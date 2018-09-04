@@ -12,6 +12,6 @@ struct powergl_util_window_t {
  
 };
 
-powergl_util_window* powergl_util_window_create(void);
+powergl_util_window* powergl_util_window_new(void);
 
 #endif
