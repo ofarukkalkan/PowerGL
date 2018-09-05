@@ -13,6 +13,7 @@ typedef struct powergl_util_window_xorg_t powergl_util_window_xorg;
 
 struct powergl_util_window_xorg_t {
   powergl_util_window_create_func_t* create;
+  powergl_util_window_run_func_t* run;
   Display * display;
   int screenid;
   GLXFBConfig fbconfig;
@@ -34,5 +35,6 @@ const powergl_util_window_xorg* powergl_util_window_xorg_get_ptr();
 
 // global functions for per instance
 int powergl_util_window_xorg_create(void);
+int powergl_util_window_xorg_run(void);
 
 #endif

@@ -45,6 +45,7 @@ const powergl_util_window_xorg* powergl_util_window_xorg_new(void){
     powergl_util_window_xorg* wnd = NULL;
     wnd = powergl_resize(NULL,sizeof(powergl_util_window_xorg));
     wnd->create = powergl_util_window_xorg_create;
+    wnd->run = powergl_util_window_xorg_run;
 
     g_powergl_util_window_xorg = powergl_resize(g_powergl_util_window_xorg,
 					sizeof(powergl_util_window_xorg) * ++n_powergl_util_window_xorg );
@@ -251,4 +252,47 @@ int powergl_util_window_xorg_create(void){
   }
   return 1;
 
+}
+
+int powergl_util_window_xorg_run(void){
+  if(!powergl_util_window_xorg_check_init()){
+    return 0;
+  }
+
+  powergl_util_window_xorg* wnd = g_powergl_util_window_xorg[powergl_util_window_xorg_get_index()];
+
+  XEvent event;
+  /*
+    glDebugMessageCallback(glErrorCallback, NULL);
+    glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE );  
+    glEnable(GL_DEBUG_OUTPUT);	
+  */
+  glEnable(GL_DEPTH_TEST);
+  //glEnable(GL_MULTISAMPLE);
+  glClearColor(0.3f,0.6f,0.9f,1.0f);
+  
+ here:
+
+  while (XPending(wnd->display) > 0){
+    XNextEvent(wnd->display,&event);
+    
+    switch(event.type){
+    case ButtonPress:
+      /* running=0; */
+      printf("butona basildi");
+      goto exit;
+    case Expose:
+      ;
+    }
+  }
+
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+  glXSwapBuffers(wnd->display,wnd->window);
+  
+  goto here;
+
+ exit:
+
+  return 1;
 }
