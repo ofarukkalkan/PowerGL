@@ -1,4 +1,5 @@
 #include "xorg.h"
+#include <stdio.h>
 
 // internal fields
 static powergl_util_window_xorg** g_powergl_util_window_xorg;
@@ -15,14 +16,13 @@ int powergl_util_window_xorg_check_init(void){
 
 int powergl_util_window_xorg_init(void){
   if(powergl_util_window_xorg_check_init()){
-    
+    return 1;
+  }else{
     g_powergl_util_window_xorg = NULL;
     n_powergl_util_window_xorg = 0;
     i_powergl_util_window_xorg = 0;
     f_powergl_util_window_xorg = 1;
     return 1;
-  }else{
-    return 0;
   }
 }
 
@@ -39,14 +39,14 @@ int powergl_util_window_xorg_finish(void){
   }else return 0;
 }
 
-size_t powergl_util_window_xorg_new(void){
+const powergl_util_window_xorg* powergl_util_window_xorg_new(void){
   if(powergl_util_window_xorg_check_init()){
   
     powergl_util_window_xorg* wnd = NULL;
-    wnd = resize(NULL,sizeof(powergl_util_window_xorg));
+    wnd = powergl_resize(NULL,sizeof(powergl_util_window_xorg));
     wnd->create = powergl_util_window_xorg_create;
 
-    g_powergl_util_window_xorg = resize(g_powergl_util_window_xorg,
+    g_powergl_util_window_xorg = powergl_resize(g_powergl_util_window_xorg,
 					sizeof(powergl_util_window_xorg) * ++n_powergl_util_window_xorg );
   
     size_t new_index = n_powergl_util_window_xorg - 1;
@@ -54,8 +54,8 @@ size_t powergl_util_window_xorg_new(void){
 
     g_powergl_util_window_xorg[new_index] = wnd;
   
-    return new_index;
-  }else return 0;
+    return wnd;
+  }else return NULL;
 }
 
 int powergl_util_window_xorg_delete(void){

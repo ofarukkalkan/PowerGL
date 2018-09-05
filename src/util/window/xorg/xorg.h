@@ -6,9 +6,6 @@
 
 #include "../window.h"
 
-#include <stdlib.h>
-#include <stdio.h>
-
 #include <GL/glx.h>
 #include <GL/glxext.h>
 
@@ -28,7 +25,7 @@ struct powergl_util_window_xorg_t {
 int powergl_util_window_xorg_check_init(void);
 int powergl_util_window_xorg_init(void);
 int powergl_util_window_xorg_finish(void);
-size_t powergl_util_window_xorg_new(void);
+const powergl_util_window_xorg* powergl_util_window_xorg_new(void);
 int powergl_util_window_xorg_delete(void);
 int powergl_util_window_xorg_delete_all(void);
 int powergl_util_window_xorg_set_index(size_t);

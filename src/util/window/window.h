@@ -12,6 +12,8 @@ struct powergl_util_window_t {
  
 };
 
-powergl_util_window* powergl_util_window_new(void);
+// global functions
+const powergl_util_window* powergl_util_window_new(void);
+
 
 #endif
