@@ -1,8 +1,124 @@
 #include "xorg.h"
 
-powergl_util_window_xorg* powergl_util_window_xorg_create(void){
-  powergl_util_window_xorg* wnd = NULL;
-  wnd = resize();
+// internal fields
+static powergl_util_window_xorg** g_powergl_util_window_xorg;
+static size_t n_powergl_util_window_xorg;
+static size_t i_powergl_util_window_xorg;
+static int f_powergl_util_window_xorg;
+
+int powergl_util_window_xorg_check_init(void){
+ if(f_powergl_util_window_xorg != 1){
+    fprintf(stderr,"powergl_util_window_xorg is not initialised");
+    return 0;
+ }else return 1;
+}
+
+int powergl_util_window_xorg_init(void){
+  if(powergl_util_window_xorg_check_init()){
+    
+    g_powergl_util_window_xorg = NULL;
+    n_powergl_util_window_xorg = 0;
+    i_powergl_util_window_xorg = 0;
+    f_powergl_util_window_xorg = 1;
+    return 1;
+  }else{
+    return 0;
+  }
+}
+
+int powergl_util_window_xorg_finish(void){
+  if(powergl_util_window_xorg_check_init()){
+    
+    if(powergl_util_window_xorg_delete_all()){
+      g_powergl_util_window_xorg = NULL;
+      n_powergl_util_window_xorg = 0;
+      i_powergl_util_window_xorg = 0;
+      f_powergl_util_window_xorg = 0;
+      return 1;
+    }else return 0;
+  }else return 0;
+}
+
+size_t powergl_util_window_xorg_new(void){
+  if(powergl_util_window_xorg_check_init()){
+  
+    powergl_util_window_xorg* wnd = NULL;
+    wnd = resize(NULL,sizeof(powergl_util_window_xorg));
+    wnd->create = powergl_util_window_xorg_create;
+
+    g_powergl_util_window_xorg = resize(g_powergl_util_window_xorg,
+					sizeof(powergl_util_window_xorg) * ++n_powergl_util_window_xorg );
+  
+    size_t new_index = n_powergl_util_window_xorg - 1;
+    powergl_util_window_xorg_set_index(new_index);
+
+    g_powergl_util_window_xorg[new_index] = wnd;
+  
+    return new_index;
+  }else return 0;
+}
+
+int powergl_util_window_xorg_delete(void){
+  if(powergl_util_window_xorg_check_init()){
+    
+    size_t i = powergl_util_window_xorg_get_index();
+    if(g_powergl_util_window_xorg[i]){
+      free(g_powergl_util_window_xorg[i]);
+      g_powergl_util_window_xorg[i] = NULL;
+      powergl_util_window_xorg_set_index(i-1);
+      return 1;
+    }else {
+      fprintf(stderr,"could not deleted index %ld of powergl_util_window_xorg",i);
+      return 0;
+    }
+  }else return 0;
+}
+
+int powergl_util_window_xorg_delete_all(void){
+  if(powergl_util_window_xorg_check_init()){
+    
+    for(int i = 0; i < n_powergl_util_window_xorg; ++i){
+      int result = powergl_util_window_xorg_set_index(i);
+      if(!result) return 0;     
+      result = powergl_util_window_xorg_delete();
+      if(!result) return 0;
+    }
+
+    if(g_powergl_util_window_xorg){
+      free(g_powergl_util_window_xorg);
+      g_powergl_util_window_xorg = NULL;
+      return 1;
+    }else {
+      fprintf(stderr,"could not deleted powergl_util_window_xorg");
+      return 0;
+    }
+  }else return 0;
+}
+
+int powergl_util_window_xorg_set_index(size_t i){
+  if(powergl_util_window_xorg_check_init()){
+    
+    if(i >= n_powergl_util_window_xorg){
+      fprintf(stderr,"index is not valid");
+      return 0;
+    }else{
+      i_powergl_util_window_xorg = i;
+      return 1;
+    }
+  }else return 0;
+}
+
+size_t powergl_util_window_xorg_get_index(){
+  return i_powergl_util_window_xorg;
+}
+
+int powergl_util_window_xorg_create(void){
+
+  if(!powergl_util_window_xorg_check_init()){
+    return 0;
+  }
+
+  powergl_util_window_xorg* wnd = g_powergl_util_window_xorg[powergl_util_window_xorg_get_index()];
   
   int fbattribs[] = {
     GLX_CONFIG_CAVEAT,GLX_NONE,
@@ -35,32 +151,31 @@ powergl_util_window_xorg* powergl_util_window_xorg_create(void){
   };
   Bool result;
 
-  
   /* X Server e baglanma */
   wnd->display = XOpenDisplay(NULL);
   if(wnd->display!=NULL){
-    printf("\nX Server baglantisi basarili");
+    fprintf(stdout,"\nX Server baglantisi basarili");
   }else{
-    printf("\nhata : X Server baglantisi basarisiz");
-    exit(EXIT_FAILURE);
+    fprintf(stderr,"\nhata : X Server baglantisi basarisiz");
+    return 0;
   }
   /* suan ki ekran id sini elde etme */
   wnd->screenid = DefaultScreen(wnd->display);
-  printf("\nEkran id : %d",wnd->screenid);
+  fprintf(stderr,"\nEkran id : %d",wnd->screenid);
 
   /* verilen ozelliklerle eslesen frame buffer formatlarini getir */
   fbconfigs = glXChooseFBConfig (wnd->display,wnd->screenid, fbattribs,&count );
   if(count){
-    printf("\nEslesen fbconfig sayisi : %d", count);
+    fprintf(stdout,"\nEslesen fbconfig sayisi : %d", count);
     /* ilkini sec (ne oldugu belli degil !) */
     wnd->fbconfig=fbconfigs[0];
   }else{
-    printf("\nhata : eslesen fbconfig yok");
-    exit(EXIT_FAILURE);
+    fprintf(stderr,"\nhata : eslesen fbconfig yok");
+    return 0;
   }
 
   visualinfo = glXGetVisualFromFBConfig(wnd->display,wnd->fbconfig);
-  printf("\nsecilen visual id : 0x%x",(unsigned int)visualinfo->visualid);
+  fprintf(stderr,"\nsecilen visual id : 0x%x",(unsigned int)visualinfo->visualid);
 
   /* eslesen fbconfigleri temizle */
   XFree(fbconfigs);
@@ -90,10 +205,10 @@ powergl_util_window_xorg* powergl_util_window_xorg_create(void){
 		  );
 
   if(wnd->window){
-    printf("\ntest penceresi olusturuldu");
+    fprintf(stdout,"\ntest penceresi olusturuldu");
   }else{
-    printf("\nhata : test penceresi olusturulamadi");
-    exit(EXIT_FAILURE);
+    fprintf(stderr,"\nhata : test penceresi olusturulamadi");
+    return 0;
   }
   XFree(visualinfo);
 
@@ -109,19 +224,19 @@ powergl_util_window_xorg* powergl_util_window_xorg_create(void){
   glXCreateContextAttribsARB = (PFNGLXCREATECONTEXTATTRIBSARBPROC)glXGetProcAddressARB( (const GLubyte *) "glXCreateContextAttribsARB" );
   wnd->context = glXCreateContextAttribsARB(wnd->display,wnd->fbconfig,0,True,contextattribs);
   if(wnd->context){
-    printf("\ncontext olusturuldu");
+    fprintf(stdout,"\ncontext olusturuldu");
   }else{
-    printf("\nhata : context olusturulamadi");
-    exit(EXIT_FAILURE);
+    fprintf(stderr,"\nhata : context olusturulamadi");
+    return 0;
   }
 
   /* context baglama */
   result = glXMakeCurrent(wnd->display,wnd->window,wnd->context);
   if(result){
-    printf("\ncontext baglandi");
+    fprintf(stdout,"\ncontext baglandi");
   }else{
-    printf("\nhata : context baglanamadi");
-    exit(EXIT_FAILURE);
+    fprintf(stderr,"\nhata : context baglanamadi");
+    return 0;
   }
 
   /* vsync ayarlama */
@@ -131,8 +246,9 @@ powergl_util_window_xorg* powergl_util_window_xorg_create(void){
   if ( glXSwapIntervalMESA != NULL ) {
     glXSwapIntervalMESA(0);
   }else{
-    printf("\nhata : swap interval ayarlanamadi");
-    exit(EXIT_FAILURE);
+    fprintf(stderr,"\nhata : swap interval ayarlanamadi");
+    return 0;
   }
+  return 1;
 
 }
