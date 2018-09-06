@@ -39,13 +39,13 @@ int powergl_util_window_xorg_finish(void){
   }else return 0;
 }
 
-const powergl_util_window_xorg* powergl_util_window_xorg_new(void){
-  if(powergl_util_window_xorg_check_init()){
+powergl_util_window_xorg* powergl_util_window_xorg_new(void){
+  if(powergl_util_window_xorg_init()){
   
     powergl_util_window_xorg* wnd = NULL;
     wnd = powergl_resize(NULL,sizeof(powergl_util_window_xorg));
-    wnd->create = powergl_util_window_xorg_create;
-    wnd->run = powergl_util_window_xorg_run;
+    wnd->_base.create = powergl_util_window_xorg_create;
+    wnd->_base.run = powergl_util_window_xorg_run;
 
     g_powergl_util_window_xorg = powergl_resize(g_powergl_util_window_xorg,
 					sizeof(powergl_util_window_xorg) * ++n_powergl_util_window_xorg );
@@ -111,6 +111,10 @@ int powergl_util_window_xorg_set_index(size_t i){
 
 size_t powergl_util_window_xorg_get_index(){
   return i_powergl_util_window_xorg;
+}
+
+powergl_util_window_xorg* powergl_util_window_xorg_get_ptr(){
+  return g_powergl_util_window_xorg[powergl_util_window_xorg_get_index()];
 }
 
 int powergl_util_window_xorg_create(void){
