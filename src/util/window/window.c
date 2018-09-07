@@ -1,5 +1,6 @@
 #include "window.h"
 #include "xorg/xorg.h"
+#include "../app/appmanager/appmanager.h"
 
 int powergl_util_window_check_init(void){
   return powergl_util_window_xorg_check_init();
@@ -14,8 +15,9 @@ int powergl_util_window_finish(void){
 }
 
 const powergl_util_window* powergl_util_window_new(void){
-  powergl_util_window* wnd = NULL;
-  return (powergl_util_window*)(powergl_util_window_xorg_new());
+  powergl_util_window* wnd = (powergl_util_window*)(powergl_util_window_xorg_new());
+  wnd->appmanager = (powergl_util_app*)(powergl_util_app_appmanager_new());
+  return wnd;
 }
 
 int powergl_util_window_delete(void){
