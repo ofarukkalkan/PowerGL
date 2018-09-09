@@ -1,6 +1,7 @@
 AM_CFLAGS = -I$(top_srcdir)/util
 SUBDIRS = \
-	window
+	window \
+	app
 
 noinst_LTLIBRARIES = libpowerglutil.la
 libpowerglutil_ladir = $(includedir)/powergl/util
@@ -10,5 +11,5 @@ libpowerglutil_la_LDFLAGS = -no-undefined
 libpowerglutil_la_SOURCES = \
 	util.c
 libpowerglutil_la_LIBADD = \
-	window/libpowerglutilwindow.la
-
+	window/libpowerglutilwindow.la \
+	app/libpowerglutilapp.la

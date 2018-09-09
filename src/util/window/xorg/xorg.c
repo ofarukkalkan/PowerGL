@@ -265,6 +265,8 @@ int powergl_util_window_xorg_run(void){
 
   powergl_util_window_xorg* wnd = g_powergl_util_window_xorg[powergl_util_window_xorg_get_index()];
 
+  wnd->_base.appmanager->create();
+
   XEvent event;
   /*
     glDebugMessageCallback(glErrorCallback, NULL);
@@ -291,6 +293,8 @@ int powergl_util_window_xorg_run(void){
   }
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  wnd->_base.appmanager->run();
     
   glXSwapBuffers(wnd->display,wnd->window);
   

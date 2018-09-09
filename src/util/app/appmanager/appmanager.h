@@ -11,6 +11,14 @@ struct powergl_util_app_appmanager_t {
   size_t n_app;
 };
 
+int powergl_util_app_appmanager_check_init(void);
+int powergl_util_app_appmanager_init(void);
+int powergl_util_app_appmanager_finish(void);
 powergl_util_app_appmanager* powergl_util_app_appmanager_new(void);
+int powergl_util_app_appmanager_delete(void);
+int powergl_util_app_appmanager_delete_all(void);
+int powergl_util_app_appmanager_set_index(size_t);
+size_t powergl_util_app_appmanager_get_index();
+powergl_util_app_appmanager* powergl_util_app_appmanager_get_ptr();
 
 #endif
