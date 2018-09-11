@@ -9,7 +9,7 @@ static int f_powergl_util_window_xorg;
 
 int powergl_util_window_xorg_check_init(void){
  if(f_powergl_util_window_xorg != 1){
-    fprintf(stderr,"powergl_util_window_xorg is not initialised");
+    fprintf(stderr,"powergl_util_window_xorg is not initialised\n");
     return 0;
  }else return 1;
 }
@@ -46,9 +46,10 @@ powergl_util_window_xorg* powergl_util_window_xorg_new(void){
     wnd = powergl_resize(NULL,sizeof(powergl_util_window_xorg));
     wnd->_base.create = powergl_util_window_xorg_create;
     wnd->_base.run = powergl_util_window_xorg_run;
-
+    wnd->_base.root_app = powergl_util_app_new("appmanager");
+    
     g_powergl_util_window_xorg = powergl_resize(g_powergl_util_window_xorg,
-					sizeof(powergl_util_window_xorg) * ++n_powergl_util_window_xorg );
+					sizeof(powergl_util_window_xorg*) * ++n_powergl_util_window_xorg );
   
     size_t new_index = n_powergl_util_window_xorg - 1;
     powergl_util_window_xorg_set_index(new_index);
@@ -265,7 +266,7 @@ int powergl_util_window_xorg_run(void){
 
   powergl_util_window_xorg* wnd = g_powergl_util_window_xorg[powergl_util_window_xorg_get_index()];
 
-  wnd->_base.appmanager->create();
+  wnd->_base.root_app->create();
 
   XEvent event;
   /*
@@ -294,7 +295,7 @@ int powergl_util_window_xorg_run(void){
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  wnd->_base.appmanager->run();
+  wnd->_base.root_app->run();
     
   glXSwapBuffers(wnd->display,wnd->window);
   

@@ -12,7 +12,7 @@ struct powergl_util_window_t {
   
   powergl_util_window_create_func_t* create;
   powergl_util_window_run_func_t* run;
-  powergl_util_app* appmanager;
+  powergl_util_app* root_app;
 };
 
 // global functions

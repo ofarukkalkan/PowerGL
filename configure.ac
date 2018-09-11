@@ -25,8 +25,7 @@ AC_PROG_CPP
 AC_CONFIG_FILES([Makefile
 		 src/Makefile
                  src/util/Makefile
-		 src/util/app/Makefile
-		 src/util/app/appmanager/Makefile
+		 						 src/util/app/Makefile
                  src/util/window/Makefile
                  src/util/window/xorg/Makefile])
 AC_OUTPUT
