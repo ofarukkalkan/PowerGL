@@ -1,6 +1,9 @@
 AM_CFLAGS = -I$(top_srcdir)
 SUBDIRS = \
-	util
+	util \
+	rendering \
+	math \
+	asset
 
 lib_LTLIBRARIES = libpowergl.la
 libpowergl_ladir = $(includedir)/powergl
@@ -10,5 +13,8 @@ libpowergl_la_LDFLAGS = -no-undefined
 libpowergl_la_SOURCES = \
 	powergl.c
 libpowergl_la_LIBADD = \
-	util/libpowerglutil.la
+	util/libpowerglutil.la \
+	rendering/libpowerglrendering.la \
+	math/libpowerglmath.la \
+	asset/libpowerglasset.la
 
