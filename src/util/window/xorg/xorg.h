@@ -25,7 +25,7 @@ struct powergl_util_window_xorg_t {
 int powergl_util_window_xorg_check_init(void);
 int powergl_util_window_xorg_init(void);
 int powergl_util_window_xorg_finish(void);
-powergl_util_window_xorg* powergl_util_window_xorg_new(void);
+powergl_util_window_xorg* powergl_util_window_xorg_new(powergl_util_app *root_app);
 int powergl_util_window_xorg_delete(void);
 int powergl_util_window_xorg_delete_all(void);
 int powergl_util_window_xorg_set_index(size_t);

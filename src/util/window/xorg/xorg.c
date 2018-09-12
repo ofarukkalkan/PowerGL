@@ -39,14 +39,14 @@ int powergl_util_window_xorg_finish(void){
   }else return 0;
 }
 
-powergl_util_window_xorg* powergl_util_window_xorg_new(void){
+powergl_util_window_xorg* powergl_util_window_xorg_new(powergl_util_app *root_app){
   if(powergl_util_window_xorg_init()){
   
     powergl_util_window_xorg* wnd = NULL;
     wnd = powergl_resize(NULL,sizeof(powergl_util_window_xorg));
     wnd->_base.create = powergl_util_window_xorg_create;
     wnd->_base.run = powergl_util_window_xorg_run;
-    wnd->_base.root_app = powergl_util_app_new("appmanager");
+    wnd->_base.root_app = root_app;
     
     g_powergl_util_window_xorg = powergl_resize(g_powergl_util_window_xorg,
 					sizeof(powergl_util_window_xorg*) * ++n_powergl_util_window_xorg );

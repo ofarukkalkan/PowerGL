@@ -13,8 +13,8 @@ int powergl_util_window_finish(void){
   return powergl_util_window_xorg_finish();
 }
 
-const powergl_util_window* powergl_util_window_new(void){
-  powergl_util_window* wnd = (powergl_util_window*)(powergl_util_window_xorg_new());
+const powergl_util_window* powergl_util_window_new(powergl_util_app *root_app){
+  powergl_util_window* wnd = (powergl_util_window*)(powergl_util_window_xorg_new(root_app));
   return wnd;
 }
 
