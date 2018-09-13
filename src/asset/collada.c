@@ -438,6 +438,14 @@ define_init_function(p){
     this->_ext.value = NULL;
  
     init_complex_element_base(this,"p","list_of_uints",parent,&this->_ext.value);
+  }else if(strcmp(elem->name,"triangles") == 0 ){
+    element(triangles) * parent = (element(triangles)*) g_current_elem;
+    assert(parent);
+    element(p)* this = &parent->c_p;
+    this->p_triangles = parent;
+    this->_ext.value = NULL;
+ 
+    init_complex_element_base(this,"p","list_of_uints",parent,&this->_ext.value);
   }else {
     g_undefined_element_flag = 1;
   }
@@ -457,7 +465,7 @@ define_init_function(input){
   simple_element * elem = (simple_element*) g_current_elem;
   assert(elem);
   
-  if(strncmp(elem->name,"ve",2) == 0 ){ // vertices
+  if(strcmp(elem->name,"vertices") == 0 ){ // vertices
     element(vertices) * parent = (element(vertices)*) g_current_elem;
     element(input_local)** ptr = parent->ch_input_local;
     ptr = resize( ptr, ++parent->n_input_local * sizeof(element(input_local)*));
@@ -472,25 +480,43 @@ define_init_function(input){
     init_simple_element_base(&this->a_source,"source","string",this,&this->a_source.value);
     init_ptr_complex_element_base(&this->r_source,this->a_source.value,"source",this);
  
-  } else if (strncmp(elem->name,"po",2) == 0){ // polylist
-    element(polylist) * parent = (element(polylist)*) g_current_elem;
-    element(input_local_offset)** ptr = parent->ch_input_local_offset;
-    ptr = resize( ptr, ++parent->n_input_local_offset * sizeof(element(input_local_offset)*));
-    parent->ch_input_local_offset = ptr;   
-    parent->ch_input_local_offset[parent->n_input_local_offset - 1] = resize( NULL, sizeof(element(input_local_offset)));
-    element(input_local_offset)* this = parent->ch_input_local_offset[parent->n_input_local_offset - 1];
+  } else if (strcmp(elem->name,"polylist") == 0 || strcmp(elem->name,"triangles") == 0){ // polylist or triangles
+    void *parent_ptr = NULL;
+    element(input_local_offset)* this = NULL;
+    if(strcmp(elem->name,"polylist") == 0){
+      element(polylist) * parent = (element(polylist)*) g_current_elem;
+      element(input_local_offset)** ptr = parent->ch_input_local_offset;
+      ptr = resize( ptr, ++parent->n_input_local_offset * sizeof(element(input_local_offset)*));
+      parent->ch_input_local_offset = ptr;   
+      parent->ch_input_local_offset[parent->n_input_local_offset - 1] = resize( NULL, sizeof(element(input_local_offset)));
+      this = parent->ch_input_local_offset[parent->n_input_local_offset - 1];
+      this->p_polylist = parent_ptr;
+      this->p_triangles = NULL;
+      this->a_semantic.value = NULL;
+      this->a_source.value = NULL;
+      parent_ptr = parent;
+    }else if(strcmp(elem->name,"triangles") == 0){
+      element(triangles) * parent = (element(triangles)*) g_current_elem;
+      element(input_local_offset)** ptr = parent->ch_input_local_offset;
+      ptr = resize( ptr, ++parent->n_input_local_offset * sizeof(element(input_local_offset)*));
+      parent->ch_input_local_offset = ptr;   
+      parent->ch_input_local_offset[parent->n_input_local_offset - 1] = resize( NULL, sizeof(element(input_local_offset)));
+      this = parent->ch_input_local_offset[parent->n_input_local_offset - 1];
+      this->p_triangles = parent_ptr;
+      this->p_triangles = NULL;
+      this->a_semantic.value = NULL;
+      this->a_source.value = NULL;
+      parent_ptr = parent;
+    }
     
-    this->p_polylist = parent;
-    this->a_semantic.value = NULL;
-    this->a_source.value = NULL;
-
-    init_complex_element_base(this,"input","none",parent,NULL);
+    init_complex_element_base(this,"input","none",parent_ptr,NULL);
     init_simple_element_base(&this->a_semantic,"semantic","string",this,&this->a_semantic.value);
     init_simple_element_base(&this->a_source,"source","string",this,&this->a_source.value);
     init_simple_element_base(&this->a_set,"set","uint",this,&this->a_set.value);
     init_simple_element_base(&this->a_offset,"offset","uint",this,&this->a_offset.value);
     init_ptr_complex_element_base(&this->r_source,this->a_source.value,"source",this);
     init_ptr_complex_element_base(&this->r_vertices,this->a_source.value,"source",this);
+    
   }else{
     g_undefined_element_flag = 1;
   }
@@ -582,6 +608,24 @@ define_init_function(polylist){
   init_simple_element_base(&this->a_name,"name","string",this,&this->a_name.value);
 }
 
+define_init_function(triangles){
+  element(mesh) * parent = (element(mesh)*) g_current_elem;
+  element(triangles)** ptr = parent->ch_triangles;
+  ptr = resize( ptr, ++parent->n_triangles * sizeof(element(triangles)*));
+  parent->ch_triangles = ptr;
+  parent->ch_triangles[parent->n_triangles - 1] = resize( NULL, sizeof(element(triangles)));
+  element(triangles)* this = parent->ch_triangles[parent->n_triangles - 1];
+
+  this->p_mesh = parent;
+  this->a_name.value = NULL;
+  this->ch_input_local_offset = NULL;
+  this->n_input_local_offset = 0;
+
+  init_complex_element_base(this,"triangles","none",parent,NULL);
+  init_simple_element_base(&this->a_count,"count","uint",this,&this->a_count.value);
+  init_simple_element_base(&this->a_name,"name","string",this,&this->a_name.value);
+}
+
 define_init_function(vertices){
   element (mesh) * parent = (element(mesh)*) g_current_elem;
   element(vertices) * this = &parent->c_vertices;
@@ -622,8 +666,10 @@ define_init_function(mesh){
 
   this->ch_source = NULL;
   this->ch_polylist = NULL;
+  this->ch_triangles = NULL;
   this->n_source = 0;
   this->n_polylist = 0;
+  this->n_triangles = 0;
   
   init_complex_element_base(this,"mesh","none",parent,NULL);
 }
@@ -1017,10 +1063,14 @@ static void parse_attribs(void* userdata, const char** attr){
 	ptr=attr[i*2+1];
 	g_collada_elem_attribs.offset = strtoul(ptr,NULL,10);
 	g_collada_elem_attrib_states.offset = 1;
-      } else if(ptr[0]=='x'){//xmlns
-	ptr=attr[i*2+1];
-	g_collada_elem_attribs.xmlns = ptr;
-	g_collada_elem_attrib_states.xmlns = 1;
+      } else if(ptr[0]=='x'){
+	if(ptr[5]=='\0'){//xmlns
+	  ptr=attr[i*2+1];
+	  g_collada_elem_attribs.xmlns = ptr;
+	  g_collada_elem_attrib_states.xmlns = 1;
+	}else{//xmlns:xsi
+	  // not implemented
+	}
       }
     }
   }
@@ -1033,64 +1083,65 @@ static void collada(elemend)(void *userdata,const char *elem){
   g_current_depth--;
   
   if(g_current_depth==5){
-    if(strncmp(elem,"per",3)==0){
-    }else if(strncmp(elem,"ort",3)==0){
-    }else if(strncmp(elem,"float_",6)==0){
-    }else if(strncmp(elem,"int_",4)==0){
-    }else if(strncmp(elem,"technique_c",11)==0){
-    }else if(strncmp(elem,"inp",3)==0){
+    if(strcmp(elem,"perspective")==0){
+    }else if(strcmp(elem,"orthographic")==0){
+    }else if(strcmp(elem,"float_array")==0){
+    }else if(strcmp(elem,"int_array")==0){
+    }else if(strcmp(elem,"technique_common")==0){
+    }else if(strcmp(elem,"input")==0){
     }else if(strcmp(elem,"p")==0){
-    }else if(strncmp(elem,"vc",2)==0){
+    }else if(strcmp(elem,"vcount")==0){
     }else{
       g_undefined_element_flag = 1;
     }
   }else if(g_current_depth==4){
-    if(strncmp(elem,"technique_c",11)==0){
+    if(strcmp(elem,"technique_common")==0){
     }else if(strcmp(elem,"source")==0){
-    }else if(strncmp(elem,"verti",5)==0){
-    }else if(strncmp(elem,"polyl",5)==0){
-    }else if(strncmp(elem,"matr",4)==0){
-    }else if(strncmp(elem,"instance_ca",11)==0){
-    }else if(strncmp(elem,"instance_g",10)==0){
+    }else if(strcmp(elem,"vertices")==0){
+    }else if(strcmp(elem,"polylist")==0){
+    }else if(strcmp(elem,"triangles")==0){
+    }else if(strcmp(elem,"matrix")==0){
+    }else if(strcmp(elem,"instance_camera")==0){
+    }else if(strcmp(elem,"instance_geometry")==0){
     }else{
       g_undefined_element_flag = 1;
     }
   }else if(g_current_depth==6){
-    if(strncmp(elem,"xf",2)==0){
-    }else if(strncmp(elem,"yf",2)==0){
-    }else if(strncmp(elem,"asp",3)==0){
-    }else if(strncmp(elem,"zn",2)==0){
+    if(strcmp(elem,"xfov")==0){
+    }else if(strcmp(elem,"yfov")==0){
+    }else if(strcmp(elem,"aspect_ratio")==0){
+    }else if(strcmp(elem,"znear")==0){
     }else if(strcmp(elem,"zfar")==0){
-    }else if(strncmp(elem,"ac",2)==0){
+    }else if(strcmp(elem,"accessor")==0){
     }else{
       g_undefined_element_flag = 1;
     }
   }else if(g_current_depth==1){
-    if(strncmp(elem,"library_ca",10)==0){
-    }else if(strncmp(elem,"library_ge",10)==0){
-    }else if(strncmp(elem,"library_vi",10)==0){
-    }else if(strncmp(elem,"sce",3)==0){
+    if(strcmp(elem,"library_cameras")==0){
+    }else if(strcmp(elem,"library_geometries")==0){
+    }else if(strcmp(elem,"library_visual_scenes")==0){
+    }else if(strcmp(elem,"scene")==0){
     }else{
       g_undefined_element_flag = 1;
     }
   }else if(g_current_depth==2){
-    if(strncmp(elem,"up",2)==0){
-    }else if(strncmp(elem,"cam",3)==0){
-    }else if(strncmp(elem,"geo",3)==0){
-    }else if(strncmp(elem,"vis",3)==0){
-    }else if(strncmp(elem,"instance_v",10)==0){
+    if(strcmp(elem,"up_axis")==0){
+    }else if(strcmp(elem,"camera")==0){
+    }else if(strcmp(elem,"geometry")==0){
+    }else if(strcmp(elem,"visual_scene")==0){
+    }else if(strcmp(elem,"instance_visual_scene")==0){
     }else{
       g_undefined_element_flag = 1;
     }
   }else if(g_current_depth==3){
-    if(strncmp(elem,"optic",5)==0){
-    }else if(strncmp(elem,"mes",3)==0){
-    }else if(strncmp(elem,"nod",3)==0){
+    if(strcmp(elem,"optics")==0){
+    }else if(strcmp(elem,"mesh")==0){
+    }else if(strcmp(elem,"node")==0){
     }else{
       g_undefined_element_flag = 1;
     }
   }else if(g_current_depth==0){
-    if(strncmp(elem,"CO",2)==0){
+    if(strcmp(elem,"COLLADA")==0){
       puts(((simple_element*) g_current_elem)->name);
       g_current_depth--;
       return;
@@ -1098,7 +1149,7 @@ static void collada(elemend)(void *userdata,const char *elem){
       g_undefined_element_flag = 1;
     }
   }else if(g_current_depth==7){
-    if(strncmp(elem,"par",3)==0){
+    if(strcmp(elem,"param")==0){
     }else{
       g_undefined_element_flag = 1;
     }
@@ -1401,127 +1452,130 @@ static void collada(elemstart)(void *userdata,const char *elem,const char **attr
   // bu kisimda herhangi bir element icin parse_attribs calistirilmaz ise onceki degerler kaliyor
   // o yuzden ya parse_attribs en ustte bir kez cagirilacak yada dikkatli sekilde her biri iicn ayri ayri cagirilacak
   if(g_current_depth==5){
-    if(strncmp(elem,"per",3)==0){
+    if(strcmp(elem,"perspective")==0){
       collada(init_perspective)();
-    }else if(strncmp(elem,"ort",3)==0){
+    }else if(strcmp(elem,"orthographic")==0){
       collada(init_orthographic)();
-    }else if(strncmp(elem,"float_",6)==0){
+    }else if(strcmp(elem,"float_array")==0){
       parse_attribs(userdata,attr);
       collada(init_float_array)();
-    }else if(strncmp(elem,"int_",4)==0){
+    }else if(strcmp(elem,"int_array")==0){
       parse_attribs(userdata,attr);
       collada(init_int_array)();
-    }else if(strncmp(elem,"technique_c",11)==0){
+    }else if(strcmp(elem,"technique_common")==0){
       collada(init_technique_common)();
-    }else if(strncmp(elem,"inp",3)==0){
+    }else if(strcmp(elem,"input")==0){
       parse_attribs(userdata,attr);
       collada(init_input)();
     }else if(strcmp(elem,"p")==0){
       collada(init_p)();
-    }else if(strncmp(elem,"vc",2)==0){
+    }else if(strcmp(elem,"vcount")==0){
       collada(init_vcount)();
     }else{
       g_undefined_element_flag = 1;
     }
   }else if(g_current_depth==4){
-    if(strncmp(elem,"technique_c",11)==0){
+    if(strcmp(elem,"technique_common")==0){
       collada(init_technique_common)();
     }else if(strcmp(elem,"source")==0){
       parse_attribs(userdata,attr);
       collada(init_source)();
-    }else if(strncmp(elem,"verti",5)==0){
+    }else if(strcmp(elem,"vertices")==0){
       parse_attribs(userdata,attr);
       collada(init_vertices)();
-    }else if(strncmp(elem,"polyl",5)==0){
+    }else if(strcmp(elem,"polylist")==0){
       parse_attribs(userdata,attr);
       collada(init_polylist)();
-    }else if(strncmp(elem,"matr",4)==0){
+    }else if(strcmp(elem,"triangles")==0){
+      parse_attribs(userdata,attr);
+      collada(init_triangles)();
+    }else if(strcmp(elem,"matrix")==0){
       parse_attribs(userdata,attr);
       collada(init_matrix)();
-    }else if(strncmp(elem,"instance_ca",11)==0){
+    }else if(strcmp(elem,"instance_camera")==0){
       parse_attribs(userdata,attr);
       collada(init_instance_camera)();
-    }else if(strncmp(elem,"instance_g",10)==0){
+    }else if(strcmp(elem,"instance_geometry")==0){
       parse_attribs(userdata,attr);
       collada(init_instance_geometry)();
     }else{
       g_undefined_element_flag = 1;
     }
   }else if(g_current_depth==6){
-    if(strncmp(elem,"xf",2)==0){
+    if(strcmp(elem,"xfov")==0){
       parse_attribs(userdata,attr);
       collada(init_xfov)();
-    }else if(strncmp(elem,"yf",2)==0){
+    }else if(strcmp(elem,"yfov")==0){
       parse_attribs(userdata,attr);
       collada(init_yfov)();
-    }else if(strncmp(elem,"asp",3)==0){
+    }else if(strcmp(elem,"aspect_ratio")==0){
       parse_attribs(userdata,attr);
       collada(init_aspect_ratio)();
-    }else if(strncmp(elem,"zn",2)==0){
+    }else if(strcmp(elem,"znear")==0){
       parse_attribs(userdata,attr);
       collada(init_znear)();
     }else if(strcmp(elem,"zfar")==0){
       parse_attribs(userdata,attr);
       collada(init_zfar)();
-    }else if(strncmp(elem,"ac",2)==0){
+    }else if(strcmp(elem,"accessor")==0){
       parse_attribs(userdata,attr);
       collada(init_accessor)();
     }else{
       g_undefined_element_flag = 1;
     }
   }else if(g_current_depth==1){
-    if(strncmp(elem,"library_ca",10)==0){
+    if(strcmp(elem,"library_cameras")==0){
       parse_attribs(userdata,attr);      
       collada(init_library_cameras)();
-    }else if(strncmp(elem,"library_ge",10)==0){
+    }else if(strcmp(elem,"library_geometries")==0){
       parse_attribs(userdata,attr);      
       collada(init_library_geometries)();
-    }else if(strncmp(elem,"library_vi",10)==0){
+    }else if(strcmp(elem,"library_visual_scenes")==0){
       parse_attribs(userdata,attr);      
       collada(init_library_visual_scenes)();
-    }else if(strncmp(elem,"sce",3)==0){
+    }else if(strcmp(elem,"scene")==0){
       collada(init_scene)();
     }else{
       g_undefined_element_flag = 1;
     }
   }else if(g_current_depth==2){
-    if(strncmp(elem,"up",2)==0){
+    if(strcmp(elem,"up_axis")==0){
       
-    }else if(strncmp(elem,"cam",3)==0){
+    }else if(strcmp(elem,"camera")==0){
       parse_attribs(userdata,attr);      
       collada(init_camera)();
-    }else if(strncmp(elem,"geo",3)==0){
+    }else if(strcmp(elem,"geometry")==0){
       parse_attribs(userdata,attr);      
       collada(init_geometry)();
-    }else if(strncmp(elem,"vis",3)==0){
+    }else if(strcmp(elem,"visual_scene")==0){
       parse_attribs(userdata,attr);
       collada(init_visual_scene)();
-    }else if(strncmp(elem,"instance_v",10)==0){
+    }else if(strcmp(elem,"instance_visual_scene")==0){
       parse_attribs(userdata,attr);  
       collada(init_instance_visual_scene)();
     }else{
       g_undefined_element_flag = 1;
     }
   }else if(g_current_depth==3){
-    if(strncmp(elem,"optic",5)==0){
+    if(strcmp(elem,"optics")==0){
       collada(init_optics)();
-    }else if(strncmp(elem,"mes",3)==0){
+    }else if(strcmp(elem,"mesh")==0){
       collada(init_mesh)();
-    }else if(strncmp(elem,"nod",3)==0){
+    }else if(strcmp(elem,"node")==0){
       parse_attribs(userdata,attr);
       collada(init_node)();
     }else{
       g_undefined_element_flag = 1;
     }
   }else if(g_current_depth==0){
-    if(strncmp(elem,"CO",2)==0){
+    if(strcmp(elem,"COLLADA")==0){
       parse_attribs(userdata,attr);
       collada(init_collada)();
     }else{
       g_undefined_element_flag = 1;
     }
   }else if(g_current_depth==7){
-    if(strncmp(elem,"par",3)==0){
+    if(strcmp(elem,"param")==0){
       parse_attribs(userdata,attr);
       collada(init_param)();
     }else{
@@ -1580,7 +1634,7 @@ static int resolve_refs(complex_element* root,int n_resolved){
 }
 
 
-void collada(parse)(const char *filename){
+element(collada)* collada(parse)(const char *filename){
   XML_Parser p;
   FILE *f;
   long fsize;
@@ -1631,7 +1685,7 @@ void collada(parse)(const char *filename){
       XML_SetCharacterDataHandler(p, element(chardata));
       
       if (!XML_Parse(p, string, fsize, -1)) {
-	fprintf(stderr, "Parse error at line %lu:\n%s\n",XML_GetCurrentLineNumber(p),XML_ErrorString(XML_GetErrorCode(p)));    
+	fprintf(stderr, "Parse error at line %lu:\n%s\n",XML_GetCurrentLineNumber(p),XML_ErrorString(XML_GetErrorCode(p)));
       }else {
 
 	printf("\n\n\n\n");
@@ -1650,6 +1704,8 @@ void collada(parse)(const char *filename){
 
       
 	printf("\n\n\n\n");
+
+
       }
       
       /* cleaning */
@@ -1660,4 +1716,5 @@ void collada(parse)(const char *filename){
 
     }
   }
+  return g_collada;
 }

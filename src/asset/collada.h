@@ -70,6 +70,7 @@ alias_element(param);
 alias_element(p);
 alias_element(vcount);
 alias_element(polylist);
+alias_element(triangles);
 alias_element(vertices);
 alias_element(library_cameras);
 /* object elements */
@@ -132,6 +133,8 @@ alias_attrib(node_type_enum);
 typedef struct simple_element_t simple_element;
 typedef struct complex_element_t complex_element;
 typedef struct ptr_complex_element_t ptr_complex_element;
+
+element(collada)* collada(parse)(const char *filename);
 
 struct simple_element_t {
   char* name;
@@ -268,6 +271,7 @@ define_ref(source);
 define_ref(vertices);
 
 define_parent(polylist);
+define_parent(triangles);
 
 end_type()
 
@@ -281,6 +285,7 @@ end_type()
 begin_complex_type(p_t) extend_type(list_of_uints);
 
 define_parent(polylist);
+define_parent(triangles);
 
 end_type()
 
@@ -371,6 +376,18 @@ define_parent(mesh);
 
 end_type()
 
+begin_complex_type(triangles_t)
+
+define_attrib(string,name);
+define_attrib(uint,count);
+
+define_children(input_local_offset);
+define_child(p);
+
+define_parent(mesh);
+
+end_type()
+
 
 begin_complex_type(vertices_t)
 
@@ -388,6 +405,7 @@ begin_complex_type(mesh_t)
 
 define_children(source);
 define_children(polylist);
+define_children(triangles);
 define_child(vertices);
   
 define_parent(geometry);
