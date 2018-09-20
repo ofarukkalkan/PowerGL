@@ -2,78 +2,115 @@
 #define _powergl_asset_collada_h
 
 #include <stddef.h>
+#include <stdio.h>
 
-#define collada(NAME)				\
-  powergl_asset_collada_ ## NAME
+/* MACROS */
 
-#define attribute(NAME)				\
-  powergl_asset_collada_ ## NAME
+#define collada_func(NAME)											\
+  powergl_collada_func_ ## NAME
 
-#define element(NAME)				\
-  powergl_asset_collada_ ## NAME
+#define collada_elem(NAME)											\
+  powergl_collada_elem_ ## NAME
 
-#define children(TYPE)				\
-  element( TYPE ) * 
+#define decl_attrib(TYPE,NAME)									\
+  collada_elem( TYPE ) a_ ## NAME 
 
-#define define_attrib(TYPE,NAME)		\
-  attribute( TYPE ) a_ ## NAME
+#define decl_child(TYPE)												\
+  collada_elem( TYPE ) * c_ ## TYPE 
 
-#define define_child(TYPE)			\
-  element( TYPE ) c_ ## TYPE
+#define decl_choice_child(TYPE)									\
+	collada_elem( TYPE ) *cc_ ## TYPE 
 
-#define define_parent(TYPE)			\
-  element( TYPE ) * p_ ## TYPE
+#define decl_parent(TYPE)												\
+  collada_elem( TYPE ) * p_ ## TYPE 
 
-#define define_ref(TYPE)			\
-  ptr_complex_element  r_ ## TYPE		
+#define decl_ref(TYPE)													\
+  ptr_complex_element  r_ ## TYPE	;
 
-#define define_children(TYPE)			\
-  element( TYPE ) ** ch_ ## TYPE ;		\
-  size_t n_ ## TYPE				\
+#define decl_children(TYPE)											\
+  collada_elem( TYPE ) ** ch_ ## TYPE ;					\
+  size_t n_ ## TYPE														
 
-#define begin_complex_type(NAME)		\
-  struct element( NAME ) {			\
-  complex_element _base;
+#define decl_base(TYPE)													\
+	TYPE _base;
 
-#define begin_simple_type(NAME)			\
-  struct element( NAME ) {			\
-  simple_element _base;
+#define decl_extend(TYPE)												\
+  collada_elem( TYPE ) _ext
 
-#define end_type() };
+#define alias_element(NAME)																				\
+  typedef struct collada_elem( NAME ## _t ) collada_elem( NAME ) 
 
-#define extend_type(BASE)			\
-  element( BASE ) _ext;
-
-#define alias_element(NAME)				\
-  typedef struct element( NAME ## _t ) element( NAME )
-
-#define alias_attrib(NAME)				\
-  typedef struct attribute( NAME ## _t ) attribute( NAME )
-
-#define define_init_function(NAME)			\
-  static void powergl_asset_collada_init_ ## NAME ()	\
+#define alias_attrib(NAME)																				\
+  typedef struct collada_elem( NAME ## _t ) collada_elem( NAME ) 
 
 
-/* root element */
+
+
+
+typedef struct simple_element_t simple_element;
+typedef struct complex_element_t complex_element;
+typedef struct ptr_complex_element_t ptr_complex_element;
+
+struct simple_element_t {
+  char *name;
+  char *base_type;
+  void *parent;
+
+  void *value_ptr;
+};
+
+struct complex_element_t {
+  char *name;
+  char *base_type;
+  void *parent;
+
+  void *value_ptr;
+  size_t value_size; // bu da bazi yerlerde atanmamis
+  
+  size_t n_elem;
+  size_t n_attrib;
+  size_t n_ref;
+	
+  complex_element **elems;
+  simple_element **attribs;
+  ptr_complex_element **refs;
+	
+	complex_element ****ch_container; // stores element ( TYPE ) **ch_xxx pointers
+	size_t n_ch_container;
+};
+
+struct ptr_complex_element_t {
+  complex_element* ptr;
+  const char* src;
+  char* ptr_type;
+  
+  void* parent;
+};
+
+
+/* COLLADA TYPEDEFS */
+
+
+/* COLLADA CORE */
+
 alias_element(collada);
-/* modularity elements */
+alias_element(up_axis);
+alias_element(unit);
 alias_element(library_geometries);
-/* geometry elements */
 alias_element(geometry);
 alias_element(mesh);
-/* data flow elements */
 alias_element(source);
 alias_element(source_technique_common);
+alias_element(float_array);
+alias_element(int_array);
 alias_element(accessor);
 alias_element(param);
-/* collation elements */
 alias_element(p);
 alias_element(vcount);
 alias_element(polylist);
 alias_element(triangles);
 alias_element(vertices);
 alias_element(library_cameras);
-/* object elements */
 alias_element(camera);
 alias_element(optics);
 alias_element(optics_technique_common);
@@ -87,33 +124,54 @@ alias_element(znear);
 alias_element(zfar);
 alias_element(aspect_ratio);
 alias_element(library_nodes);
+alias_element(library_lights);
+alias_element(light);
+alias_element(light_technique_common);
+alias_element(directional);
+alias_element(light_color);
 alias_element(library_visual_scenes);
-/* hierarchical elemets */
 alias_element(visual_scene);
 alias_element(node);
 alias_element(instance_geometry);
 alias_element(instance_camera);
 alias_element(instance_node);
-/* transformational elements */
 alias_element(lookat);
 alias_element(matrix);
 alias_element(rotate);
 alias_element(scale);
 alias_element(translate);
 alias_element(scene);
-/* instance elements */
 alias_element(instance_visual_scene);
-/* complex types */
+alias_element(instance_light);
 alias_element(input_local_offset);
 alias_element(input_local);
 
-/* typed array elements */
-alias_element(float_array);
-alias_element(int_array);
+
+/* COLLADA FX */
+
+alias_element(library_effects);
+alias_element(library_materials);
+alias_element(effect);
+alias_element(profile_COMMON);
+alias_element(technique_FX_COMMON);
+alias_element(lambert);
+alias_element(ambient);
+alias_element(diffuse);
+alias_element(fx_common_color_or_texture);
+alias_element(profile_COMMON_color);
+alias_element(material);
+alias_element(instance_effect);
+alias_element(instance_material);
+alias_element(bind_material);
+alias_element(material_technique_common);
+
 
 alias_element(targetable_float);
 alias_element(targetable_float3);
 alias_element(targetable_float4);
+
+
+/* COLLADA ELEMENT VALUE TYPES */
 
 alias_attrib(float);
 alias_attrib(int);
@@ -130,581 +188,939 @@ alias_attrib(version_enum);
 alias_attrib(up_axis_enum);
 alias_attrib(node_type_enum);
 
-typedef struct simple_element_t simple_element;
-typedef struct complex_element_t complex_element;
-typedef struct ptr_complex_element_t ptr_complex_element;
 
-element(collada)* collada(parse)(const char *filename);
 
-struct simple_element_t {
-  char* name;
-  char* base_type;
-  short elem_type;
-  void* parent;
+/* EXPORTED FUNCTIONS */
 
-  void* value_ptr;
+collada_elem(collada)* collada_func(parse)(const char *filename);
+void collada_func(export_dae_file)(complex_element *root, const char* file_name);
+void collada_func(delete_complex_element)(complex_element* elemm,size_t depth);
+void collada_func(print_element)(FILE* file,complex_element* elem, int depth);
+void collada_func(print_attribute)(FILE* file,simple_element* elem);
+void collada_func(print_elem_value) (FILE* file,complex_element* elem);
+	
+/* SIMPLE TYPES */
+
+struct collada_elem(float_t) {
+	decl_base(simple_element);
+	double value;
 };
 
-struct complex_element_t {
-  char* name;
-  char* base_type;
-  short elem_type;
-  void* parent;
-
-  void* value_ptr;
-  size_t value_size; // bu da bazi yerlerde atanmamis
-  
-  size_t n_elem;
-  size_t n_attrib;
-  size_t n_ref;
-  complex_element** elems;
-  simple_element** attribs;
-  ptr_complex_element** refs;
+struct collada_elem(int_t) {
+	decl_base(simple_element);
+	long int value;
 };
 
-struct ptr_complex_element_t {
-  complex_element* ptr;
-  const char* src;
-  char* ptr_type;
-  
-  void* parent;
+struct collada_elem(uint_t) {
+	decl_base(simple_element);
+	unsigned long value;
+};
+
+struct collada_elem(float3_t) {
+	decl_base(simple_element);
+	double* value;
+};
+
+struct collada_elem(float4_t) {
+	decl_base(simple_element);
+	double* value;
+};
+
+struct collada_elem(float3x3_t) {
+	decl_base(simple_element);
+	double* value;
+};
+
+struct collada_elem(float4x4_t) {
+	decl_base(simple_element);
+	double* value;
+};
+
+struct collada_elem(string_t) {
+	decl_base(simple_element);
+	char* value;
+};
+
+struct collada_elem(list_of_floats_t) {
+	decl_base(simple_element);
+	double* value;
+};
+
+struct collada_elem(list_of_ints_t) {
+	decl_base(simple_element);
+	long int* value;
+};
+
+struct collada_elem(list_of_uints_t) {
+	decl_base(simple_element);
+	unsigned long* value;
+};
+
+struct collada_elem(version_enum_t) {
+	decl_base(simple_element);
+	enum { V_1_5_0 }  value;
+};
+
+struct collada_elem(up_axis_enum_t) {
+	decl_base(simple_element);
+	enum { X_UP , Y_UP , Z_UP }  value;
+};
+
+struct collada_elem(node_type_enum_t) {
+	decl_base(simple_element);
+	enum { JOINT , NODE }  value;
 };
 
 
-begin_simple_type(float_t)
-double value;
-end_type()
 
-begin_simple_type(int_t)
-long int value;
-end_type()
-
-begin_simple_type(uint_t)
-unsigned long value;
-end_type()
-
-begin_simple_type(float3_t)
-double* value;
-end_type()
-
-begin_simple_type(float4_t)
-double* value;
-end_type()
-
-begin_simple_type(float3x3_t)
-double** value;
-end_type()
-
-begin_simple_type(float4x4_t)
-double** value;
-end_type()
-
-begin_simple_type(string_t)
-char* value;
-end_type()
-
-begin_simple_type(list_of_floats_t)
-double* value;
-end_type()
-
-begin_simple_type(list_of_ints_t)
-long int* value;
-end_type()
-
-begin_simple_type(list_of_uints_t)
-unsigned long* value;
-end_type()
-
-begin_simple_type(version_enum_t)
-enum { V_1_5_0 } value;
-end_type()
-
-begin_simple_type(up_axis_enum_t)
-enum { X_UP , Y_UP , Z_UP } value;
-end_type()
-
-begin_simple_type(node_type_enum_t)
-enum { JOINT , NODE } value;
-end_type()
+/* COMPLEX TYPES */
 
 
-begin_complex_type(targetable_float_t) extend_type(float);
 
-define_attrib(string,sid);
+struct collada_elem(targetable_float_t) {
 
-end_type()
+	decl_base(complex_element);
+	decl_extend(float);
 
+	decl_attrib(string,sid);
 
-begin_complex_type(targetable_float3_t) extend_type(float3);
-
-define_attrib(string,sid);
-
-end_type()
-
-begin_complex_type(targetable_float4_t) extend_type(float4);
-
-define_attrib(string,sid);
-
-end_type()
+};
 
 
-begin_complex_type(input_local_t)
+struct collada_elem(targetable_float3_t) {
+
+	decl_base(complex_element);
+	decl_extend(float3);
+
+	decl_attrib(string,sid);
+
+};
+
+
+struct collada_elem(targetable_float4_t) {
+
+	decl_base(complex_element);
+	decl_extend(float4);
+
+	decl_attrib(string,sid);
+
+};
+
+
+struct collada_elem(bind_material_t) {
+
+	decl_base(complex_element);
+
+
+	decl_parent(instance_geometry);
+
+};
+
+
+struct collada_elem(instance_material_t) {
+
+	decl_base(complex_element);
+
+	decl_attrib(string,sid);
+	decl_attrib(string,name);
+	decl_attrib(string,symbol);
+	decl_attrib(string,target);
+
+	decl_ref(material);
+
+	decl_parent(node);
+
+};
+
+
+struct collada_elem(instance_effect_t) {
+
+	decl_base(complex_element);
+
+	decl_attrib(string,sid);
+	decl_attrib(string,name);
+	decl_attrib(string,url);
+
+	decl_ref(effect);
+
+	decl_parent(node);
+
+};
+
+
+struct collada_elem(instance_light_t) {
+
+	decl_base(complex_element);
+
+	decl_attrib(string,sid);
+	decl_attrib(string,name);
+	decl_attrib(string,url);
+
+	decl_ref(light);
+
+	decl_parent(node);
+
+};
+
+
+
+struct collada_elem(profile_COMMON_color_t) {
+
+	decl_base(complex_element);
+	decl_extend(targetable_float4);
+
+	decl_parent(fx_common_color_or_texture);
+
+};
+
+
+struct collada_elem(fx_common_color_or_texture_t) {
+
+	decl_base(complex_element);
+
+	decl_choice_child(profile_COMMON_color);
+
+	decl_parent(diffuse);
+	decl_parent(ambient);
+
+};
+
+
+struct collada_elem(diffuse_t) {
+
+	decl_base(complex_element);
+	decl_extend(fx_common_color_or_texture);
+
+	decl_parent(lambert);
+
+};
+
+
+struct collada_elem(ambient_t) {
+
+	decl_base(complex_element);
+	decl_extend(fx_common_color_or_texture);
+
+	decl_parent(lambert);
+
+};
+
+
+struct collada_elem(lambert_t) {
+
+	decl_base(complex_element);
+
+	decl_choice_child(ambient);
+	decl_choice_child(diffuse);
+
+	decl_parent(technique_FX_COMMON);
+
+};
+
+
+struct collada_elem(technique_FX_COMMON_t) {
+
+	decl_base(complex_element);
+
+	decl_attrib(string,id);
+	decl_attrib(string,sid);
+
+	decl_child(lambert);
+
+	decl_parent(profile_COMMON);
+
+};
+
+
+struct collada_elem(profile_COMMON_t) {
+
+	decl_base(complex_element);
+
+	decl_attrib(string,id);
+
+	decl_child(technique_FX_COMMON);
+
+	decl_parent(effect);
+
+};
+
+
+struct collada_elem(effect_t) {
+
+	decl_base(complex_element);
+
+	decl_attrib(string,id);
+	decl_attrib(string,name);
+
+	decl_children(profile_COMMON);
+
+	decl_parent(library_effects);
+
+};
+
+
+struct collada_elem(light_color_t) {
+
+	decl_base(complex_element);
+	decl_extend(targetable_float3);
+
+	decl_parent(directional);
+
+};
+
+
+struct collada_elem(directional_t) {
+
+	decl_base(complex_element);
+
+	decl_child(light_color);
+
+	decl_parent(light_technique_common);
+
+};
+
+
+struct collada_elem(light_technique_common_t) {
+
+	decl_base(complex_element);
+
+	decl_choice_child(directional);
+
+	decl_parent(light);
+
+};
+
+
+struct collada_elem(light_t) {
+
+	decl_base(complex_element);
+
+	decl_attrib(string,id);
+	decl_attrib(string,name);
+
+	decl_child(light_technique_common);
+
+	decl_parent(library_lights);
+
+};
+
+
+struct collada_elem(library_effects_t) {
+
+	decl_base(complex_element);
+
+	decl_attrib(string,id);
+	decl_attrib(string,name);
+
+	decl_children(effect);
+
+	decl_parent(collada);
+
+};
+
+
+struct collada_elem(library_materials_t) {
+
+	decl_base(complex_element);
+
+	decl_attrib(string,id);
+	decl_attrib(string,name);
+
+	decl_children(material);
+
+	decl_parent(collada);
+
+};
+
+
+struct collada_elem(library_lights_t) {
+
+	decl_base(complex_element);
+
+	decl_attrib(string,id);
+	decl_attrib(string,name);
+
+	decl_children(light);
+
+	decl_parent(collada);
+
+};
+
+
+struct collada_elem(input_local_t) {
+
+	decl_base(complex_element);
   
-define_attrib(string,semantic);
-define_attrib(string,source);
+	decl_attrib(string,semantic);
+	decl_attrib(string,source);
 
-define_ref(source);
+	decl_ref(source);
 
-define_parent(vertices);
+	decl_parent(vertices);
 
-end_type()
+};
 
 
-begin_complex_type(input_local_offset_t)
+struct collada_elem(input_local_offset_t) {
+
+	decl_base(complex_element);
   
-define_attrib(uint,set);
-define_attrib(uint,offset);
-define_attrib(string,semantic);
-define_attrib(string,source);
+	decl_attrib(uint,set);
+	decl_attrib(uint,offset);
+	decl_attrib(string,semantic);
+	decl_attrib(string,source);
 
-define_ref(source);
-define_ref(vertices);
+	decl_ref(source);
+	decl_ref(vertices);
 
-define_parent(polylist);
-define_parent(triangles);
+	decl_parent(polylist);
+	decl_parent(triangles);
 
-end_type()
-
-
-begin_complex_type(vcount_t) extend_type(list_of_uints);
-
-define_parent(polylist);
-
-end_type()
-
-begin_complex_type(p_t) extend_type(list_of_uints);
-
-define_parent(polylist);
-define_parent(triangles);
-
-end_type()
-
-begin_complex_type(float_array_t) extend_type(list_of_floats);
-
-define_attrib(string,id);
-define_attrib(string,name);
-define_attrib(uint,count);
-
-define_parent(source);
-
-end_type()
+};
 
 
-begin_complex_type(int_array_t) extend_type(list_of_ints);
+struct collada_elem(vcount_t) {
 
-define_attrib(string,id);
-define_attrib(string,name);
-define_attrib(uint,count);
+	decl_base(complex_element);
+	decl_extend(list_of_uints);
 
-define_parent(source);
+	decl_parent(polylist);
 
-end_type()
+};
 
+struct collada_elem(p_t) {
 
-begin_complex_type(param_t)
+	decl_base(complex_element);
+	decl_extend(list_of_uints);
 
-define_attrib(string,sid);
-define_attrib(string,name);
-define_attrib(string,type);
-define_attrib(string,semantic);
+	decl_parent(polylist);
+	decl_parent(triangles);
 
-define_parent(accessor);
+};
 
-end_type()
+struct collada_elem(float_array_t) {
 
+	decl_base(complex_element);
+	decl_extend(list_of_floats);
 
-begin_complex_type(accessor_t)
+	decl_attrib(string,id);
+	decl_attrib(string,name);
+	decl_attrib(uint,count);
 
-define_attrib(uint,count);
-define_attrib(uint,offset);
-define_attrib(uint,stride);
-define_attrib(string,source);
+	decl_parent(source);
 
-define_children(param);
-
-define_ref(float_array);
-define_ref(int_array);
-
-define_parent(source_technique_common);
-
-end_type()
+};
 
 
-begin_complex_type(source_technique_common_t)
+struct collada_elem(int_array_t) {
+
+	decl_base(complex_element);
+	decl_extend(list_of_ints);
+
+	decl_attrib(string,id);
+	decl_attrib(string,name);
+	decl_attrib(uint,count);
+
+	decl_parent(source);
+
+};
+
+
+struct collada_elem(param_t) {
+
+	decl_base(complex_element);
+
+	decl_attrib(string,sid);
+	decl_attrib(string,name);
+	decl_attrib(string,type);
+	decl_attrib(string,semantic);
+
+	decl_parent(accessor);
+
+};
+
+
+struct collada_elem(accessor_t) {
+
+	decl_base(complex_element);
+
+	decl_attrib(uint,count);
+	decl_attrib(uint,offset);
+	decl_attrib(uint,stride);
+	decl_attrib(string,source);
+
+	decl_children(param);
+
+	decl_ref(float_array);
+	decl_ref(int_array);
+
+	decl_parent(source_technique_common);
+
+};
+
+
+struct collada_elem(source_technique_common_t) {
+
+	decl_base(complex_element);
   
-define_child(accessor);
+	decl_child(accessor);
 
-define_parent(source);
+	decl_parent(source);
 
-end_type()
-
-
-begin_complex_type(source_t)
-
-define_attrib(string,id);
-define_attrib(string,name);
-
-define_child(float_array);
-define_child(int_array);
-define_child(source_technique_common);
-
-define_parent(mesh);
-
-end_type()
+};
 
 
-begin_complex_type(polylist_t)
+struct collada_elem(source_t) {
 
-define_attrib(string,name);
-define_attrib(uint,count);
+	decl_base(complex_element);
 
-define_children(input_local_offset);
-define_child(vcount);
-define_child(p);
+	decl_attrib(string,id);
+	decl_attrib(string,name);
 
-define_parent(mesh);
+	decl_child(float_array);
+	decl_child(int_array);
+	decl_child(source_technique_common);
 
-end_type()
+	decl_parent(mesh);
 
-begin_complex_type(triangles_t)
-
-define_attrib(string,name);
-define_attrib(uint,count);
-
-define_children(input_local_offset);
-define_child(p);
-
-define_parent(mesh);
-
-end_type()
+};
 
 
-begin_complex_type(vertices_t)
+struct collada_elem(polylist_t) {
 
-define_attrib(string,id);
-define_attrib(string,name);
+	decl_base(complex_element);
 
-define_children(input_local);
+	decl_attrib(string,name);
+	decl_attrib(uint,count);
+
+	decl_children(input_local_offset);
+	decl_child(vcount);
+	decl_child(p);
+
+	decl_parent(mesh);
+
+};
+
+struct collada_elem(triangles_t) {
+
+	decl_base(complex_element);
+
+	decl_attrib(string,name);
+	decl_attrib(uint,count);
+
+	decl_children(input_local_offset);
+	decl_child(p);
+
+	decl_parent(mesh);
+
+};
+
+
+struct collada_elem(vertices_t) {
+
+	decl_base(complex_element);
+
+	decl_attrib(string,id);
+	decl_attrib(string,name);
+
+	decl_children(input_local);
   
-define_parent(mesh);
+	decl_parent(mesh);
 
-end_type()
+};
 
 
-begin_complex_type(mesh_t)
+struct collada_elem(mesh_t) {
 
-define_children(source);
-define_children(polylist);
-define_children(triangles);
-define_child(vertices);
+	decl_base(complex_element);
+
+	decl_children(source);
+	decl_children(polylist);
+	decl_children(triangles);
+	decl_child(vertices);
   
-define_parent(geometry);
+	decl_parent(geometry);
 
-end_type()
-
-
-begin_complex_type(znear_t) extend_type(targetable_float);
-define_parent(perspective);
-define_parent(orthographic);
-end_type()
-
-begin_complex_type(zfar_t) extend_type(targetable_float);
-define_parent(perspective);
-define_parent(orthographic);
-end_type()
-
-begin_complex_type(xmag_t) extend_type(targetable_float);
-define_parent(orthographic);
-end_type()
-
-begin_complex_type(ymag_t) extend_type(targetable_float);
-define_parent(orthographic);
-end_type()
-
-begin_complex_type(yfov_t) extend_type(targetable_float);
-define_parent(perspective);
-end_type()
-
-begin_complex_type(xfov_t) extend_type(targetable_float);
-define_parent(perspective);
-end_type()
-
-begin_complex_type(aspect_ratio_t) extend_type(targetable_float);
-define_parent(perspective);
-define_parent(orthographic);
-end_type()
+};
 
 
-begin_complex_type(orthographic_t)
+struct collada_elem(znear_t) {
 
-define_child(xmag);
-define_child(ymag);
-define_child(aspect_ratio);
-define_child(znear);
-define_child(zfar);
+	decl_base(complex_element);
+	decl_extend(targetable_float);
+	decl_parent(perspective);
+	decl_parent(orthographic);
+};
 
-define_parent(optics_technique_common);
+struct collada_elem(zfar_t) {
 
-end_type()
+	decl_base(complex_element);
+	decl_extend(targetable_float);
+	decl_parent(perspective);
+	decl_parent(orthographic);
+};
 
+struct collada_elem(xmag_t) {
 
-begin_complex_type(perspective_t)
+	decl_base(complex_element);
+	decl_extend(targetable_float);
+	decl_parent(orthographic);
+};
 
-define_child(xfov);
-define_child(yfov);
-define_child(aspect_ratio);
-define_child(znear);
-define_child(zfar);
+struct collada_elem(ymag_t) {
 
-define_parent(optics_technique_common);
+	decl_base(complex_element);
+	decl_extend(targetable_float);
+	decl_parent(orthographic);
+};
 
-end_type()
+struct collada_elem(yfov_t) {
 
+	decl_base(complex_element);
+	decl_extend(targetable_float);
+	decl_parent(perspective);
+};
 
-begin_complex_type(optics_technique_common_t)
+struct collada_elem(xfov_t) {
 
-define_child(perspective);
-define_child(orthographic);
+	decl_base(complex_element);
+	decl_extend(targetable_float);
+	decl_parent(perspective);
+};
 
-define_parent(optics);
+struct collada_elem(aspect_ratio_t) {
 
-end_type()
-
-
-begin_complex_type(optics_t)
-
-define_child(optics_technique_common);
-
-define_parent(camera);
-
-end_type()
-
-
-begin_complex_type(camera_t)
-
-define_attrib(string,id);
-define_attrib(string,name);
-
-define_child(optics);
-
-define_parent(library_cameras);
-
-end_type()
+	decl_base(complex_element);
+	decl_extend(targetable_float);
+	decl_parent(perspective);
+	decl_parent(orthographic);
+};
 
 
-begin_complex_type(geometry_t)
+struct collada_elem(orthographic_t) {
 
-define_attrib(string,id);
-define_attrib(string,name);
+	decl_base(complex_element);
 
-define_child(mesh);
+	decl_choice_child(xmag);
+	decl_choice_child(ymag);
+	decl_child(aspect_ratio);
+	decl_child(znear);
+	decl_child(zfar);
 
-define_parent(library_geometries);
+	decl_parent(optics_technique_common);
 
-end_type()
-
-
-begin_complex_type(lookat_t) extend_type(float3x3);
-
-define_attrib(string,sid);
-
-define_parent(node);
-
-end_type()
+};
 
 
-begin_complex_type(matrix_t) extend_type(float4x4);
+struct collada_elem(perspective_t) {
 
-define_attrib(string,sid);
+	decl_base(complex_element);
 
-define_parent(node);
+	decl_choice_child(xfov);
+	decl_choice_child(yfov);
+	decl_child(aspect_ratio);
+	decl_child(znear);
+	decl_child(zfar);
 
-end_type()
+	decl_parent(optics_technique_common);
+
+};
 
 
-begin_complex_type(rotate_t) extend_type(targetable_float4);
+struct collada_elem(optics_technique_common_t) {
 
-define_attrib(string,sid);
+	decl_base(complex_element);
+
+	decl_choice_child(perspective);
+	decl_choice_child(orthographic);
+
+	decl_parent(optics);
+
+};
+
+
+struct collada_elem(optics_t) {
+
+	decl_base(complex_element);
+
+	decl_child(optics_technique_common);
+
+	decl_parent(camera);
+
+};
+
+
+struct collada_elem(camera_t) {
+
+	decl_base(complex_element);
+
+	decl_attrib(string,id);
+	decl_attrib(string,name);
+
+	decl_child(optics);
+
+	decl_parent(library_cameras);
+
+};
+
+
+struct collada_elem(geometry_t) {
+
+	decl_base(complex_element);
+
+	decl_attrib(string,id);
+	decl_attrib(string,name);
+
+	decl_child(mesh);
+
+	decl_parent(library_geometries);
+
+};
+
+
+struct collada_elem(lookat_t) {
+
+	decl_base(complex_element);
+	decl_extend(float3x3);
+
+	decl_attrib(string,sid);
+
+	decl_parent(node);
+
+};
+
+
+struct collada_elem(matrix_t) {
+
+	decl_base(complex_element);
+	decl_extend(float4x4);
+
+	decl_attrib(string,sid);
+
+	decl_parent(node);
+
+};
+
+
+struct collada_elem(rotate_t) {
+
+	decl_base(complex_element);
+	decl_extend(targetable_float4);
+
+	decl_attrib(string,sid);
   
-define_parent(node);
+	decl_parent(node);
 
-end_type()
-
-
-begin_complex_type(scale_t) extend_type(targetable_float3);
-
-define_attrib(string,sid);
-
-define_parent(node);
-
-end_type()
+};
 
 
-begin_complex_type(translate_t) extend_type(targetable_float3);
+struct collada_elem(scale_t) {
 
-define_attrib(string,sid);
+	decl_base(complex_element);
+	decl_extend(targetable_float3);
 
-define_parent(node);
+	decl_attrib(string,sid);
 
-end_type()
+	decl_parent(node);
 
-
-begin_complex_type(instance_camera_t)
-
-define_attrib(string,sid);
-define_attrib(string,name);
-define_attrib(string,url);
-
-define_ref(camera);
-
-define_parent(node);
-
-end_type()
+};
 
 
-begin_complex_type(instance_geometry_t)
+struct collada_elem(translate_t) {
 
-define_attrib(string,sid);
-define_attrib(string,name);
-define_attrib(string,url);
+	decl_base(complex_element);
+	decl_extend(targetable_float3);
 
-define_ref(geometry);
+	decl_attrib(string,sid);
 
-define_parent(node);
+	decl_parent(node);
 
-end_type()
-
-
-begin_complex_type(instance_node_t)
-
-define_attrib(string,sid);
-define_attrib(string,name);
-define_attrib(string,url);
-
-define_ref(node);
-
-define_parent(node);
+};
 
 
-end_type()
+struct collada_elem(instance_camera_t) {
+
+	decl_base(complex_element);
+
+	decl_attrib(string,sid);
+	decl_attrib(string,name);
+	decl_attrib(string,url);
+
+	decl_ref(camera);
+
+	decl_parent(node);
+
+};
 
 
-begin_complex_type(instance_visual_scene_t)
+struct collada_elem(instance_geometry_t) {
 
-define_attrib(string,sid);
-define_attrib(string,name);
-define_attrib(string,url);
+	decl_base(complex_element);
 
-define_ref(visual_scene);
+	decl_attrib(string,sid);
+	decl_attrib(string,name);
+	decl_attrib(string,url);
+
+	decl_child(bind_material);
+
+	decl_ref(geometry);
+
+	decl_parent(node);
+
+};
+
+
+struct collada_elem(instance_node_t) {
+
+	decl_base(complex_element);
+
+	decl_attrib(string,sid);
+	decl_attrib(string,name);
+	decl_attrib(string,url);
+
+	decl_ref(node);
+
+	decl_parent(node);
+
+
+};
+
+
+struct collada_elem(instance_visual_scene_t) {
+
+	decl_base(complex_element);
+
+	decl_attrib(string,sid);
+	decl_attrib(string,name);
+	decl_attrib(string,url);
+
+	decl_ref(visual_scene) ;
+
+	decl_parent(scene);
+
+};
+
+
+struct collada_elem(library_cameras_t) {
+
+	decl_base(complex_element);
+
+	decl_attrib(string,id);
+	decl_attrib(string,name);
+
+	decl_children(camera);
+
+	decl_parent(collada);
+
+};
+
+
+struct collada_elem(library_geometries_t) {
+
+	decl_base(complex_element);
+
+	decl_attrib(string,id);
+	decl_attrib(string,name);
+
+	decl_children(geometry);
+
+	decl_parent(collada);
+
+};
+
+
+struct collada_elem(library_visual_scenes_t) {
+
+	decl_base(complex_element);
+
+	decl_attrib(string,id);
+	decl_attrib(string,name);
+
+	decl_children(visual_scene);
+
+	decl_parent(collada);
+
+};
+
+
+struct collada_elem(node_t) {
+
+	decl_base(complex_element);
+
+	decl_attrib(string,id);
+	decl_attrib(string,name);
+	decl_attrib(string,sid);
+
+	decl_children(matrix);
+	decl_children(instance_camera);
+	decl_children(instance_light);
+	decl_children(instance_geometry);
+	decl_children(instance_node);
+	decl_children(node);
   
-define_parent(scene);
 
-end_type()
+	decl_parent(node);
+	decl_parent(visual_scene);
 
-
-begin_complex_type(library_cameras_t)
-
-define_attrib(string,id);
-define_attrib(string,name);
-
-define_children(camera);
-
-define_parent(collada);
-
-end_type()
+};
 
 
-begin_complex_type(library_geometries_t)
+struct collada_elem(visual_scene_t) {
 
-define_attrib(string,id);
-define_attrib(string,name);
+	decl_base(complex_element);
 
-define_children(geometry);
+	decl_attrib(string,id);
+	decl_attrib(string,name);
 
-define_parent(collada);
+	decl_children(node);
 
-end_type()
+	decl_parent(library_visual_scenes);
 
-
-begin_complex_type(library_visual_scenes_t)
-
-define_attrib(string,id);
-define_attrib(string,name);
-
-define_children(visual_scene);
-
-define_parent(collada);
-
-end_type()
+};
 
 
-begin_complex_type(node_t)
+struct collada_elem(scene_t) {
 
-define_attrib(string,id);
-define_attrib(string,name);
-define_attrib(string,sid);
-
-
-define_children(lookat);
-define_children(matrix);
-define_children(rotate);
-define_children(scale);
-define_children(translate);
-define_children(instance_camera);
-define_children(instance_geometry);
-define_children(instance_node);
-define_children(node);
+	decl_base(complex_element);
   
+	decl_child(instance_visual_scene);
 
-define_parent(node);
-define_parent(visual_scene);
+	decl_parent(collada);
 
-end_type()
-
-
-begin_complex_type(visual_scene_t)
-
-define_attrib(string,id);
-define_attrib(string,name);
-
-define_children(node);
-
-define_parent(library_visual_scenes);
-
-end_type()
+};
 
 
-begin_complex_type(scene_t)
-  
-define_child(instance_visual_scene);
+struct collada_elem(collada_t) {
 
-define_parent(collada);
+	decl_base(complex_element);
 
-end_type()
+	decl_attrib(string,version);
+	decl_attrib(string,xmlns);
+
+	decl_children(library_geometries);
+	decl_children(library_cameras);
+	decl_children(library_lights);
+	decl_children(library_materials);
+	decl_children(library_visual_scenes);
+	decl_child(scene);
+
+};
 
 
-begin_complex_type(collada_t)
 
-define_attrib(string,version);
-define_attrib(string,xmlns);
 
-define_children(library_geometries);
-define_children(library_cameras);
-define_children(library_visual_scenes);
-define_child(scene);
+/* UNDEF UNNECESSARY MACROS */
 
-end_type()
-
+#undef decl_attrib							
+#undef decl_child
+#undef decl_choice_child
+#undef decl_paren												
+#undef decl_ref													
+#undef decl_children																								
+#undef end_type
+#undef decl_extend													
+#undef alias_element																				
+#undef alias_attrib																				
 
 
 #endif
