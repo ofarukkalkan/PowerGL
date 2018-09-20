@@ -5,13 +5,10 @@
 
 #include <GL/glcorearb.h>
 #include <stddef.h>
+
 #include "object.h"
 
-
 typedef struct powergl_rendering_pipeline_t powergl_rendering_pipeline;
-typedef int powergl_rendering_pipeline_create_func_t (void);
-typedef int powergl_rendering_pipeline_run_func_t (void);
-
 
 typedef struct {
   GLuint index;
@@ -25,19 +22,15 @@ typedef struct {
 
 struct powergl_rendering_pipeline_t {
 
-  powergl_rendering_pipeline_create_func_t* create;
-  powergl_rendering_pipeline_run_func_t* run;
-
-  // objects
-  powergl_rendering_object *objects;
-  size_t n_object;
-
-  powergl_vsis vsis;
+  powergl_vsis vis;
+	powergl_vsis cis;
   GLuint vs;
   GLuint fs;
   GLuint gp;
-  GLuint mvp;
+  GLuint uni_matrix;
 };
 
+int powergl_rendering_pipeline_create( powergl_rendering_pipeline * , powergl_rendering_object **, size_t );
+int powergl_rendering_pipeline_render( powergl_rendering_pipeline * , powergl_rendering_object **, size_t, int );
 
 #endif
