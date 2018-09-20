@@ -13,7 +13,7 @@ typedef struct powergl_util_window_xorg_t powergl_util_window_xorg;
 
 struct powergl_util_window_xorg_t {
   powergl_util_window _base;
-  Display * display;
+  Display *display;
   int screenid;
   GLXFBConfig fbconfig;
   Colormap colormap;

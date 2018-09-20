@@ -5,6 +5,6 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-void* powergl_resize(void* ptr,size_t newsize);
+void *powergl_resize( void *ptr, size_t newsize );
 
 #endif

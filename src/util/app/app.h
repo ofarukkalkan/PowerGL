@@ -15,7 +15,7 @@ struct powergl_util_app_t {
 
 int powergl_util_app_create( powergl_util_app * );
 int powergl_util_app_run( powergl_util_app * );
-const char* powergl_util_app_get_name( powergl_util_app * );
+const char *powergl_util_app_get_name( powergl_util_app * );
 
 
 #endif
