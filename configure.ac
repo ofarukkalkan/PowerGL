@@ -21,6 +21,7 @@ AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 
 # Checks for libraries.
+AC_CHECK_LIB([m], [sqrtf])
 
 # Checks for header files.
 AC_CHECK_HEADERS([stddef.h stdlib.h string.h])
