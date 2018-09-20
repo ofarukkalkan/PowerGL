@@ -7,38 +7,83 @@
 #include <stddef.h>
 #include "../powergl.h"
 #include "../math/vec3.h"
-#include "../asset/collada.h"
 
 typedef struct powergl_rendering_object_t powergl_rendering_object;
-typedef int powergl_rendering_object_create_func_t (void);
-typedef int powergl_rendering_object_run_func_t (void);
+typedef struct powergl_rendering_geometry_t powergl_rendering_geometry;
+typedef struct powergl_rendering_camera_t powergl_rendering_camera;
 
+struct powergl_rendering_camera_t {
+	
+	char type;
+	
+	GLfloat view[4][4];
+	char view_flag;
+	
+	GLfloat projection[4][4];
+	char projection_flag;
+
+	GLfloat vp[4][4];
+	
+	GLfloat xfov;
+	GLfloat yfov;
+	GLfloat xmag;
+	GLfloat ymag;
+	GLfloat aspect_ratio;
+	GLfloat znear;
+	GLfloat zfar;
+	
+};
+
+struct powergl_rendering_geometry_t {
+
+  GLuint vao;
+  GLuint vbo;
+	GLuint cbo;
+	
+  powergl_vec3 *vertex;
+	char vertex_flag;
+  size_t n_vertex;
+
+	powergl_vec3 *color;
+	char color_flag;
+  size_t n_color;
+	
+  GLuint *index;
+	char index_flag;
+  size_t n_index;
+
+};
 
 struct powergl_rendering_object_t {
 
-  powergl_rendering_object_create_func_t* create;
-  powergl_rendering_object_run_func_t* run;
+	// geometry
+	powergl_rendering_geometry *geometry;
+	
+	// camera
+	powergl_rendering_camera *camera;
 
   // transform
   GLfloat matrix[4][4];
+	char matrix_flag;
+
+	GLfloat mvp[4][4];
+	
   GLfloat lookat[3][3];
   GLfloat translate[3];
   GLfloat rotation[4];
   GLfloat scale[3];
   GLfloat skew[3];
-  char matrix_flag;
 
-  // geometry
-  GLuint vao;
-  GLuint vbo;
-  powergl_vec3 * vertex;
-  size_t n_vertex;
 
   // info
   const char *id;
   const char *name;
 };
 
-void powergl_rendering_object_build_from_dae(powergl_rendering_object *, powergl_asset_collada_node *);
+int powergl_rendering_geometry_create ( powergl_rendering_geometry * );
+int powergl_rendering_camera_create ( powergl_rendering_camera * );
+int powergl_rendering_object_create( powergl_rendering_object * );
+int powergl_rendering_object_run( powergl_rendering_object * );
+
 
 #endif
