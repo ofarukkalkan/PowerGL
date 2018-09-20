@@ -21,19 +21,8 @@ struct powergl_util_window_xorg_t {
   GLXContext context;
 };
 
-// global functions
-int powergl_util_window_xorg_check_init(void);
-int powergl_util_window_xorg_init(void);
-int powergl_util_window_xorg_finish(void);
-powergl_util_window_xorg* powergl_util_window_xorg_new(powergl_util_app *root_app);
-int powergl_util_window_xorg_delete(void);
-int powergl_util_window_xorg_delete_all(void);
-int powergl_util_window_xorg_set_index(size_t);
-size_t powergl_util_window_xorg_get_index();
-powergl_util_window_xorg* powergl_util_window_xorg_get_ptr();
-
 // global functions for per instance
-int powergl_util_window_xorg_create(void);
-int powergl_util_window_xorg_run(void);
+int powergl_util_window_xorg_create( powergl_util_window_xorg * );
+int powergl_util_window_xorg_run( powergl_util_window_xorg * );
 
 #endif

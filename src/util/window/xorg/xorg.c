@@ -1,131 +1,48 @@
 #include "xorg.h"
 #include <stdio.h>
 
-// internal fields
-static powergl_util_window_xorg** g_powergl_util_window_xorg;
-static size_t n_powergl_util_window_xorg;
-static size_t i_powergl_util_window_xorg;
-static int f_powergl_util_window_xorg;
+enum msgSource
+	{
+		SOURCE_API = 0x8246,
+		SOURCE_SYSTEM = 0x8247,
+		SOURCE_SHADER_COMPILER = 0x8248,
+		SOURCE_THIRD_PARTY = 0x8249,
+		SOURCE_APPLICATION = 0x824A,
+		SOURCE_OTHER = 0x824B,
+	};
 
-int powergl_util_window_xorg_check_init(void){
- if(f_powergl_util_window_xorg != 1){
-    fprintf(stderr,"powergl_util_window_xorg is not initialised\n");
-    return 0;
- }else return 1;
-}
+enum msgType
+	{
+		TYPE_ERROR = 0x824C,
+		TYPE_DEPRECATED_BEHAVIOR = 0x824D,
+		TYPE_UNDEFINED_BEHAVIOR = 0x824E,
+		TYPE_PORTABILITY = 0x824F,
+		TYPE_PERFORMANCE = 0x8250,
+		TYPE_OTHER = 0x8251,
+		TYPE_MARKER = 0x8268,
+		TYPE_PUSH_GROUP = 0x8269,
+		TYPE_POP_GROUP = 0x826A,
+	};
 
-int powergl_util_window_xorg_init(void){
-  if(powergl_util_window_xorg_check_init()){
-    return 1;
-  }else{
-    g_powergl_util_window_xorg = NULL;
-    n_powergl_util_window_xorg = 0;
-    i_powergl_util_window_xorg = 0;
-    f_powergl_util_window_xorg = 1;
-    return 1;
-  }
-}
+enum msgSeverity
+	{
+		SEVERITY_HIGH = 0x9146,
+		SEVERITY_MEDIUM = 0x9147,
+		SEVERITY_LOW = 0x9148,
+		SEVERITY_NOTIFICATION = 0x826B,
+	};
 
-int powergl_util_window_xorg_finish(void){
-  if(powergl_util_window_xorg_check_init()){
-    
-    if(powergl_util_window_xorg_delete_all()){
-      g_powergl_util_window_xorg = NULL;
-      n_powergl_util_window_xorg = 0;
-      i_powergl_util_window_xorg = 0;
-      f_powergl_util_window_xorg = 0;
-      return 1;
-    }else return 0;
-  }else return 0;
-}
+void errorCallback( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message,const GLvoid *userParam )                                                                      
+{                                                                                                                                                       
+	printf( "\nSource = [ %d ] \n", (int) source);                                                                                                                                                                 
+	printf( "Type = [ %d ]\n", (int) type);                                                                                                                                                               
+	printf(	"Severity = [ %d ]\n",(int) severity );                                                                                                                                                                
+	printf(	"ID = [ %d ]\n",(int) id);                                                                                                                                                              
+	printf(	"Msg = [ %s ]\n",(const char*)message);                                                                                                                                                                    
+}  
 
-powergl_util_window_xorg* powergl_util_window_xorg_new(powergl_util_app *root_app){
-  if(powergl_util_window_xorg_init()){
-  
-    powergl_util_window_xorg* wnd = NULL;
-    wnd = powergl_resize(NULL,sizeof(powergl_util_window_xorg));
-    wnd->_base.create = powergl_util_window_xorg_create;
-    wnd->_base.run = powergl_util_window_xorg_run;
-    wnd->_base.root_app = root_app;
-    
-    g_powergl_util_window_xorg = powergl_resize(g_powergl_util_window_xorg,
-					sizeof(powergl_util_window_xorg*) * ++n_powergl_util_window_xorg );
-  
-    size_t new_index = n_powergl_util_window_xorg - 1;
-    powergl_util_window_xorg_set_index(new_index);
+int powergl_util_window_xorg_create( powergl_util_window_xorg *wnd ){
 
-    g_powergl_util_window_xorg[new_index] = wnd;
-  
-    return wnd;
-  }else return NULL;
-}
-
-int powergl_util_window_xorg_delete(void){
-  if(powergl_util_window_xorg_check_init()){
-    
-    size_t i = powergl_util_window_xorg_get_index();
-    if(g_powergl_util_window_xorg[i]){
-      free(g_powergl_util_window_xorg[i]);
-      g_powergl_util_window_xorg[i] = NULL;
-      powergl_util_window_xorg_set_index(i-1);
-      return 1;
-    }else {
-      fprintf(stderr,"could not deleted index %ld of powergl_util_window_xorg",i);
-      return 0;
-    }
-  }else return 0;
-}
-
-int powergl_util_window_xorg_delete_all(void){
-  if(powergl_util_window_xorg_check_init()){
-    
-    for(int i = 0; i < n_powergl_util_window_xorg; ++i){
-      int result = powergl_util_window_xorg_set_index(i);
-      if(!result) return 0;     
-      result = powergl_util_window_xorg_delete();
-      if(!result) return 0;
-    }
-
-    if(g_powergl_util_window_xorg){
-      free(g_powergl_util_window_xorg);
-      g_powergl_util_window_xorg = NULL;
-      return 1;
-    }else {
-      fprintf(stderr,"could not deleted powergl_util_window_xorg");
-      return 0;
-    }
-  }else return 0;
-}
-
-int powergl_util_window_xorg_set_index(size_t i){
-  if(powergl_util_window_xorg_check_init()){
-    
-    if(i >= n_powergl_util_window_xorg){
-      fprintf(stderr,"index is not valid");
-      return 0;
-    }else{
-      i_powergl_util_window_xorg = i;
-      return 1;
-    }
-  }else return 0;
-}
-
-size_t powergl_util_window_xorg_get_index(){
-  return i_powergl_util_window_xorg;
-}
-
-powergl_util_window_xorg* powergl_util_window_xorg_get_ptr(){
-  return g_powergl_util_window_xorg[powergl_util_window_xorg_get_index()];
-}
-
-int powergl_util_window_xorg_create(void){
-
-  if(!powergl_util_window_xorg_check_init()){
-    return 0;
-  }
-
-  powergl_util_window_xorg* wnd = g_powergl_util_window_xorg[powergl_util_window_xorg_get_index()];
-  
   int fbattribs[] = {
     GLX_CONFIG_CAVEAT,GLX_NONE,
     GLX_BUFFER_SIZE,32,
@@ -259,24 +176,21 @@ int powergl_util_window_xorg_create(void){
 
 }
 
-int powergl_util_window_xorg_run(void){
-  if(!powergl_util_window_xorg_check_init()){
-    return 0;
-  }
+int powergl_util_window_xorg_run( powergl_util_window_xorg *wnd ) {
 
-  powergl_util_window_xorg* wnd = g_powergl_util_window_xorg[powergl_util_window_xorg_get_index()];
-
-  wnd->_base.root_app->create();
+	
 
   XEvent event;
-  /*
-    glDebugMessageCallback(glErrorCallback, NULL);
-    glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE );  
-    glEnable(GL_DEBUG_OUTPUT);	
-  */
+  
+	glDebugMessageCallback(errorCallback, NULL);
+	glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE );  
+	glEnable(GL_DEBUG_OUTPUT);	
+  
   glEnable(GL_DEPTH_TEST);
   //glEnable(GL_MULTISAMPLE);
   glClearColor(0.3f,0.6f,0.9f,1.0f);
+
+	powergl_util_app_create( &wnd->_base.root_app );
   
  here:
 
@@ -295,7 +209,7 @@ int powergl_util_window_xorg_run(void){
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  wnd->_base.root_app->run();
+	powergl_util_app_run( &wnd->_base.root_app );
     
   glXSwapBuffers(wnd->display,wnd->window);
   
