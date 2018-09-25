@@ -11,7 +11,7 @@
 
 
 #define element(NAME)														\
-  powergl_collada_elem_ ## NAME
+  powergl_collada_ ## NAME
 
 /* globals */
 static size_t g_current_depth;
@@ -63,7 +63,7 @@ struct collada_elem_attrib_states {
 
 struct collada_elem_attrib_states g_collada_elem_attrib_states;
 
-void collada_func( print_elem_value )( FILE *file, complex_element *elem ) {
+void powergl_collada_print_elem_value( FILE *file, complex_element *elem ) {
   if ( strcmp( elem->base_type, "list_of_floats" ) == 0 ) {
     double *ptr = *( ( double ** )elem->value_ptr );
     for ( int i = 0; i < elem->value_size; i++ ) {
@@ -109,7 +109,7 @@ void collada_func( print_elem_value )( FILE *file, complex_element *elem ) {
   }
 }
 
-void collada_func( print_attribute )( FILE *file, simple_element *elem ) {
+void powergl_collada_print_attribute( FILE *file, simple_element *elem ) {
   assert( elem );
   if ( strcmp( elem->base_type, "float" ) == 0 ) {
     fprintf( file, " %s=\"", elem->name );
@@ -132,7 +132,7 @@ void collada_func( print_attribute )( FILE *file, simple_element *elem ) {
   }
 }
 
-void collada_func( print_element )( FILE *file, complex_element *elem, int depth ) {
+void powergl_collada_print_element( FILE *file, complex_element *elem, int depth ) {
   assert( elem );
   complex_element *elem_ptr = ( complex_element * )elem;
 
@@ -142,12 +142,12 @@ void collada_func( print_element )( FILE *file, complex_element *elem, int depth
   }
   fprintf( file, "<%s", elem_ptr->name );
   for ( int i = 0; i < elem_ptr->n_attrib; ++i ) {
-    collada_func( print_attribute )( file, elem_ptr->attribs[i] );
+    powergl_collada_print_attribute( file, elem_ptr->attribs[i] );
   }
   if ( elem_ptr->n_elem ) {
     fprintf( file, ">" );
     for ( int i = 0; i < elem_ptr->n_elem; ++i ) {
-      collada_func( print_element )( file, elem_ptr->elems[i], depth + 1 );
+      powergl_collada_print_element( file, elem_ptr->elems[i], depth + 1 );
     }
     fprintf( file, "\n" );
     for ( int i = 0; i < depth; ++i ) {
@@ -156,21 +156,21 @@ void collada_func( print_element )( FILE *file, complex_element *elem, int depth
     fprintf( file, "</%s>", elem_ptr->name );
   } else if ( elem_ptr->value_ptr ) {
     fprintf( file, ">" );
-    collada_func( print_elem_value )( file, elem_ptr );
+    powergl_collada_print_elem_value( file, elem_ptr );
     fprintf( file, "</%s>", elem_ptr->name );
   } else {
     fprintf( file, "/>" );
   }
 }
 
-void collada_func( export_dae_file )( complex_element *root, const char *file_name ) {
+void powergl_collada_export_dae_file( complex_element *root, const char *file_name ) {
   FILE *file = fopen( file_name, "w" );
   if ( !file ) {
     printf( "File opening failed" );
     return;
   }
   fprintf( file, "<?xml version=\"1.0\" encoding=\"utf-8\"?>" );
-  collada_func( print_element )( file, root, 0 );
+  powergl_collada_print_element( file, root, 0 );
   fprintf( file, "\n" );
   fclose( file );
 }
@@ -255,7 +255,7 @@ static int init_simple_element_base( void *obj, char *name, char *base_type, voi
   }
 }
 
-static int init_complex_element_base( void *obj, char *name, char *base_type, void *parent, void *value_ptr, complex_element ***ch_cont[], size_t n_ch_cont ) {
+static int init_complex_element_base( void *obj, const char *name, const char *base_type, void *parent, void *value_ptr, complex_element ***ch_cont[], size_t n_ch_cont ) {
   complex_element *this = ( complex_element * )obj;
   this->name = NULL;
   this->base_type = NULL;
@@ -331,16 +331,16 @@ static int init_ptr_complex_element_base( void *obj, char *src, char *ptr_type, 
 static void reset_parsed_attrib_states() {
   g_collada_elem_attrib_states = ( struct collada_elem_attrib_states ) {
     .id = 0,
-     .sid = 0,
-      .name = 0,
-       .type = 0,
-        .version = 0,
-         .url = 0,
-          .xmlns = 0,
-           .stride = 0,
-            .offset = 0,
-             .set = 0,
-              .meter = 0
+		.sid = 0,
+		.name = 0,
+		.type = 0,
+		.version = 0,
+		.url = 0,
+		.xmlns = 0,
+		.stride = 0,
+		.offset = 0,
+		.set = 0,
+		.meter = 0
   };
 }
 
@@ -422,87 +422,303 @@ static void parse_attribs( const char **attr, size_t nattr ) {
 
 }
 
+static int init_targetable_float( complex_element *parent_complex, const char *name,  const char **attr, size_t nattr ) {
+	if ( strcmp( parent_complex->name, "perspective" ) == 0 ) {	
+    element( perspective ) * parent = ( element( perspective ) * ) parent_complex;
+		parent->cc_xfov = NULL;
+    parent->cc_yfov = NULL;
 
-static int init_library_effects( const char **attr, size_t nattr ) {
+		element( targetable_float )* this = NULL;
+		
+		if ( strcmp(name,"xfov") == 0 ) {
+			parent->cc_xfov = powergl_resize( NULL, sizeof( element( targetable_float ) ) );
+			this = parent->cc_xfov;
+		} else if ( strcmp(name,"yfov") == 0 ) {
+			parent->cc_yfov = powergl_resize( NULL, sizeof( element( targetable_float ) ) );
+			this = parent->cc_yfov;
+		} else if ( strcmp(name,"zfar") == 0 ) {
+			parent->c_zfar = powergl_resize( NULL, sizeof( element( targetable_float ) ) );
+			this = parent->c_zfar;
+		} else if ( strcmp(name,"znear") == 0 ) {
+			parent->c_znear = powergl_resize( NULL, sizeof( element( targetable_float ) ) );
+			this = parent->c_znear;
+		} else if ( strcmp(name,"aspect_ratio") == 0 ) {
+			parent->c_aspect_ratio = powergl_resize( NULL, sizeof( element( targetable_float ) ) );
+			this = parent->c_aspect_ratio;
+		}
+		
+		this->p_perspective = parent;
+		this->a_sid.value = NULL;
+		this->_ext.value = 0.0f;
+
+		parse_attribs( attr, nattr );
+		init_complex_element_base( this, name, "float", parent, &this->_ext.value, NULL, 0 );
+    init_simple_element_base( &this->a_sid, "sid", "string", this, &this->a_sid.value );
+	} else if ( strcmp( parent_complex->name, "orthographic" ) == 0 ) {
+
+	} else {
+    return 0;
+  }
+  return 1;
+}
+
+
+static int init_library_effects( complex_element *parent_complex, const char **attr, size_t nattr ) {
+  if ( strcmp( parent_complex->name, "COLLADA" ) == 0 ) {
+    element( collada ) * parent = ( element( collada ) * ) parent_complex;
+    element( library_effects ) **ptr = parent->ch_library_effects;
+    ptr = powergl_resize( ptr, ++parent->n_library_effects * sizeof( element( library_effects ) * ) );
+    parent->ch_library_effects = ptr;
+
+    parent->ch_library_effects[parent->n_library_effects - 1] = powergl_resize( NULL, sizeof( element( library_effects ) ) );
+    element( library_effects )* this = parent->ch_library_effects[parent->n_library_effects - 1];
+
+    this->p_collada = parent;
+    this->a_id.value = NULL;
+    this->a_name.value = NULL;
+    this->n_effect = 0;
+    this->ch_effect = NULL;
+    complex_element ***ch_cont[1] = {
+      ( complex_element ** * ) &this->ch_effect
+    };
+
+    parse_attribs( attr, nattr );
+    init_complex_element_base( this, "library_effects", "none", parent, NULL, ch_cont, 1 );
+    init_simple_element_base( &this->a_id, "id", "string", this, &this->a_id.value );
+    init_simple_element_base( &this->a_name, "name", "string", this, &this->a_name.value );
+  } else {
+    return 0;
+  }
+  return 1;
+}
+
+static int init_library_materials( complex_element *parent_complex, const char **attr, size_t nattr ) {
+	if ( strcmp( parent_complex->name, "COLLADA" ) == 0 ) {
+    element( collada ) * parent = ( element( collada ) * ) parent_complex;
+    element( library_materials ) **ptr = parent->ch_library_materials;
+    ptr = powergl_resize( ptr, ++parent->n_library_materials * sizeof( element( library_materials ) * ) );
+    parent->ch_library_materials = ptr;
+
+    parent->ch_library_materials[parent->n_library_materials - 1] = powergl_resize( NULL, sizeof( element( library_materials ) ) );
+    element( library_materials )* this = parent->ch_library_materials[parent->n_library_materials - 1];
+
+    this->p_collada = parent;
+    this->a_id.value = NULL;
+    this->a_name.value = NULL;
+    this->n_material = 0;
+    this->ch_material = NULL;
+    complex_element ***ch_cont[1] = {
+      ( complex_element ** * ) &this->ch_material
+    };
+
+    parse_attribs( attr, nattr );
+    init_complex_element_base( this, "library_materials", "none", parent, NULL, ch_cont, 1 );
+    init_simple_element_base( &this->a_id, "id", "string", this, &this->a_id.value );
+    init_simple_element_base( &this->a_name, "name", "string", this, &this->a_name.value );
+  } else {
+    return 0;
+  }
+  return 1;
+}
+
+static int init_library_lights( complex_element *parent_complex, const char **attr, size_t nattr ) {
+  if ( strcmp( parent_complex->name, "COLLADA" ) == 0 ) {
+    element( collada ) * parent = ( element( collada ) * ) parent_complex;
+    element( library_lights ) **ptr = parent->ch_library_lights;
+    ptr = powergl_resize( ptr, ++parent->n_library_lights * sizeof( element( library_lights ) * ) );
+    parent->ch_library_lights = ptr;
+
+    parent->ch_library_lights[parent->n_library_lights - 1] = powergl_resize( NULL, sizeof( element( library_lights ) ) );
+    element( library_lights )* this = parent->ch_library_lights[parent->n_library_lights - 1];
+
+    this->p_collada = parent;
+    this->a_id.value = NULL;
+    this->a_name.value = NULL;
+    this->n_light = 0;
+    this->ch_light = NULL;
+    complex_element ***ch_cont[1] = {
+      ( complex_element ** * ) &this->ch_light
+    };
+
+    parse_attribs( attr, nattr );
+    init_complex_element_base( this, "library_lights", "none", parent, NULL, ch_cont, 1 );
+    init_simple_element_base( &this->a_id, "id", "string", this, &this->a_id.value );
+    init_simple_element_base( &this->a_name, "name", "string", this, &this->a_name.value );
+  } else {
+    return 0;
+  }
+  return 1;
+}
+
+
+static int init_light( complex_element *parent_complex, const char **attr, size_t nattr ) {
+  if ( strcmp( parent_complex->name, "library_lights" ) == 0 ) {
+    element( library_lights ) * parent = ( element( library_lights ) * ) parent_complex;
+    element( light ) **ptr = parent->ch_light;
+    ptr = powergl_resize( ptr, ++parent->n_light * sizeof( element( light ) * ) );
+    parent->ch_light = ptr;
+    parent->ch_light[parent->n_light - 1] = powergl_resize( NULL, sizeof( element( light ) ) );
+    element( light )* this = parent->ch_light[parent->n_light - 1];
+
+    this->p_library_lights = parent;
+    this->a_id.value = NULL;
+    this->a_name.value = NULL;
+		this->c_light_technique_common = NULL;
+
+    parse_attribs( attr, nattr );
+    init_complex_element_base( this, "light", "none", parent, NULL, NULL, 0 );
+    init_simple_element_base( &this->a_id, "id", "string", this, &this->a_id.value );
+    init_simple_element_base( &this->a_name, "name", "string", this, &this->a_name.value );
+  } else {
+    return 0;
+  }
+  return 1;
+}
+
+static int init_directional( complex_element *parent_complex, const char **attr, size_t nattr ) {
+  if ( strcmp( parent_complex->name, "light_technique_common" ) == 0 ) {
+    element( light_technique_common ) * parent = ( element( light_technique_common ) * ) parent_complex;
+    parent->cc_directional = powergl_resize( NULL, sizeof( element( directional ) ) );
+    element( directional )* this = parent->cc_directional;
+    this->p_light_technique_common = parent;
+		this->c_light_color = NULL;
+    init_complex_element_base( this, "directional", "none", parent, NULL, NULL, 0 );
+  } else {
+    return 0;
+  }
+  return 1;
+}
+
+static int init_effect( complex_element *parent_complex, const char **attr, size_t nattr ) {
+	if ( strcmp( parent_complex->name, "library_effects" ) == 0 ) {
+    element( library_effects ) * parent = ( element( library_effects ) * ) parent_complex;
+    element( effect ) **ptr = parent->ch_effect;
+    ptr = powergl_resize( ptr, ++parent->n_effect * sizeof( element( effect ) * ) );
+    parent->ch_effect = ptr;
+
+    parent->ch_effect[parent->n_effect - 1] = powergl_resize( NULL, sizeof( element( effect ) ) );
+    element( effect )* this = parent->ch_effect[parent->n_effect - 1];
+
+    this->p_library_effects = parent;
+    this->a_id.value = NULL;
+    this->a_name.value = NULL;
+    this->n_profile_COMMON = 0;
+    this->ch_profile_COMMON = NULL;
+    complex_element ***ch_cont[1] = {
+      ( complex_element ** * ) &this->ch_profile_COMMON
+    };
+
+    parse_attribs( attr, nattr );
+    init_complex_element_base( this, "effect", "none", parent, NULL, ch_cont, 1 );
+    init_simple_element_base( &this->a_id, "id", "string", this, &this->a_id.value );
+    init_simple_element_base( &this->a_name, "name", "string", this, &this->a_name.value );
+  } else {
+    return 0;
+  }
+  return 1;
+}
+
+static int init_profile_COMMON( complex_element *parent_complex, const char **attr, size_t nattr ) {
+	if ( strcmp( parent_complex->name, "effect" ) == 0 ) {
+		element( effect ) * parent = ( element( effect ) * ) parent_complex;
+    element( profile_COMMON ) **ptr = parent->ch_profile_COMMON;
+    ptr = powergl_resize( ptr, ++parent->n_profile_COMMON * sizeof( element( profile_COMMON ) * ) );
+    parent->ch_profile_COMMON = ptr;
+
+    parent->ch_profile_COMMON[parent->n_profile_COMMON - 1] = powergl_resize( NULL, sizeof( element( profile_COMMON ) ) );
+    element( profile_COMMON )* this = parent->ch_profile_COMMON[parent->n_profile_COMMON - 1];
+
+		this->p_effect = parent;
+		this->a_id.value = NULL;
+		this->c_technique_FX_COMMON = NULL;
+		
+		parse_attribs( attr, nattr );
+    init_complex_element_base( this, "profile_COMMON", "none", parent, NULL, NULL, 0 );
+    init_simple_element_base( &this->a_id, "id", "string", this, &this->a_id.value );
+	} else {
+    return 0;
+  }
+  return 1;
+}
+
+static int init_technique( complex_element *parent_complex, const char **attr, size_t nattr ) {
+	if ( strcmp( parent_complex->name, "profile_COMMON" ) == 0 ) {
+		element( profile_COMMON ) * parent = ( element( profile_COMMON ) * ) parent_complex;
+		parent->c_technique_FX_COMMON = powergl_resize( NULL, sizeof( element( technique_FX_COMMON ) ) );
+		element( technique_FX_COMMON )* this = parent->c_technique_FX_COMMON;
+    this->p_profile_COMMON = parent;
+		this->a_id.value = NULL;
+		this->a_sid.value = NULL;
+		this->c_lambert = NULL;
+    init_complex_element_base( this, "technique", "none", parent, NULL, NULL, 0 );
+	} else {
+    return 0;
+  }
+  return 1;
+}
+
+static int init_lambert( complex_element *parent_complex, const char **attr, size_t nattr ) {
+	if ( strcmp( parent_complex->name, "technique_FX_COMMON" ) == 0 ) {
+    element( technique_FX_COMMON ) * parent = ( element( technique_FX_COMMON ) * ) parent_complex;
+    parent->c_lambert = powergl_resize( NULL, sizeof( element( lambert ) ) );
+    element( lambert )* this = parent->c_lambert;
+    this->p_technique_FX_COMMON = parent;
+		this->cc_ambient = NULL;
+    this->cc_diffuse = NULL;
+    init_complex_element_base( this, "lambert", "none", parent, NULL, NULL, 0 );
+	} else {
+    return 0;
+  }
+  return 1;
+}
+
+static int init_ambient( complex_element *parent_complex, const char **attr, size_t nattr ) {
+	if ( strcmp( parent_complex->name, "lambert" ) == 0 ) {
+		element( lambert ) * parent = ( element( lambert ) * ) parent_complex;
+    parent->cc_ambient = powergl_resize( NULL, sizeof( element( fx_common_color_or_texture ) ) );
+    element( fx_common_color_or_texture )* this = parent->cc_ambient;
+		this->p_lambert = parent;
+
+    init_complex_element_base( this, "lambert", "none", parent, NULL, NULL, 0 );
+	} else {
+    return 0;
+  }
+  return 1;
+}
+
+static int init_diffuse( complex_element *parent_complex, const char **attr, size_t nattr ) {
 
 }
 
-static int init_library_materials( const char **attr, size_t nattr ) {
+static int init_fx_common_color_or_texture( complex_element *parent_complex, const char **attr, size_t nattr ) {
 
 }
 
-static int init_library_lights( const char **attr, size_t nattr ) {
+static int init_light_color( complex_element *parent_complex, const char **attr, size_t nattr ) {
 
 }
 
-
-static int init_light( const char **attr, size_t nattr ) {
-
-}
-
-
-static int init_light_technique_common( complex_element *parent_complex ) {
+static int init_profile_COMMON_color( complex_element *parent_complex, const char **attr, size_t nattr ) {
 
 }
 
-
-static int init_directional( complex_element *parent_complex ) {
-
-}
-
-static int init_effect( complex_element *parent_complex ) {
+static int init_material( complex_element *parent_complex, const char **attr, size_t nattr ) {
 
 }
 
-static int init_profile_COMMON( complex_element *parent_complex ) {
+static int init_instance_effect( complex_element *parent_complex, const char **attr, size_t nattr ) {
 
 }
 
-static int init_technique_FX_COMMON( complex_element *parent_complex ) {
+static int init_instance_material( complex_element *parent_complex, const char **attr, size_t nattr ) {
 
 }
 
-static int init_lambert( complex_element *parent_complex ) {
+static int init_instance_light( complex_element *parent_complex, const char **attr, size_t nattr ) {
 
 }
 
-static int init_ambient( complex_element *parent_complex ) {
-
-}
-
-static int init_diffuse( complex_element *parent_complex ) {
-
-}
-
-static int init_fx_common_color_or_texture( complex_element *parent_complex ) {
-
-}
-
-static int init_light_color( complex_element *parent_complex ) {
-
-}
-
-static int init_profile_COMMON_color( complex_element *parent_complex ) {
-
-}
-
-static int init_material( complex_element *parent_complex ) {
-
-}
-
-static int init_instance_effect( complex_element *parent_complex ) {
-
-}
-
-static int init_instance_material( complex_element *parent_complex ) {
-
-}
-
-static int init_instance_light( complex_element *parent_complex ) {
-
-}
-
-static int init_bind_material( complex_element *parent_complex ) {
+static int init_bind_material( complex_element *parent_complex, const char **attr, size_t nattr ) {
 
 }
 
@@ -645,15 +861,7 @@ static int init_node( complex_element *parent_complex, const char **attr, size_t
 }
 
 static int init_p( complex_element *parent_complex ) {
-  if ( strcmp( parent_complex->name, "polylist" ) == 0 ) {
-    element( polylist ) * parent = ( element( polylist ) * ) parent_complex;
-    parent->c_p = powergl_resize( NULL, sizeof( element( p ) ) );
-    element( p )* this = parent->c_p;
-    this->p_polylist = parent;
-    this->_ext.value = NULL;
-
-    init_complex_element_base( this, "p", "list_of_uints", parent, &this->_ext.value, NULL, 0 );
-  } else if ( strcmp( parent_complex->name, "triangles" ) == 0 ) {
+	if ( strcmp( parent_complex->name, "triangles" ) == 0 ) {
     element( triangles ) * parent = ( element( triangles ) * ) parent_complex;
     parent->c_p = powergl_resize( NULL, sizeof( element( p ) ) );
     element( p )* this = parent->c_p;
@@ -667,20 +875,6 @@ static int init_p( complex_element *parent_complex ) {
   return 1;
 }
 
-static int init_vcount( complex_element *parent_complex ) {
-  if ( strcmp( parent_complex->name, "polylist" ) == 0 ) {
-    element( polylist ) * parent = ( element( polylist ) * ) parent_complex;
-    parent->c_vcount = powergl_resize( NULL, sizeof( element( vcount ) ) );
-    element( vcount )* this = parent->c_vcount;
-    this->p_polylist = parent;
-    this->_ext.value = NULL;
-
-    init_complex_element_base( this, "vcount", "list_of_uints", parent, &this->_ext.value, NULL, 0 );
-  } else {
-    return 0;
-  }
-  return 1;
-}
 
 static int init_input( complex_element *parent_complex, const char **attr, size_t nattr ) {
   if ( strcmp( parent_complex->name, "vertices" ) == 0 ) { // vertices
@@ -701,22 +895,10 @@ static int init_input( complex_element *parent_complex, const char **attr, size_
     init_simple_element_base( &this->a_source, "source", "string", this, &this->a_source.value );
     init_ptr_complex_element_base( &this->r_source, this->a_source.value, "source", this );
 
-  } else if ( strcmp( parent_complex->name, "polylist" ) == 0 || strcmp( parent_complex->name, "triangles" ) == 0 ) { // polylist or triangles
+  } else if ( strcmp( parent_complex->name, "triangles" ) == 0 ) { // triangles
     void *parent_ptr = NULL;
     element( input_local_offset )* this = NULL;
-    if ( strcmp( parent_complex->name, "polylist" ) == 0 ) {
-      element( polylist ) * parent = ( element( polylist ) * ) parent_complex;
-      element( input_local_offset ) **ptr = parent->ch_input_local_offset;
-      ptr = powergl_resize( ptr, ++parent->n_input_local_offset * sizeof( element( input_local_offset ) * ) );
-      parent->ch_input_local_offset = ptr;
-      parent->ch_input_local_offset[parent->n_input_local_offset - 1] = powergl_resize( NULL, sizeof( element( input_local_offset ) ) );
-      this = parent->ch_input_local_offset[parent->n_input_local_offset - 1];
-      this->p_polylist = parent_ptr;
-      this->p_triangles = NULL;
-      this->a_semantic.value = NULL;
-      this->a_source.value = NULL;
-      parent_ptr = parent;
-    } else if ( strcmp( parent_complex->name, "triangles" ) == 0 ) {
+		if ( strcmp( parent_complex->name, "triangles" ) == 0 ) {
       element( triangles ) * parent = ( element( triangles ) * ) parent_complex;
       element( input_local_offset ) **ptr = parent->ch_input_local_offset;
       ptr = powergl_resize( ptr, ++parent->n_input_local_offset * sizeof( element( input_local_offset ) * ) );
@@ -843,32 +1025,6 @@ static int init_float_array( complex_element *parent_complex, const char **attr,
   return 1;
 }
 
-static int init_polylist( complex_element *parent_complex, const char **attr, size_t nattr ) {
-  if ( strcmp( parent_complex->name, "mesh" ) == 0 ) {
-    element( mesh ) * parent = ( element( mesh ) * ) parent_complex;
-    element( polylist ) **ptr = parent->ch_polylist;
-    ptr = powergl_resize( ptr, ++parent->n_polylist * sizeof( element( polylist ) * ) );
-    parent->ch_polylist = ptr;
-    parent->ch_polylist[parent->n_polylist - 1] = powergl_resize( NULL, sizeof( element( polylist ) ) );
-    element( polylist )* this = parent->ch_polylist[parent->n_polylist - 1];
-
-    this->p_mesh = parent;
-    this->a_name.value = NULL;
-    this->ch_input_local_offset = NULL;
-    this->n_input_local_offset = 0;
-    complex_element ***ch_cont[] = {
-      ( complex_element ** * ) &this->ch_input_local_offset
-    };
-
-    parse_attribs( attr, nattr );
-    init_complex_element_base( this, "polylist", "none", parent, NULL, ch_cont, 1 );
-    init_simple_element_base( &this->a_count, "count", "uint", this, &this->a_count.value );
-    init_simple_element_base( &this->a_name, "name", "string", this, &this->a_name.value );
-  } else {
-    return 0;
-  }
-  return 1;
-}
 
 static int init_triangles( complex_element *parent_complex, const char **attr, size_t nattr ) {
   if ( strcmp( parent_complex->name, "mesh" ) == 0 ) {
@@ -953,184 +1109,15 @@ static int init_mesh( complex_element *parent_complex ) {
     this->p_geometry = parent;
 
     this->ch_source = NULL;
-    this->ch_polylist = NULL;
     this->ch_triangles = NULL;
     this->n_source = 0;
-    this->n_polylist = 0;
     this->n_triangles = 0;
-    complex_element ***ch_cont[3] = {
+    complex_element ***ch_cont[2] = {
       ( complex_element ** * ) &this->ch_source,
-      ( complex_element ** * ) &this->ch_polylist,
       ( complex_element ** * ) &this->ch_triangles
     };
 
-    init_complex_element_base( this, "mesh", "none", parent, NULL, ch_cont, 3 );
-  } else {
-    return 0;
-  }
-  return 1;
-}
-
-static int init_aspect_ratio( complex_element *parent_complex, const char **attr, size_t nattr ) {
-  element( aspect_ratio )* this = NULL;
-  complex_element *parent_ptr = NULL;
-
-  if ( strcmp( parent_complex->name, "perspective" ) == 0 ) { // perspective
-    element( perspective ) * parent = ( element( perspective ) * ) parent_complex;
-    parent->c_aspect_ratio = powergl_resize( NULL, sizeof( element( aspect_ratio ) ) );
-    this = parent->c_aspect_ratio;
-    this->p_perspective = parent;
-    parent_ptr = ( complex_element * ) parent_complex;
-  } else if ( strcmp( parent_complex->name, "orthographic" ) == 0 ) { // orthographic
-    element( orthographic ) * parent = ( element( orthographic ) * ) parent_complex;
-    parent->c_aspect_ratio = powergl_resize( NULL, sizeof( element( aspect_ratio ) ) );
-    this = parent->c_aspect_ratio;
-    this->p_orthographic = parent;
-    parent_ptr = ( complex_element * ) parent_complex;
-  } else {
-    return 0;
-  }
-
-  this->_ext.a_sid.value = NULL;
-  this->_ext._ext.value = 0.0f;
-
-  parse_attribs( attr, nattr );
-  init_complex_element_base( this, "aspect_ratio", "float", parent_ptr, &this->_ext._ext.value, NULL, 0 );
-  init_simple_element_base( &this->_ext.a_sid, "sid", "string", this, &this->_ext.a_sid.value );
-
-  return 1;
-}
-
-static int init_zfar( complex_element *parent_complex, const char **attr, size_t nattr ) {
-  element( zfar )* this = NULL;
-  complex_element *parent_ptr = NULL;
-  if ( strcmp( parent_complex->name, "perspective" ) == 0 ) { // perspective
-    element( perspective ) * parent = ( element( perspective ) * ) parent_complex;
-    parent->c_zfar = powergl_resize( NULL, sizeof( element( zfar ) ) );
-    this = parent->c_zfar;
-    this->p_perspective = parent;
-    parent_ptr = ( complex_element * )parent;
-  } else if ( strcmp( parent_complex->name, "orthographic" ) == 0 ) { // orthographic
-    element( orthographic ) * parent = ( element( orthographic ) * ) parent_complex;
-    parent->c_zfar = powergl_resize( NULL, sizeof( element( zfar ) ) );
-    this = parent->c_zfar;
-    this->p_orthographic = parent;
-    parent_ptr = ( complex_element * )parent;
-  } else {
-    return 0;
-  }
-
-  this->_ext.a_sid.value = NULL;
-  this->_ext._ext.value = 0.0f;
-
-  parse_attribs( attr, nattr );
-  init_complex_element_base( this, "zfar", "float", parent_ptr, &this->_ext._ext.value, NULL, 0 );
-  init_simple_element_base( &this->_ext.a_sid, "sid", "string", this, &this->_ext.a_sid.value );
-
-  return 1;
-}
-
-static int init_znear( complex_element *parent_complex, const char **attr, size_t nattr ) {
-  element( znear )* this = NULL;
-  complex_element *parent_ptr = NULL;
-  if ( strcmp( parent_complex->name, "perspective" ) == 0 ) { // perspective
-    element( perspective ) * parent = ( element( perspective ) * ) parent_complex;
-    parent->c_znear = powergl_resize( NULL, sizeof( element( znear ) ) );
-    this = parent->c_znear;
-    this->p_perspective = parent;
-    parent_ptr = ( complex_element * )parent;
-  } else if ( strcmp( parent_complex->name, "orthographic" ) == 0 ) { // orthographic
-    element( orthographic ) * parent = ( element( orthographic ) * ) parent_complex;
-    parent->c_znear = powergl_resize( NULL, sizeof( element( znear ) ) );
-    this = parent->c_znear;
-    this->p_orthographic = parent;
-    parent_ptr = ( complex_element * )parent;
-  } else {
-    return 0;
-  }
-  this->_ext.a_sid.value = NULL;
-  this->_ext._ext.value = 0.0f;
-
-  parse_attribs( attr, nattr );
-  init_complex_element_base( this, "znear", "float", parent_ptr, &this->_ext._ext.value, NULL, 0 );
-  init_simple_element_base( &this->_ext.a_sid, "sid", "string", this, &this->_ext.a_sid.value );
-  return 1;
-}
-
-static int init_ymag( complex_element *parent_complex, const char **attr, size_t nattr ) {
-  if ( strcmp( parent_complex->name, "orthographic" ) == 0 ) { // orthographic
-    element( orthographic ) * parent = ( element( orthographic ) * ) parent_complex;
-    parent->cc_xmag = NULL;
-    parent->cc_ymag = NULL;
-    parent->cc_ymag = powergl_resize( NULL, sizeof( element( ymag ) ) );
-    element( ymag )* this = parent->cc_ymag;
-    this->p_orthographic = parent;
-    this->_ext.a_sid.value = NULL;
-    this->_ext._ext.value = 0.0f;
-
-    parse_attribs( attr, nattr );
-    init_complex_element_base( this, "ymag", "float", parent, &this->_ext._ext.value, NULL, 0 );
-    init_simple_element_base( &this->_ext.a_sid, "sid", "string", this, &this->_ext.a_sid.value );
-  } else {
-    return 0;
-  }
-  return 1;
-}
-
-static int init_xmag( complex_element *parent_complex, const char **attr, size_t nattr ) {
-  if ( strcmp( parent_complex->name, "orthographic" ) == 0 ) { // orthographic
-    element( orthographic ) * parent = ( element( orthographic ) * ) parent_complex;
-    parent->cc_xmag = NULL;
-    parent->cc_ymag = NULL;
-    parent->cc_xmag = powergl_resize( NULL, sizeof( element( xmag ) ) );
-    element( xmag )* this = parent->cc_xmag;
-    this->p_orthographic = parent;
-    this->_ext.a_sid.value = NULL;
-    this->_ext._ext.value = 0.0f;
-
-    parse_attribs( attr, nattr );
-    init_complex_element_base( this, "xmag", "float", parent, &this->_ext._ext.value, NULL, 0 );
-    init_simple_element_base( &this->_ext.a_sid, "sid", "string", this, &this->_ext.a_sid.value );
-  } else {
-    return 0;
-  }
-  return 1;
-}
-
-static int init_yfov( complex_element *parent_complex, const char **attr, size_t nattr ) {
-  if ( strcmp( parent_complex->name, "perspective" ) == 0 ) { // perspective
-    element( perspective ) * parent = ( element( perspective ) * ) parent_complex;
-    parent->cc_xfov = NULL;
-    parent->cc_yfov = NULL;
-    parent->cc_yfov = powergl_resize( NULL, sizeof( element( yfov ) ) );
-    element( yfov )* this = parent->cc_yfov;
-    this->p_perspective = parent;
-    this->_ext.a_sid.value = NULL;
-    this->_ext._ext.value = 0.0f;
-
-    parse_attribs( attr, nattr );
-    init_complex_element_base( this, "yfov", "float", parent, &this->_ext._ext.value, NULL, 0 );
-    init_simple_element_base( &this->_ext.a_sid, "sid", "string", this, &this->_ext.a_sid.value );
-  } else {
-    return 0;
-  }
-  return 1;
-}
-
-static int init_xfov( complex_element *parent_complex, const char **attr, size_t nattr ) {
-  if ( strcmp( parent_complex->name, "perspective" ) == 0 ) { // perspective
-    element( perspective ) * parent = ( element( perspective ) * ) parent_complex;
-    parent->cc_xfov = NULL;
-    parent->cc_yfov = NULL;
-    parent->cc_xfov = powergl_resize( NULL, sizeof( element( xfov ) ) );
-    element( xfov )* this = parent->cc_xfov;
-    this->p_perspective = parent;
-    this->_ext.a_sid.value = NULL;
-    this->_ext._ext.value = 0.0f;
-
-    parse_attribs( attr, nattr );
-    init_complex_element_base( this, "xfov", "float", parent, &this->_ext._ext.value, NULL, 0 );
-    init_simple_element_base( &this->_ext.a_sid, "sid", "string", this, &this->_ext.a_sid.value );
+    init_complex_element_base( this, "mesh", "none", parent, NULL, ch_cont, 2 );
   } else {
     return 0;
   }
@@ -1156,8 +1143,6 @@ static int init_orthographic( complex_element *parent_complex ) {
 static int init_perspective( complex_element *parent_complex ) {
   if ( strcmp( parent_complex->name, "technique_common" ) == 0 ) {
     element( optics_technique_common ) * parent = ( element( optics_technique_common ) * ) parent_complex;
-    parent->cc_orthographic = NULL;
-    parent->cc_perspective = NULL;
     parent->cc_perspective = powergl_resize( NULL, sizeof( element( perspective ) ) );
     element( perspective )* this = parent->cc_perspective;
 
@@ -1174,14 +1159,22 @@ static int init_technique_common( complex_element *parent_complex ) {
     parent->c_optics_technique_common = powergl_resize( NULL, sizeof( element( optics_technique_common ) ) );
     element( optics_technique_common )* this = parent->c_optics_technique_common;
     this->p_optics = parent;
-
+		this->cc_orthographic = NULL;
+    this->cc_perspective = NULL;
     init_complex_element_base( this, "technique_common", "none", parent, NULL, NULL, 0 );
   } else if ( strcmp( parent_complex->name, "source" ) == 0 ) { // source
     element( source ) * parent = ( element( source ) * ) parent_complex;
     parent->c_source_technique_common = powergl_resize( NULL, sizeof( element( source_technique_common ) ) );
     element( source_technique_common )* this = parent->c_source_technique_common;
     this->p_source = parent;
-
+		this->c_accessor = NULL;
+    init_complex_element_base( this, "technique_common", "none", parent, NULL, NULL, 0 );
+  } else if ( strcmp( parent_complex->name, "light" ) == 0 ) { // light
+    element( light ) * parent = ( element( light ) * ) parent_complex;
+    parent->c_light_technique_common = powergl_resize( NULL, sizeof( element( light_technique_common ) ) );
+    element( light_technique_common )* this = parent->c_light_technique_common;
+    this->p_light = parent;
+		this->cc_directional = NULL;
     init_complex_element_base( this, "technique_common", "none", parent, NULL, NULL, 0 );
   } else {
     return 0;
@@ -1408,25 +1401,28 @@ static int init_collada( complex_element *parent_complex, const char **attr, siz
   this->ch_library_geometries = NULL;
   this->ch_library_cameras = NULL;
   this->ch_library_lights = NULL;
+	this->ch_library_effects = NULL;
   this->ch_library_visual_scenes = NULL;
   this->ch_library_materials = NULL;
 
   this->n_library_geometries = 0;
   this->n_library_cameras = 0;
   this->n_library_lights = 0;
+	this->n_library_effects = 0;
   this->n_library_visual_scenes = 0;
   this->n_library_materials = 0;
 
-  complex_element ***ch_cont[5] = {
+  complex_element ***ch_cont[6] = {
     ( complex_element ** * ) &this->ch_library_geometries,
     ( complex_element ** * ) &this->ch_library_cameras,
     ( complex_element ** * ) &this->ch_library_lights,
+		( complex_element ** * ) &this->ch_library_effects,
     ( complex_element ** * ) &this->ch_library_materials,
     ( complex_element ** * ) &this->ch_library_visual_scenes
   };
 
   parse_attribs( attr, nattr );
-  init_complex_element_base( this, "COLLADA", "none", NULL, NULL, ch_cont, 5 );
+  init_complex_element_base( this, "COLLADA", "none", NULL, NULL, ch_cont, 6 );
   init_simple_element_base( &this->a_xmlns, "xmlns", "string", this, &this->a_xmlns.value );
   init_simple_element_base( &this->a_version, "version", "string", this, &this->a_version.value );
 
@@ -1447,7 +1443,6 @@ static void elemend( void *userdata, const char *elem ) {
     } else if ( strcmp( elem, "technique_common" ) == 0 ) {
     } else if ( strcmp( elem, "input" ) == 0 ) {
     } else if ( strcmp( elem, "p" ) == 0 ) {
-    } else if ( strcmp( elem, "vcount" ) == 0 ) {
     } else {
       g_undefined_element_flag = 1;
     }
@@ -1455,7 +1450,6 @@ static void elemend( void *userdata, const char *elem ) {
     if ( strcmp( elem, "technique_common" ) == 0 ) {
     } else if ( strcmp( elem, "source" ) == 0 ) {
     } else if ( strcmp( elem, "vertices" ) == 0 ) {
-    } else if ( strcmp( elem, "polylist" ) == 0 ) {
     } else if ( strcmp( elem, "triangles" ) == 0 ) {
     } else if ( strcmp( elem, "matrix" ) == 0 ) {
     } else if ( strcmp( elem, "instance_camera" ) == 0 ) {
@@ -1756,8 +1750,6 @@ static void chardata( void *userdata, const XML_Char *string, int len ) {
       parse_list_of_ints( ( complex_element * )g_current_elem, merge_data_flag, string, len );
     } else if ( strcmp( g_current_elem_tag, "p" ) == 0 ) {
       parse_list_of_uints( ( complex_element * )g_current_elem, merge_data_flag, string, len );
-    } else if ( strcmp( g_current_elem_tag, "vcount" ) == 0 ) {
-      parse_list_of_uints( ( complex_element * )g_current_elem, merge_data_flag, string, len );
     } else {
       data_parsed = 0;
     }
@@ -1849,8 +1841,6 @@ static void elemstart( void *userdata, const char *elem, const char **attr ) {
       if ( result == 0 ) {
         g_undefined_element_flag = 1;
       }
-    } else if ( strcmp( elem, "vcount" ) == 0 ) {
-      result = init_vcount( parent );
     } else {
       g_undefined_element_flag = 1;
     }
@@ -1864,8 +1854,6 @@ static void elemstart( void *userdata, const char *elem, const char **attr ) {
       result = init_source( parent, attr, nattr );
     } else if ( strcmp( elem, "vertices" ) == 0 ) {
       result = init_vertices( parent, attr, nattr );
-    } else if ( strcmp( elem, "polylist" ) == 0 ) {
-      result = init_polylist( parent, attr, nattr );
     } else if ( strcmp( elem, "triangles" ) == 0 ) {
       result = init_triangles( parent, attr, nattr );
     } else if ( strcmp( elem, "matrix" ) == 0 ) {
@@ -1879,15 +1867,15 @@ static void elemstart( void *userdata, const char *elem, const char **attr ) {
     }
   } else if ( g_current_depth == 6 ) {
     if ( strcmp( elem, "xfov" ) == 0 ) {
-      result =  init_xfov( parent, attr, nattr );
+      result =  init_targetable_float( parent, "xfov", attr, nattr );
     } else if ( strcmp( elem, "yfov" ) == 0 ) {
-      result = init_yfov( parent, attr, nattr );
+      result = init_targetable_float( parent, "yfov", attr, nattr );
     } else if ( strcmp( elem, "aspect_ratio" ) == 0 ) {
-      result = init_aspect_ratio( parent, attr, nattr );
+      result = init_targetable_float( parent, "aspect_ratio", attr, nattr );
     } else if ( strcmp( elem, "znear" ) == 0 ) {
-      result = init_znear( parent, attr, nattr );
+      result = init_targetable_float( parent, "znear", attr, nattr );
     } else if ( strcmp( elem, "zfar" ) == 0 ) {
-      result = init_zfar( parent, attr, nattr );
+      result = init_targetable_float( parent, "zfar", attr, nattr );
     } else if ( strcmp( elem, "accessor" ) == 0 ) {
       result = init_accessor( parent, attr, nattr );
     } else {
@@ -2012,7 +2000,7 @@ static int resolve_refs( complex_element *root, int n_resolved ) {
 static size_t n_free;
 
 
-void collada_func( delete_complex_element )( complex_element *root, size_t depth ) {
+void powergl_collada_delete_complex_element( complex_element *root, size_t depth ) {
 
   if ( root == NULL ) {
 
@@ -2029,7 +2017,7 @@ void collada_func( delete_complex_element )( complex_element *root, size_t depth
     // delete child elems
     for ( size_t i = 0; i < root->n_elem ; i++ ) {
 
-      collada_func( delete_complex_element )( root->elems[i], depth + 1 );
+      powergl_collada_delete_complex_element( root->elems[i], depth + 1 );
 
     }
 
@@ -2209,7 +2197,7 @@ void collada_func( delete_complex_element )( complex_element *root, size_t depth
 
 
 
-element( collada ) *collada_func( parse )( const char *filename ) {
+element( collada ) *powergl_collada_parse ( const char *filename ) {
   XML_Parser p;
   FILE *f;
   long fsize;

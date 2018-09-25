@@ -4,48 +4,9 @@
 #include <stddef.h>
 #include <stdio.h>
 
-/* MACROS */
 
-#define collada_func(NAME)  \
-  powergl_collada_func_ ## NAME
-
-#define collada_elem(NAME)  \
-  powergl_collada_elem_ ## NAME
-
-#define decl_attrib(TYPE,NAME)  \
-  collada_elem( TYPE ) a_ ## NAME
-
-#define decl_child(TYPE)    \
-  collada_elem( TYPE ) * c_ ## TYPE
-
-#define decl_choice_child(TYPE) \
-	collada_elem( TYPE ) *cc_ ## TYPE
-
-#define decl_parent(TYPE)   \
-  collada_elem( TYPE ) * p_ ## TYPE
-
-#define decl_ref(TYPE)  \
-  ptr_complex_element  r_ ## TYPE	;
-
-#define decl_children(TYPE) \
-  collada_elem( TYPE ) ** ch_ ## TYPE ; \
-  size_t n_ ## TYPE
-
-#define decl_base(TYPE) \
-	TYPE _base;
-
-#define decl_extend(TYPE)   \
-  collada_elem( TYPE ) _ext
-
-#define alias_element(NAME) \
-  typedef struct collada_elem( NAME ## _t ) collada_elem( NAME )
-
-#define alias_attrib(NAME)  \
-  typedef struct collada_elem( NAME ## _t ) collada_elem( NAME )
-
-
-
-
+#define collada_type(NAME)											\
+  powergl_collada_ ## NAME
 
 typedef struct simple_element_t simple_element;
 typedef struct complex_element_t complex_element;
@@ -65,7 +26,7 @@ struct complex_element_t {
   void *parent;
 
   void *value_ptr;
-  size_t value_size; // bu da bazi yerlerde atanmamis
+  size_t value_size;
 
   size_t n_elem;
   size_t n_attrib;
@@ -75,7 +36,7 @@ struct complex_element_t {
   simple_element **attribs;
   ptr_complex_element **refs;
 
-  complex_element ** **ch_container; // stores element ( TYPE ) **ch_xxx pointers
+  complex_element ** **ch_container;
   size_t n_ch_container;
 };
 
@@ -88,1039 +49,884 @@ struct ptr_complex_element_t {
 };
 
 
-/* COLLADA TYPEDEFS */
-
-
-/* COLLADA CORE */
-
-alias_element( collada );
-alias_element( up_axis );
-alias_element( unit );
-alias_element( library_geometries );
-alias_element( geometry );
-alias_element( mesh );
-alias_element( source );
-alias_element( source_technique_common );
-alias_element( float_array );
-alias_element( int_array );
-alias_element( accessor );
-alias_element( param );
-alias_element( p );
-alias_element( vcount );
-alias_element( polylist );
-alias_element( triangles );
-alias_element( vertices );
-alias_element( library_cameras );
-alias_element( camera );
-alias_element( optics );
-alias_element( optics_technique_common );
-alias_element( perspective );
-alias_element( orthographic );
-alias_element( xmag );
-alias_element( ymag );
-alias_element( xfov );
-alias_element( yfov );
-alias_element( znear );
-alias_element( zfar );
-alias_element( aspect_ratio );
-alias_element( library_nodes );
-alias_element( library_lights );
-alias_element( light );
-alias_element( light_technique_common );
-alias_element( directional );
-alias_element( light_color );
-alias_element( library_visual_scenes );
-alias_element( visual_scene );
-alias_element( node );
-alias_element( instance_geometry );
-alias_element( instance_camera );
-alias_element( instance_node );
-alias_element( lookat );
-alias_element( matrix );
-alias_element( rotate );
-alias_element( scale );
-alias_element( translate );
-alias_element( scene );
-alias_element( instance_visual_scene );
-alias_element( instance_light );
-alias_element( input_local_offset );
-alias_element( input_local );
-
-
-/* COLLADA FX */
-
-alias_element( library_effects );
-alias_element( library_materials );
-alias_element( effect );
-alias_element( profile_COMMON );
-alias_element( technique_FX_COMMON );
-alias_element( lambert );
-alias_element( ambient );
-alias_element( diffuse );
-alias_element( fx_common_color_or_texture );
-alias_element( profile_COMMON_color );
-alias_element( material );
-alias_element( instance_effect );
-alias_element( instance_material );
-alias_element( bind_material );
-alias_element( material_technique_common );
-
-
-alias_element( targetable_float );
-alias_element( targetable_float3 );
-alias_element( targetable_float4 );
-
-
-/* COLLADA ELEMENT VALUE TYPES */
-
-alias_attrib( float );
-alias_attrib( int );
-alias_attrib( uint );
-alias_attrib( float3 );
-alias_attrib( float4 );
-alias_attrib( string );
-alias_attrib( list_of_floats );
-alias_attrib( list_of_ints );
-alias_attrib( list_of_uints );
-alias_attrib( float3x3 );
-alias_attrib( float4x4 );
-alias_attrib( version_enum );
-alias_attrib( up_axis_enum );
-alias_attrib( node_type_enum );
+typedef struct powergl_collada_collada_t powergl_collada_collada;
+typedef struct powergl_collada_up_axis_t powergl_collada_up_axis;
+typedef struct powergl_collada_unit_t powergl_collada_unit;
+typedef struct powergl_collada_library_geometries_t powergl_collada_library_geometries;
+typedef struct powergl_collada_geometry_t powergl_collada_geometry;
+typedef struct powergl_collada_mesh_t powergl_collada_mesh;
+typedef struct powergl_collada_source_t powergl_collada_source;
+typedef struct powergl_collada_source_technique_common_t powergl_collada_source_technique_common;
+typedef struct powergl_collada_float_array_t powergl_collada_float_array;
+typedef struct powergl_collada_int_array_t powergl_collada_int_array;
+typedef struct powergl_collada_accessor_t powergl_collada_accessor;
+typedef struct powergl_collada_param_t powergl_collada_param;
+typedef struct powergl_collada_p_t powergl_collada_p;
+typedef struct powergl_collada_triangles_t powergl_collada_triangles;
+typedef struct powergl_collada_vertices_t powergl_collada_vertices;
+typedef struct powergl_collada_library_cameras_t powergl_collada_library_cameras;
+typedef struct powergl_collada_camera_t powergl_collada_camera;
+typedef struct powergl_collada_optics_t powergl_collada_optics;
+typedef struct powergl_collada_optics_technique_common_t powergl_collada_optics_technique_common;
+typedef struct powergl_collada_perspective_t powergl_collada_perspective;
+typedef struct powergl_collada_orthographic_t powergl_collada_orthographic;
+typedef struct powergl_collada_library_nodes_t powergl_collada_library_nodes;
+typedef struct powergl_collada_library_lights_t powergl_collada_library_lights;
+typedef struct powergl_collada_light_t powergl_collada_light;
+typedef struct powergl_collada_light_technique_common_t powergl_collada_light_technique_common;
+typedef struct powergl_collada_directional_t powergl_collada_directional;
+typedef struct powergl_collada_light_color_t powergl_collada_light_color;
+typedef struct powergl_collada_library_visual_scenes_t powergl_collada_library_visual_scenes;
+typedef struct powergl_collada_visual_scene_t powergl_collada_visual_scene;
+typedef struct powergl_collada_node_t powergl_collada_node;
+typedef struct powergl_collada_instance_geometry_t powergl_collada_instance_geometry;
+typedef struct powergl_collada_instance_camera_t powergl_collada_instance_camera;
+typedef struct powergl_collada_instance_node_t powergl_collada_instance_node;
+typedef struct powergl_collada_lookat_t powergl_collada_lookat;
+typedef struct powergl_collada_matrix_t powergl_collada_matrix;
+typedef struct powergl_collada_rotate_t powergl_collada_rotate;
+typedef struct powergl_collada_scale_t powergl_collada_scale;
+typedef struct powergl_collada_translate_t powergl_collada_translate;
+typedef struct powergl_collada_scene_t powergl_collada_scene;
+typedef struct powergl_collada_instance_visual_scene_t powergl_collada_instance_visual_scene;
+typedef struct powergl_collada_instance_light_t powergl_collada_instance_light;
+typedef struct powergl_collada_input_local_offset_t powergl_collada_input_local_offset;
+typedef struct powergl_collada_input_local_t powergl_collada_input_local;
 
 
 
-/* EXPORTED FUNCTIONS */
 
-collada_elem( collada ) *collada_func( parse )( const char *filename );
-void collada_func( export_dae_file )( complex_element *root, const char *file_name );
-void collada_func( delete_complex_element )( complex_element *elemm, size_t depth );
-void collada_func( print_element )( FILE *file, complex_element *elem, int depth );
-void collada_func( print_attribute )( FILE *file, simple_element *elem );
-void collada_func( print_elem_value )( FILE *file, complex_element *elem );
+typedef struct powergl_collada_library_effects_t powergl_collada_library_effects;
+typedef struct powergl_collada_library_materials_t powergl_collada_library_materials;
+typedef struct powergl_collada_effect_t powergl_collada_effect;
+typedef struct powergl_collada_profile_COMMON_t powergl_collada_profile_COMMON;
+typedef struct powergl_collada_technique_FX_COMMON_t powergl_collada_technique_FX_COMMON;
+typedef struct powergl_collada_lambert_t powergl_collada_lambert;
+typedef struct powergl_collada_fx_common_color_or_texture_t powergl_collada_fx_common_color_or_texture;
+typedef struct powergl_collada_material_t powergl_collada_material;
+typedef struct powergl_collada_instance_effect_t powergl_collada_instance_effect;
+typedef struct powergl_collada_instance_material_t powergl_collada_instance_material;
+typedef struct powergl_collada_bind_material_t powergl_collada_bind_material;
+typedef struct powergl_collada_material_technique_common_t powergl_collada_material_technique_common;
 
-/* SIMPLE TYPES */
 
-struct collada_elem( float_t ) {
-  decl_base( simple_element );
+typedef struct powergl_collada_targetable_float_t powergl_collada_targetable_float;
+typedef struct powergl_collada_targetable_float3_t powergl_collada_targetable_float3;
+typedef struct powergl_collada_targetable_float4_t powergl_collada_targetable_float4;
+
+
+
+
+typedef struct powergl_collada_float_t powergl_collada_float;
+typedef struct powergl_collada_int_t powergl_collada_int;
+typedef struct powergl_collada_uint_t powergl_collada_uint;
+typedef struct powergl_collada_float3_t powergl_collada_float3;
+typedef struct powergl_collada_float4_t powergl_collada_float4;
+typedef struct powergl_collada_string_t powergl_collada_string;
+typedef struct powergl_collada_list_of_floats_t powergl_collada_list_of_floats;
+typedef struct powergl_collada_list_of_ints_t powergl_collada_list_of_ints;
+typedef struct powergl_collada_list_of_uints_t powergl_collada_list_of_uints;
+typedef struct powergl_collada_float3x3_t powergl_collada_float3x3;
+typedef struct powergl_collada_float4x4_t powergl_collada_float4x4;
+typedef struct powergl_collada_version_enum_t powergl_collada_version_enum;
+typedef struct powergl_collada_up_axis_enum_t powergl_collada_up_axis_enum;
+typedef struct powergl_collada_node_type_enum_t powergl_collada_node_type_enum;
+
+
+
+
+
+powergl_collada_collada *powergl_collada_parse( const char *filename );
+void powergl_collada_export_dae_file( complex_element *root, const char *file_name );
+void powergl_collada_delete_complex_element( complex_element *elemm, size_t depth );
+void powergl_collada_print_element( FILE *file, complex_element *elem, int depth );
+void powergl_collada_print_attribute( FILE *file, simple_element *elem );
+void powergl_collada_print_elem_value( FILE *file, complex_element *elem );
+
+
+
+struct powergl_collada_float_t {
+  simple_element _base;
   double value;
 };
 
-struct collada_elem( int_t ) {
-  decl_base( simple_element );
+struct powergl_collada_int_t {
+  simple_element _base;
   long int value;
 };
 
-struct collada_elem( uint_t ) {
-  decl_base( simple_element );
+struct powergl_collada_uint_t {
+  simple_element _base;
   unsigned long value;
 };
 
-struct collada_elem( float3_t ) {
-  decl_base( simple_element );
+struct powergl_collada_float3_t {
+  simple_element _base;
   double *value;
 };
 
-struct collada_elem( float4_t ) {
-  decl_base( simple_element );
+struct powergl_collada_float4_t {
+  simple_element _base;
   double *value;
 };
 
-struct collada_elem( float3x3_t ) {
-  decl_base( simple_element );
+struct powergl_collada_float3x3_t {
+  simple_element _base;
   double *value;
 };
 
-struct collada_elem( float4x4_t ) {
-  decl_base( simple_element );
+struct powergl_collada_float4x4_t {
+  simple_element _base;
   double *value;
 };
 
-struct collada_elem( string_t ) {
-  decl_base( simple_element );
+struct powergl_collada_string_t {
+  simple_element _base;
   char *value;
 };
 
-struct collada_elem( list_of_floats_t ) {
-  decl_base( simple_element );
+struct powergl_collada_list_of_floats_t {
+  simple_element _base;
   double *value;
 };
 
-struct collada_elem( list_of_ints_t ) {
-  decl_base( simple_element );
+struct powergl_collada_list_of_ints_t {
+  simple_element _base;
   long int *value;
 };
 
-struct collada_elem( list_of_uints_t ) {
-  decl_base( simple_element );
+struct powergl_collada_list_of_uints_t {
+  simple_element _base;
   unsigned long *value;
 };
 
-struct collada_elem( version_enum_t ) {
-  decl_base( simple_element );
-  enum { V_1_5_0 }  value;
+struct powergl_collada_version_enum_t {
+  simple_element _base;
+  enum { V_1_5_0 } value;
 };
 
-struct collada_elem( up_axis_enum_t ) {
-  decl_base( simple_element );
-  enum { X_UP, Y_UP, Z_UP }  value;
+struct powergl_collada_up_axis_enum_t {
+  simple_element _base;
+  enum { X_UP, Y_UP, Z_UP } value;
 };
 
-struct collada_elem( node_type_enum_t ) {
-  decl_base( simple_element );
-  enum { JOINT, NODE }  value;
+struct powergl_collada_node_type_enum_t {
+  simple_element _base;
+  enum { JOINT, NODE } value;
 };
 
 
 
-/* COMPLEX TYPES */
 
 
 
-struct collada_elem( targetable_float_t ) {
 
-  decl_base( complex_element );
-  decl_extend( float );
+struct powergl_collada_targetable_float_t {
 
-  decl_attrib( string, sid );
+  complex_element _base;
+  powergl_collada_float _ext;
 
-};
-
-
-struct collada_elem( targetable_float3_t ) {
-
-  decl_base( complex_element );
-  decl_extend( float3 );
+  powergl_collada_string a_sid;
 
-  decl_attrib( string, sid );
+	powergl_collada_perspective *p_perspective;
 
 };
 
 
-struct collada_elem( targetable_float4_t ) {
+struct powergl_collada_targetable_float3_t {
 
-  decl_base( complex_element );
-  decl_extend( float4 );
+  complex_element _base;
+  powergl_collada_float3 _ext;
 
-  decl_attrib( string, sid );
+  powergl_collada_string a_sid;
 
 };
 
 
-struct collada_elem( bind_material_t ) {
+struct powergl_collada_targetable_float4_t {
 
-  decl_base( complex_element );
+  complex_element _base;
+  powergl_collada_float4 _ext;
 
+  powergl_collada_string a_sid;
 
-  decl_parent( instance_geometry );
-
 };
-
 
-struct collada_elem( instance_material_t ) {
 
-  decl_base( complex_element );
+struct powergl_collada_bind_material_t {
 
-  decl_attrib( string, sid );
-  decl_attrib( string, name );
-  decl_attrib( string, symbol );
-  decl_attrib( string, target );
+  complex_element _base;
 
-  decl_ref( material );
 
-  decl_parent( node );
+  powergl_collada_instance_geometry * p_instance_geometry;
 
 };
 
 
-struct collada_elem( instance_effect_t ) {
+struct powergl_collada_instance_material_t {
 
-  decl_base( complex_element );
+  complex_element _base;
 
-  decl_attrib( string, sid );
-  decl_attrib( string, name );
-  decl_attrib( string, url );
+  powergl_collada_string a_sid;
+  powergl_collada_string a_name;
+  powergl_collada_string a_symbol;
+  powergl_collada_string a_target;
 
-  decl_ref( effect );
+  ptr_complex_element r_material;
 
-  decl_parent( node );
+  powergl_collada_node * p_node;
 
 };
 
 
-struct collada_elem( instance_light_t ) {
+struct powergl_collada_instance_effect_t {
 
-  decl_base( complex_element );
+  complex_element _base;
 
-  decl_attrib( string, sid );
-  decl_attrib( string, name );
-  decl_attrib( string, url );
+  powergl_collada_string a_sid;
+  powergl_collada_string a_name;
+  powergl_collada_string a_url;
 
-  decl_ref( light );
+  ptr_complex_element r_effect;
 
-  decl_parent( node );
+  powergl_collada_node * p_node;
 
 };
-
-
 
-struct collada_elem( profile_COMMON_color_t ) {
 
-  decl_base( complex_element );
-  decl_extend( targetable_float4 );
+struct powergl_collada_instance_light_t {
 
-  decl_parent( fx_common_color_or_texture );
+  complex_element _base;
 
-};
-
-
-struct collada_elem( fx_common_color_or_texture_t ) {
-
-  decl_base( complex_element );
+  powergl_collada_string a_sid;
+  powergl_collada_string a_name;
+  powergl_collada_string a_url;
 
-  decl_choice_child( profile_COMMON_color );
+  ptr_complex_element r_light;
 
-  decl_parent( diffuse );
-  decl_parent( ambient );
+  powergl_collada_node * p_node;
 
 };
-
-
-struct collada_elem( diffuse_t ) {
-
-  decl_base( complex_element );
-  decl_extend( fx_common_color_or_texture );
-
-  decl_parent( lambert );
 
-};
 
+struct powergl_collada_fx_common_color_or_texture_t {
 
-struct collada_elem( ambient_t ) {
+  complex_element _base;
 
-  decl_base( complex_element );
-  decl_extend( fx_common_color_or_texture );
+  powergl_collada_targetable_float4 *cc_color;
 
-  decl_parent( lambert );
+  powergl_collada_lambert * p_lambert;
 
 };
-
 
-struct collada_elem( lambert_t ) {
+struct powergl_collada_lambert_t {
 
-  decl_base( complex_element );
+  complex_element _base;
 
-  decl_choice_child( ambient );
-  decl_choice_child( diffuse );
+  powergl_collada_fx_common_color_or_texture *cc_ambient;
+  powergl_collada_fx_common_color_or_texture *cc_diffuse;
 
-  decl_parent( technique_FX_COMMON );
+  powergl_collada_technique_FX_COMMON * p_technique_FX_COMMON;
 
 };
 
 
-struct collada_elem( technique_FX_COMMON_t ) {
+struct powergl_collada_technique_FX_COMMON_t {
 
-  decl_base( complex_element );
+  complex_element _base;
 
-  decl_attrib( string, id );
-  decl_attrib( string, sid );
+  powergl_collada_string a_id;
+  powergl_collada_string a_sid;
 
-  decl_child( lambert );
+  powergl_collada_lambert *c_lambert;
 
-  decl_parent( profile_COMMON );
+  powergl_collada_profile_COMMON * p_profile_COMMON;
 
 };
 
 
-struct collada_elem( profile_COMMON_t ) {
+struct powergl_collada_profile_COMMON_t {
 
-  decl_base( complex_element );
+  complex_element _base;
 
-  decl_attrib( string, id );
+  powergl_collada_string a_id;
 
-  decl_child( technique_FX_COMMON );
+  powergl_collada_technique_FX_COMMON *c_technique_FX_COMMON;
 
-  decl_parent( effect );
+  powergl_collada_effect * p_effect;
 
 };
-
-
-struct collada_elem( effect_t ) {
 
-  decl_base( complex_element );
 
-  decl_attrib( string, id );
-  decl_attrib( string, name );
-
-  decl_children( profile_COMMON );
-
-  decl_parent( library_effects );
-
-};
+struct powergl_collada_effect_t {
 
+  complex_element _base;
 
-struct collada_elem( light_color_t ) {
+  powergl_collada_string a_id;
+  powergl_collada_string a_name;
 
-  decl_base( complex_element );
-  decl_extend( targetable_float3 );
+  powergl_collada_profile_COMMON **ch_profile_COMMON; size_t n_profile_COMMON;
 
-  decl_parent( directional );
+  powergl_collada_library_effects * p_library_effects;
 
 };
 
 
-struct collada_elem( directional_t ) {
+struct powergl_collada_directional_t {
 
-  decl_base( complex_element );
+  complex_element _base;
 
-  decl_child( light_color );
+  powergl_collada_targetable_float3 *c_light_color;
 
-  decl_parent( light_technique_common );
+  powergl_collada_light_technique_common * p_light_technique_common;
 
 };
 
 
-struct collada_elem( light_technique_common_t ) {
+struct powergl_collada_light_technique_common_t {
 
-  decl_base( complex_element );
+  complex_element _base;
 
-  decl_choice_child( directional );
+  powergl_collada_directional *cc_directional;
 
-  decl_parent( light );
+  powergl_collada_light * p_light;
 
 };
 
 
-struct collada_elem( light_t ) {
+struct powergl_collada_light_t {
 
-  decl_base( complex_element );
+  complex_element _base;
 
-  decl_attrib( string, id );
-  decl_attrib( string, name );
+  powergl_collada_string a_id;
+  powergl_collada_string a_name;
 
-  decl_child( light_technique_common );
+  powergl_collada_light_technique_common *c_light_technique_common;
 
-  decl_parent( library_lights );
+  powergl_collada_library_lights * p_library_lights;
 
 };
 
 
-struct collada_elem( library_effects_t ) {
+struct powergl_collada_library_effects_t {
 
-  decl_base( complex_element );
+  complex_element _base;
 
-  decl_attrib( string, id );
-  decl_attrib( string, name );
+  powergl_collada_string a_id;
+  powergl_collada_string a_name;
 
-  decl_children( effect );
+  powergl_collada_effect **ch_effect; size_t n_effect;
 
-  decl_parent( collada );
+  powergl_collada_collada * p_collada;
 
 };
 
 
-struct collada_elem( library_materials_t ) {
+struct powergl_collada_library_materials_t {
 
-  decl_base( complex_element );
+  complex_element _base;
 
-  decl_attrib( string, id );
-  decl_attrib( string, name );
+  powergl_collada_string a_id;
+  powergl_collada_string a_name;
 
-  decl_children( material );
+  powergl_collada_material **ch_material; size_t n_material;
 
-  decl_parent( collada );
+  powergl_collada_collada * p_collada;
 
 };
 
 
-struct collada_elem( library_lights_t ) {
+struct powergl_collada_library_lights_t {
 
-  decl_base( complex_element );
+  complex_element _base;
 
-  decl_attrib( string, id );
-  decl_attrib( string, name );
+  powergl_collada_string a_id;
+  powergl_collada_string a_name;
 
-  decl_children( light );
+  powergl_collada_light **ch_light; size_t n_light;
 
-  decl_parent( collada );
+  powergl_collada_collada * p_collada;
 
 };
 
 
-struct collada_elem( input_local_t ) {
+struct powergl_collada_input_local_t {
 
-  decl_base( complex_element );
+  complex_element _base;
 
-  decl_attrib( string, semantic );
-  decl_attrib( string, source );
+  powergl_collada_string a_semantic;
+  powergl_collada_string a_source;
 
-  decl_ref( source );
+  ptr_complex_element r_source;
 
-  decl_parent( vertices );
+  powergl_collada_vertices * p_vertices;
 
 };
 
 
-struct collada_elem( input_local_offset_t ) {
+struct powergl_collada_input_local_offset_t {
 
-  decl_base( complex_element );
+  complex_element _base;
 
-  decl_attrib( uint, set );
-  decl_attrib( uint, offset );
-  decl_attrib( string, semantic );
-  decl_attrib( string, source );
+  powergl_collada_uint a_set;
+  powergl_collada_uint a_offset;
+  powergl_collada_string a_semantic;
+  powergl_collada_string a_source;
 
-  decl_ref( source );
-  decl_ref( vertices );
+  ptr_complex_element r_source;
+  ptr_complex_element r_vertices;
 
-  decl_parent( polylist );
-  decl_parent( triangles );
+  powergl_collada_triangles * p_triangles;
 
 };
 
 
-struct collada_elem( vcount_t ) {
+struct powergl_collada_p_t {
 
-  decl_base( complex_element );
-  decl_extend( list_of_uints );
+  complex_element _base;
+  powergl_collada_list_of_uints _ext;
 
-  decl_parent( polylist );
+  powergl_collada_triangles * p_triangles;
 
 };
 
-struct collada_elem( p_t ) {
+struct powergl_collada_float_array_t {
 
-  decl_base( complex_element );
-  decl_extend( list_of_uints );
+  complex_element _base;
+  powergl_collada_list_of_floats _ext;
 
-  decl_parent( polylist );
-  decl_parent( triangles );
+  powergl_collada_string a_id;
+  powergl_collada_string a_name;
+  powergl_collada_uint a_count;
 
-};
-
-struct collada_elem( float_array_t ) {
-
-  decl_base( complex_element );
-  decl_extend( list_of_floats );
-
-  decl_attrib( string, id );
-  decl_attrib( string, name );
-  decl_attrib( uint, count );
+  powergl_collada_source * p_source;
 
-  decl_parent( source );
-
 };
 
 
-struct collada_elem( int_array_t ) {
+struct powergl_collada_int_array_t {
 
-  decl_base( complex_element );
-  decl_extend( list_of_ints );
+  complex_element _base;
+  powergl_collada_list_of_ints _ext;
 
-  decl_attrib( string, id );
-  decl_attrib( string, name );
-  decl_attrib( uint, count );
+  powergl_collada_string a_id;
+  powergl_collada_string a_name;
+  powergl_collada_uint a_count;
 
-  decl_parent( source );
+  powergl_collada_source * p_source;
 
 };
 
 
-struct collada_elem( param_t ) {
+struct powergl_collada_param_t {
 
-  decl_base( complex_element );
+  complex_element _base;
 
-  decl_attrib( string, sid );
-  decl_attrib( string, name );
-  decl_attrib( string, type );
-  decl_attrib( string, semantic );
+  powergl_collada_string a_sid;
+  powergl_collada_string a_name;
+  powergl_collada_string a_type;
+  powergl_collada_string a_semantic;
 
-  decl_parent( accessor );
+  powergl_collada_accessor * p_accessor;
 
 };
-
-
-struct collada_elem( accessor_t ) {
-
-  decl_base( complex_element );
 
-  decl_attrib( uint, count );
-  decl_attrib( uint, offset );
-  decl_attrib( uint, stride );
-  decl_attrib( string, source );
 
-  decl_children( param );
+struct powergl_collada_accessor_t {
 
-  decl_ref( float_array );
-  decl_ref( int_array );
+  complex_element _base;
 
-  decl_parent( source_technique_common );
+  powergl_collada_uint a_count;
+  powergl_collada_uint a_offset;
+  powergl_collada_uint a_stride;
+  powergl_collada_string a_source;
 
-};
-
-
-struct collada_elem( source_technique_common_t ) {
-
-  decl_base( complex_element );
+  powergl_collada_param **ch_param; size_t n_param;
 
-  decl_child( accessor );
+  ptr_complex_element r_float_array;
+  ptr_complex_element r_int_array;
 
-  decl_parent( source );
+  powergl_collada_source_technique_common * p_source_technique_common;
 
 };
 
 
-struct collada_elem( source_t ) {
+struct powergl_collada_source_technique_common_t {
 
-  decl_base( complex_element );
+  complex_element _base;
 
-  decl_attrib( string, id );
-  decl_attrib( string, name );
+  powergl_collada_accessor *c_accessor;
 
-  decl_child( float_array );
-  decl_child( int_array );
-  decl_child( source_technique_common );
+  powergl_collada_source * p_source;
 
-  decl_parent( mesh );
-
 };
-
-
-struct collada_elem( polylist_t ) {
-
-  decl_base( complex_element );
 
-  decl_attrib( string, name );
-  decl_attrib( uint, count );
 
-  decl_children( input_local_offset );
-  decl_child( vcount );
-  decl_child( p );
+struct powergl_collada_source_t {
 
-  decl_parent( mesh );
+  complex_element _base;
 
-};
-
-struct collada_elem( triangles_t ) {
-
-  decl_base( complex_element );
-
-  decl_attrib( string, name );
-  decl_attrib( uint, count );
+  powergl_collada_string a_id;
+  powergl_collada_string a_name;
 
-  decl_children( input_local_offset );
-  decl_child( p );
+  powergl_collada_float_array *c_float_array;
+  powergl_collada_int_array *c_int_array;
+  powergl_collada_source_technique_common *c_source_technique_common;
 
-  decl_parent( mesh );
+  powergl_collada_mesh * p_mesh;
 
 };
-
-
-struct collada_elem( vertices_t ) {
-
-  decl_base( complex_element );
-
-  decl_attrib( string, id );
-  decl_attrib( string, name );
 
-  decl_children( input_local );
 
-  decl_parent( mesh );
+struct powergl_collada_triangles_t {
 
-};
-
+  complex_element _base;
 
-struct collada_elem( mesh_t ) {
+  powergl_collada_string a_name;
+  powergl_collada_uint a_count;
 
-  decl_base( complex_element );
+  powergl_collada_input_local_offset **ch_input_local_offset; size_t n_input_local_offset;
+  powergl_collada_p *c_p;
 
-  decl_children( source );
-  decl_children( polylist );
-  decl_children( triangles );
-  decl_child( vertices );
+  powergl_collada_mesh * p_mesh;
 
-  decl_parent( geometry );
-
 };
-
 
-struct collada_elem( znear_t ) {
 
-  decl_base( complex_element );
-  decl_extend( targetable_float );
-  decl_parent( perspective );
-  decl_parent( orthographic );
-};
-
-struct collada_elem( zfar_t ) {
+struct powergl_collada_vertices_t {
 
-  decl_base( complex_element );
-  decl_extend( targetable_float );
-  decl_parent( perspective );
-  decl_parent( orthographic );
-};
+  complex_element _base;
 
-struct collada_elem( xmag_t ) {
+  powergl_collada_string a_id;
+  powergl_collada_string a_name;
 
-  decl_base( complex_element );
-  decl_extend( targetable_float );
-  decl_parent( orthographic );
-};
+  powergl_collada_input_local **ch_input_local; size_t n_input_local;
 
-struct collada_elem( ymag_t ) {
+  powergl_collada_mesh * p_mesh;
 
-  decl_base( complex_element );
-  decl_extend( targetable_float );
-  decl_parent( orthographic );
 };
 
-struct collada_elem( yfov_t ) {
 
-  decl_base( complex_element );
-  decl_extend( targetable_float );
-  decl_parent( perspective );
-};
+struct powergl_collada_mesh_t {
 
-struct collada_elem( xfov_t ) {
+  complex_element _base;
 
-  decl_base( complex_element );
-  decl_extend( targetable_float );
-  decl_parent( perspective );
-};
+  powergl_collada_source **ch_source; size_t n_source;
+  powergl_collada_triangles **ch_triangles; size_t n_triangles;
+  powergl_collada_vertices *c_vertices;
 
-struct collada_elem( aspect_ratio_t ) {
+  powergl_collada_geometry * p_geometry;
 
-  decl_base( complex_element );
-  decl_extend( targetable_float );
-  decl_parent( perspective );
-  decl_parent( orthographic );
 };
 
+struct powergl_collada_orthographic_t {
 
-struct collada_elem( orthographic_t ) {
+  complex_element _base;
 
-  decl_base( complex_element );
+  powergl_collada_targetable_float *cc_xmag;
+  powergl_collada_targetable_float *cc_ymag;
+  powergl_collada_targetable_float *c_aspect_ratio;
+  powergl_collada_targetable_float *c_znear;
+  powergl_collada_targetable_float *c_zfar;
 
-  decl_choice_child( xmag );
-  decl_choice_child( ymag );
-  decl_child( aspect_ratio );
-  decl_child( znear );
-  decl_child( zfar );
+  powergl_collada_optics_technique_common * p_optics_technique_common;
 
-  decl_parent( optics_technique_common );
-
 };
 
 
-struct collada_elem( perspective_t ) {
+struct powergl_collada_perspective_t {
 
-  decl_base( complex_element );
+  complex_element _base;
 
-  decl_choice_child( xfov );
-  decl_choice_child( yfov );
-  decl_child( aspect_ratio );
-  decl_child( znear );
-  decl_child( zfar );
+  powergl_collada_targetable_float *cc_xfov;
+  powergl_collada_targetable_float *cc_yfov;
+  powergl_collada_targetable_float *c_aspect_ratio;
+  powergl_collada_targetable_float *c_znear;
+  powergl_collada_targetable_float *c_zfar;
 
-  decl_parent( optics_technique_common );
+  powergl_collada_optics_technique_common * p_optics_technique_common;
 
 };
 
 
-struct collada_elem( optics_technique_common_t ) {
+struct powergl_collada_optics_technique_common_t {
 
-  decl_base( complex_element );
+  complex_element _base;
 
-  decl_choice_child( perspective );
-  decl_choice_child( orthographic );
+  powergl_collada_perspective *cc_perspective;
+  powergl_collada_orthographic *cc_orthographic;
 
-  decl_parent( optics );
+  powergl_collada_optics * p_optics;
 
 };
 
 
-struct collada_elem( optics_t ) {
+struct powergl_collada_optics_t {
 
-  decl_base( complex_element );
+  complex_element _base;
 
-  decl_child( optics_technique_common );
+  powergl_collada_optics_technique_common *c_optics_technique_common;
 
-  decl_parent( camera );
+  powergl_collada_camera * p_camera;
 
 };
 
 
-struct collada_elem( camera_t ) {
+struct powergl_collada_camera_t {
 
-  decl_base( complex_element );
+  complex_element _base;
 
-  decl_attrib( string, id );
-  decl_attrib( string, name );
+  powergl_collada_string a_id;
+  powergl_collada_string a_name;
 
-  decl_child( optics );
+  powergl_collada_optics *c_optics;
 
-  decl_parent( library_cameras );
+  powergl_collada_library_cameras * p_library_cameras;
 
 };
 
 
-struct collada_elem( geometry_t ) {
+struct powergl_collada_geometry_t {
 
-  decl_base( complex_element );
+  complex_element _base;
 
-  decl_attrib( string, id );
-  decl_attrib( string, name );
+  powergl_collada_string a_id;
+  powergl_collada_string a_name;
 
-  decl_child( mesh );
+  powergl_collada_mesh *c_mesh;
 
-  decl_parent( library_geometries );
+  powergl_collada_library_geometries * p_library_geometries;
 
 };
 
 
-struct collada_elem( lookat_t ) {
+struct powergl_collada_lookat_t {
 
-  decl_base( complex_element );
-  decl_extend( float3x3 );
+  complex_element _base;
+  powergl_collada_float3x3 _ext;
 
-  decl_attrib( string, sid );
+  powergl_collada_string a_sid;
 
-  decl_parent( node );
+  powergl_collada_node * p_node;
 
 };
 
 
-struct collada_elem( matrix_t ) {
+struct powergl_collada_matrix_t {
 
-  decl_base( complex_element );
-  decl_extend( float4x4 );
+  complex_element _base;
+  powergl_collada_float4x4 _ext;
 
-  decl_attrib( string, sid );
+  powergl_collada_string a_sid;
 
-  decl_parent( node );
+  powergl_collada_node * p_node;
 
 };
 
 
-struct collada_elem( rotate_t ) {
+struct powergl_collada_rotate_t {
 
-  decl_base( complex_element );
-  decl_extend( targetable_float4 );
+  complex_element _base;
+  powergl_collada_targetable_float4 _ext;
 
-  decl_attrib( string, sid );
+  powergl_collada_string a_sid;
 
-  decl_parent( node );
+  powergl_collada_node * p_node;
 
 };
 
 
-struct collada_elem( scale_t ) {
+struct powergl_collada_scale_t {
 
-  decl_base( complex_element );
-  decl_extend( targetable_float3 );
+  complex_element _base;
+  powergl_collada_targetable_float3 _ext;
 
-  decl_attrib( string, sid );
+  powergl_collada_string a_sid;
 
-  decl_parent( node );
+  powergl_collada_node * p_node;
 
 };
 
 
-struct collada_elem( translate_t ) {
+struct powergl_collada_translate_t {
 
-  decl_base( complex_element );
-  decl_extend( targetable_float3 );
+  complex_element _base;
+  powergl_collada_targetable_float3 _ext;
 
-  decl_attrib( string, sid );
+  powergl_collada_string a_sid;
 
-  decl_parent( node );
+  powergl_collada_node * p_node;
 
 };
 
 
-struct collada_elem( instance_camera_t ) {
+struct powergl_collada_instance_camera_t {
 
-  decl_base( complex_element );
+  complex_element _base;
 
-  decl_attrib( string, sid );
-  decl_attrib( string, name );
-  decl_attrib( string, url );
+  powergl_collada_string a_sid;
+  powergl_collada_string a_name;
+  powergl_collada_string a_url;
 
-  decl_ref( camera );
+  ptr_complex_element r_camera;
 
-  decl_parent( node );
+  powergl_collada_node * p_node;
 
 };
 
 
-struct collada_elem( instance_geometry_t ) {
+struct powergl_collada_instance_geometry_t {
 
-  decl_base( complex_element );
+  complex_element _base;
 
-  decl_attrib( string, sid );
-  decl_attrib( string, name );
-  decl_attrib( string, url );
+  powergl_collada_string a_sid;
+  powergl_collada_string a_name;
+  powergl_collada_string a_url;
 
-  decl_child( bind_material );
+  powergl_collada_bind_material *c_bind_material;
 
-  decl_ref( geometry );
+  ptr_complex_element r_geometry;
 
-  decl_parent( node );
+  powergl_collada_node * p_node;
 
 };
 
 
-struct collada_elem( instance_node_t ) {
+struct powergl_collada_instance_node_t {
 
-  decl_base( complex_element );
+  complex_element _base;
 
-  decl_attrib( string, sid );
-  decl_attrib( string, name );
-  decl_attrib( string, url );
+  powergl_collada_string a_sid;
+  powergl_collada_string a_name;
+  powergl_collada_string a_url;
 
-  decl_ref( node );
+  ptr_complex_element r_node;
 
-  decl_parent( node );
+  powergl_collada_node * p_node;
 
 
 };
 
 
-struct collada_elem( instance_visual_scene_t ) {
+struct powergl_collada_instance_visual_scene_t {
 
-  decl_base( complex_element );
+  complex_element _base;
 
-  decl_attrib( string, sid );
-  decl_attrib( string, name );
-  decl_attrib( string, url );
+  powergl_collada_string a_sid;
+  powergl_collada_string a_name;
+  powergl_collada_string a_url;
 
-  decl_ref( visual_scene ) ;
+  ptr_complex_element r_visual_scene ;
 
-  decl_parent( scene );
+  powergl_collada_scene * p_scene;
 
 };
 
 
-struct collada_elem( library_cameras_t ) {
+struct powergl_collada_library_cameras_t {
 
-  decl_base( complex_element );
+  complex_element _base;
 
-  decl_attrib( string, id );
-  decl_attrib( string, name );
+  powergl_collada_string a_id;
+  powergl_collada_string a_name;
 
-  decl_children( camera );
+  powergl_collada_camera **ch_camera; size_t n_camera;
 
-  decl_parent( collada );
+  powergl_collada_collada * p_collada;
 
 };
 
 
-struct collada_elem( library_geometries_t ) {
+struct powergl_collada_library_geometries_t {
 
-  decl_base( complex_element );
+  complex_element _base;
 
-  decl_attrib( string, id );
-  decl_attrib( string, name );
+  powergl_collada_string a_id;
+  powergl_collada_string a_name;
 
-  decl_children( geometry );
+  powergl_collada_geometry **ch_geometry; size_t n_geometry;
 
-  decl_parent( collada );
+  powergl_collada_collada * p_collada;
 
 };
 
 
-struct collada_elem( library_visual_scenes_t ) {
+struct powergl_collada_library_visual_scenes_t {
 
-  decl_base( complex_element );
+  complex_element _base;
 
-  decl_attrib( string, id );
-  decl_attrib( string, name );
+  powergl_collada_string a_id;
+  powergl_collada_string a_name;
 
-  decl_children( visual_scene );
+  powergl_collada_visual_scene **ch_visual_scene; size_t n_visual_scene;
 
-  decl_parent( collada );
+  powergl_collada_collada * p_collada;
 
 };
 
 
-struct collada_elem( node_t ) {
+struct powergl_collada_node_t {
 
-  decl_base( complex_element );
+  complex_element _base;
 
-  decl_attrib( string, id );
-  decl_attrib( string, name );
-  decl_attrib( string, sid );
+  powergl_collada_string a_id;
+  powergl_collada_string a_name;
+  powergl_collada_string a_sid;
 
-  decl_children( matrix );
-  decl_children( instance_camera );
-  decl_children( instance_light );
-  decl_children( instance_geometry );
-  decl_children( instance_node );
-  decl_children( node );
+  powergl_collada_matrix **ch_matrix; size_t n_matrix;
+  powergl_collada_instance_camera **ch_instance_camera; size_t n_instance_camera;
+  powergl_collada_instance_light **ch_instance_light; size_t n_instance_light;
+  powergl_collada_instance_geometry **ch_instance_geometry; size_t n_instance_geometry;
+  powergl_collada_instance_node **ch_instance_node; size_t n_instance_node;
+  powergl_collada_node **ch_node; size_t n_node;
 
 
-  decl_parent( node );
-  decl_parent( visual_scene );
+  powergl_collada_node * p_node;
+  powergl_collada_visual_scene * p_visual_scene;
 
 };
 
 
-struct collada_elem( visual_scene_t ) {
+struct powergl_collada_visual_scene_t {
 
-  decl_base( complex_element );
+  complex_element _base;
 
-  decl_attrib( string, id );
-  decl_attrib( string, name );
+  powergl_collada_string a_id;
+  powergl_collada_string a_name;
 
-  decl_children( node );
+  powergl_collada_node **ch_node; size_t n_node;
 
-  decl_parent( library_visual_scenes );
+  powergl_collada_library_visual_scenes * p_library_visual_scenes;
 
 };
 
 
-struct collada_elem( scene_t ) {
+struct powergl_collada_scene_t {
 
-  decl_base( complex_element );
+  complex_element _base;
 
-  decl_child( instance_visual_scene );
+  powergl_collada_instance_visual_scene *c_instance_visual_scene;
 
-  decl_parent( collada );
+  powergl_collada_collada * p_collada;
 
 };
 
 
-struct collada_elem( collada_t ) {
+struct powergl_collada_collada_t {
 
-  decl_base( complex_element );
+  complex_element _base;
 
-  decl_attrib( string, version );
-  decl_attrib( string, xmlns );
+  powergl_collada_string a_version;
+  powergl_collada_string a_xmlns;
 
-  decl_children( library_geometries );
-  decl_children( library_cameras );
-  decl_children( library_lights );
-  decl_children( library_materials );
-  decl_children( library_visual_scenes );
-  decl_child( scene );
+  powergl_collada_library_geometries **ch_library_geometries; size_t n_library_geometries;
+  powergl_collada_library_cameras **ch_library_cameras; size_t n_library_cameras;
+  powergl_collada_library_lights **ch_library_lights; size_t n_library_lights;
+	powergl_collada_library_effects **ch_library_effects; size_t n_library_effects;
+  powergl_collada_library_materials **ch_library_materials; size_t n_library_materials;
+  powergl_collada_library_visual_scenes **ch_library_visual_scenes; size_t n_library_visual_scenes;
+  powergl_collada_scene *c_scene;
 
 };
-
-
-
-
-/* UNDEF UNNECESSARY MACROS */
-
-#undef decl_attrib
-#undef decl_child
-#undef decl_choice_child
-#undef decl_paren
-#undef decl_ref
-#undef decl_children
-#undef end_type
-#undef decl_extend
-#undef alias_element
-#undef alias_attrib
-
 
 #endif
