@@ -75,7 +75,6 @@ typedef struct powergl_collada_library_lights_t powergl_collada_library_lights;
 typedef struct powergl_collada_light_t powergl_collada_light;
 typedef struct powergl_collada_light_technique_common_t powergl_collada_light_technique_common;
 typedef struct powergl_collada_directional_t powergl_collada_directional;
-typedef struct powergl_collada_light_color_t powergl_collada_light_color;
 typedef struct powergl_collada_library_visual_scenes_t powergl_collada_library_visual_scenes;
 typedef struct powergl_collada_visual_scene_t powergl_collada_visual_scene;
 typedef struct powergl_collada_node_t powergl_collada_node;
@@ -107,7 +106,7 @@ typedef struct powergl_collada_material_t powergl_collada_material;
 typedef struct powergl_collada_instance_effect_t powergl_collada_instance_effect;
 typedef struct powergl_collada_instance_material_t powergl_collada_instance_material;
 typedef struct powergl_collada_bind_material_t powergl_collada_bind_material;
-typedef struct powergl_collada_material_technique_common_t powergl_collada_material_technique_common;
+typedef struct powergl_collada_bind_material_technique_common_t powergl_collada_bind_material_technique_common;
 
 
 typedef struct powergl_collada_targetable_float_t powergl_collada_targetable_float;
@@ -240,6 +239,8 @@ struct powergl_collada_targetable_float3_t {
 
   powergl_collada_string a_sid;
 
+	powergl_collada_directional *p_directional;
+
 };
 
 
@@ -250,6 +251,19 @@ struct powergl_collada_targetable_float4_t {
 
   powergl_collada_string a_sid;
 
+	powergl_collada_fx_common_color_or_texture *p_fx_common_color_or_texture;
+
+};
+
+
+struct powergl_collada_bind_material_technique_common_t {
+
+  complex_element _base;
+
+	powergl_collada_instance_material **ch_instance_material; size_t n_instance_material;
+
+  powergl_collada_bind_material *p_bind_material;
+
 };
 
 
@@ -257,8 +271,22 @@ struct powergl_collada_bind_material_t {
 
   complex_element _base;
 
+	powergl_collada_bind_material_technique_common *c_bind_material_technique_common;
 
-  powergl_collada_instance_geometry * p_instance_geometry;
+  powergl_collada_instance_geometry *p_instance_geometry;
+
+};
+
+struct powergl_collada_material_t {
+
+  complex_element _base;
+
+	powergl_collada_string a_id;
+	powergl_collada_string a_name;
+
+	powergl_collada_instance_effect *c_instance_effect;
+
+  powergl_collada_library_materials *p_library_materials;
 
 };
 
@@ -274,7 +302,7 @@ struct powergl_collada_instance_material_t {
 
   ptr_complex_element r_material;
 
-  powergl_collada_node * p_node;
+  powergl_collada_bind_material_technique_common *p_bind_material_technique_common;
 
 };
 
@@ -289,7 +317,7 @@ struct powergl_collada_instance_effect_t {
 
   ptr_complex_element r_effect;
 
-  powergl_collada_node * p_node;
+  powergl_collada_material *p_material;
 
 };
 
@@ -304,7 +332,7 @@ struct powergl_collada_instance_light_t {
 
   ptr_complex_element r_light;
 
-  powergl_collada_node * p_node;
+  powergl_collada_node *p_node;
 
 };
 
@@ -315,7 +343,7 @@ struct powergl_collada_fx_common_color_or_texture_t {
 
   powergl_collada_targetable_float4 *cc_color;
 
-  powergl_collada_lambert * p_lambert;
+  powergl_collada_lambert *p_lambert;
 
 };
 
@@ -326,7 +354,7 @@ struct powergl_collada_lambert_t {
   powergl_collada_fx_common_color_or_texture *cc_ambient;
   powergl_collada_fx_common_color_or_texture *cc_diffuse;
 
-  powergl_collada_technique_FX_COMMON * p_technique_FX_COMMON;
+  powergl_collada_technique_FX_COMMON *p_technique_FX_COMMON;
 
 };
 
@@ -340,7 +368,7 @@ struct powergl_collada_technique_FX_COMMON_t {
 
   powergl_collada_lambert *c_lambert;
 
-  powergl_collada_profile_COMMON * p_profile_COMMON;
+  powergl_collada_profile_COMMON *p_profile_COMMON;
 
 };
 
@@ -353,7 +381,7 @@ struct powergl_collada_profile_COMMON_t {
 
   powergl_collada_technique_FX_COMMON *c_technique_FX_COMMON;
 
-  powergl_collada_effect * p_effect;
+  powergl_collada_effect *p_effect;
 
 };
 
@@ -367,7 +395,7 @@ struct powergl_collada_effect_t {
 
   powergl_collada_profile_COMMON **ch_profile_COMMON; size_t n_profile_COMMON;
 
-  powergl_collada_library_effects * p_library_effects;
+  powergl_collada_library_effects *p_library_effects;
 
 };
 
@@ -376,9 +404,9 @@ struct powergl_collada_directional_t {
 
   complex_element _base;
 
-  powergl_collada_targetable_float3 *c_light_color;
+  powergl_collada_targetable_float3 *c_color;
 
-  powergl_collada_light_technique_common * p_light_technique_common;
+  powergl_collada_light_technique_common *p_light_technique_common;
 
 };
 
@@ -389,7 +417,7 @@ struct powergl_collada_light_technique_common_t {
 
   powergl_collada_directional *cc_directional;
 
-  powergl_collada_light * p_light;
+  powergl_collada_light *p_light;
 
 };
 
@@ -403,7 +431,7 @@ struct powergl_collada_light_t {
 
   powergl_collada_light_technique_common *c_light_technique_common;
 
-  powergl_collada_library_lights * p_library_lights;
+  powergl_collada_library_lights *p_library_lights;
 
 };
 
@@ -417,7 +445,7 @@ struct powergl_collada_library_effects_t {
 
   powergl_collada_effect **ch_effect; size_t n_effect;
 
-  powergl_collada_collada * p_collada;
+  powergl_collada_collada *p_collada;
 
 };
 
@@ -431,7 +459,7 @@ struct powergl_collada_library_materials_t {
 
   powergl_collada_material **ch_material; size_t n_material;
 
-  powergl_collada_collada * p_collada;
+  powergl_collada_collada *p_collada;
 
 };
 
@@ -445,7 +473,7 @@ struct powergl_collada_library_lights_t {
 
   powergl_collada_light **ch_light; size_t n_light;
 
-  powergl_collada_collada * p_collada;
+  powergl_collada_collada *p_collada;
 
 };
 
@@ -459,7 +487,7 @@ struct powergl_collada_input_local_t {
 
   ptr_complex_element r_source;
 
-  powergl_collada_vertices * p_vertices;
+  powergl_collada_vertices *p_vertices;
 
 };
 
@@ -476,7 +504,7 @@ struct powergl_collada_input_local_offset_t {
   ptr_complex_element r_source;
   ptr_complex_element r_vertices;
 
-  powergl_collada_triangles * p_triangles;
+  powergl_collada_triangles *p_triangles;
 
 };
 
@@ -486,7 +514,7 @@ struct powergl_collada_p_t {
   complex_element _base;
   powergl_collada_list_of_uints _ext;
 
-  powergl_collada_triangles * p_triangles;
+  powergl_collada_triangles *p_triangles;
 
 };
 
@@ -499,7 +527,7 @@ struct powergl_collada_float_array_t {
   powergl_collada_string a_name;
   powergl_collada_uint a_count;
 
-  powergl_collada_source * p_source;
+  powergl_collada_source *p_source;
 
 };
 
@@ -513,7 +541,7 @@ struct powergl_collada_int_array_t {
   powergl_collada_string a_name;
   powergl_collada_uint a_count;
 
-  powergl_collada_source * p_source;
+  powergl_collada_source *p_source;
 
 };
 
@@ -527,7 +555,7 @@ struct powergl_collada_param_t {
   powergl_collada_string a_type;
   powergl_collada_string a_semantic;
 
-  powergl_collada_accessor * p_accessor;
+  powergl_collada_accessor *p_accessor;
 
 };
 
@@ -546,7 +574,7 @@ struct powergl_collada_accessor_t {
   ptr_complex_element r_float_array;
   ptr_complex_element r_int_array;
 
-  powergl_collada_source_technique_common * p_source_technique_common;
+  powergl_collada_source_technique_common *p_source_technique_common;
 
 };
 
@@ -557,7 +585,7 @@ struct powergl_collada_source_technique_common_t {
 
   powergl_collada_accessor *c_accessor;
 
-  powergl_collada_source * p_source;
+  powergl_collada_source *p_source;
 
 };
 
@@ -573,7 +601,7 @@ struct powergl_collada_source_t {
   powergl_collada_int_array *c_int_array;
   powergl_collada_source_technique_common *c_source_technique_common;
 
-  powergl_collada_mesh * p_mesh;
+  powergl_collada_mesh *p_mesh;
 
 };
 
@@ -588,7 +616,7 @@ struct powergl_collada_triangles_t {
   powergl_collada_input_local_offset **ch_input_local_offset; size_t n_input_local_offset;
   powergl_collada_p *c_p;
 
-  powergl_collada_mesh * p_mesh;
+  powergl_collada_mesh *p_mesh;
 
 };
 
@@ -602,7 +630,7 @@ struct powergl_collada_vertices_t {
 
   powergl_collada_input_local **ch_input_local; size_t n_input_local;
 
-  powergl_collada_mesh * p_mesh;
+  powergl_collada_mesh *p_mesh;
 
 };
 
@@ -615,7 +643,7 @@ struct powergl_collada_mesh_t {
   powergl_collada_triangles **ch_triangles; size_t n_triangles;
   powergl_collada_vertices *c_vertices;
 
-  powergl_collada_geometry * p_geometry;
+  powergl_collada_geometry *p_geometry;
 
 };
 
@@ -629,7 +657,7 @@ struct powergl_collada_orthographic_t {
   powergl_collada_targetable_float *c_znear;
   powergl_collada_targetable_float *c_zfar;
 
-  powergl_collada_optics_technique_common * p_optics_technique_common;
+  powergl_collada_optics_technique_common *p_optics_technique_common;
 
 };
 
@@ -644,7 +672,7 @@ struct powergl_collada_perspective_t {
   powergl_collada_targetable_float *c_znear;
   powergl_collada_targetable_float *c_zfar;
 
-  powergl_collada_optics_technique_common * p_optics_technique_common;
+  powergl_collada_optics_technique_common *p_optics_technique_common;
 
 };
 
@@ -656,7 +684,7 @@ struct powergl_collada_optics_technique_common_t {
   powergl_collada_perspective *cc_perspective;
   powergl_collada_orthographic *cc_orthographic;
 
-  powergl_collada_optics * p_optics;
+  powergl_collada_optics *p_optics;
 
 };
 
@@ -667,7 +695,7 @@ struct powergl_collada_optics_t {
 
   powergl_collada_optics_technique_common *c_optics_technique_common;
 
-  powergl_collada_camera * p_camera;
+  powergl_collada_camera *p_camera;
 
 };
 
@@ -681,7 +709,7 @@ struct powergl_collada_camera_t {
 
   powergl_collada_optics *c_optics;
 
-  powergl_collada_library_cameras * p_library_cameras;
+  powergl_collada_library_cameras *p_library_cameras;
 
 };
 
@@ -695,7 +723,7 @@ struct powergl_collada_geometry_t {
 
   powergl_collada_mesh *c_mesh;
 
-  powergl_collada_library_geometries * p_library_geometries;
+  powergl_collada_library_geometries *p_library_geometries;
 
 };
 
@@ -707,7 +735,7 @@ struct powergl_collada_lookat_t {
 
   powergl_collada_string a_sid;
 
-  powergl_collada_node * p_node;
+  powergl_collada_node *p_node;
 
 };
 
@@ -719,7 +747,7 @@ struct powergl_collada_matrix_t {
 
   powergl_collada_string a_sid;
 
-  powergl_collada_node * p_node;
+  powergl_collada_node *p_node;
 
 };
 
@@ -731,7 +759,7 @@ struct powergl_collada_rotate_t {
 
   powergl_collada_string a_sid;
 
-  powergl_collada_node * p_node;
+  powergl_collada_node *p_node;
 
 };
 
@@ -743,7 +771,7 @@ struct powergl_collada_scale_t {
 
   powergl_collada_string a_sid;
 
-  powergl_collada_node * p_node;
+  powergl_collada_node *p_node;
 
 };
 
@@ -755,7 +783,7 @@ struct powergl_collada_translate_t {
 
   powergl_collada_string a_sid;
 
-  powergl_collada_node * p_node;
+  powergl_collada_node *p_node;
 
 };
 
@@ -770,7 +798,7 @@ struct powergl_collada_instance_camera_t {
 
   ptr_complex_element r_camera;
 
-  powergl_collada_node * p_node;
+  powergl_collada_node *p_node;
 
 };
 
@@ -787,7 +815,7 @@ struct powergl_collada_instance_geometry_t {
 
   ptr_complex_element r_geometry;
 
-  powergl_collada_node * p_node;
+  powergl_collada_node *p_node;
 
 };
 
@@ -802,7 +830,7 @@ struct powergl_collada_instance_node_t {
 
   ptr_complex_element r_node;
 
-  powergl_collada_node * p_node;
+  powergl_collada_node *p_node;
 
 
 };
@@ -818,7 +846,7 @@ struct powergl_collada_instance_visual_scene_t {
 
   ptr_complex_element r_visual_scene ;
 
-  powergl_collada_scene * p_scene;
+  powergl_collada_scene *p_scene;
 
 };
 
@@ -832,7 +860,7 @@ struct powergl_collada_library_cameras_t {
 
   powergl_collada_camera **ch_camera; size_t n_camera;
 
-  powergl_collada_collada * p_collada;
+  powergl_collada_collada *p_collada;
 
 };
 
@@ -846,7 +874,7 @@ struct powergl_collada_library_geometries_t {
 
   powergl_collada_geometry **ch_geometry; size_t n_geometry;
 
-  powergl_collada_collada * p_collada;
+  powergl_collada_collada *p_collada;
 
 };
 
@@ -860,7 +888,7 @@ struct powergl_collada_library_visual_scenes_t {
 
   powergl_collada_visual_scene **ch_visual_scene; size_t n_visual_scene;
 
-  powergl_collada_collada * p_collada;
+  powergl_collada_collada *p_collada;
 
 };
 
@@ -881,8 +909,8 @@ struct powergl_collada_node_t {
   powergl_collada_node **ch_node; size_t n_node;
 
 
-  powergl_collada_node * p_node;
-  powergl_collada_visual_scene * p_visual_scene;
+  powergl_collada_node *p_node;
+  powergl_collada_visual_scene *p_visual_scene;
 
 };
 
@@ -896,7 +924,7 @@ struct powergl_collada_visual_scene_t {
 
   powergl_collada_node **ch_node; size_t n_node;
 
-  powergl_collada_library_visual_scenes * p_library_visual_scenes;
+  powergl_collada_library_visual_scenes *p_library_visual_scenes;
 
 };
 
@@ -907,7 +935,7 @@ struct powergl_collada_scene_t {
 
   powergl_collada_instance_visual_scene *c_instance_visual_scene;
 
-  powergl_collada_collada * p_collada;
+  powergl_collada_collada *p_collada;
 
 };
 
