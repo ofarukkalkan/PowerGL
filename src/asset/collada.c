@@ -67,7 +67,10 @@ struct collada_elem_attrib_states {
 struct collada_elem_attrib_states g_collada_elem_attrib_states;
 
 void powergl_collada_print_elem_value( FILE *file, complex_element *elem ) {
-  if ( strcmp( elem->base_type, "list_of_floats" ) == 0 ) {
+  if ( strcmp( elem->base_type, "list_of_floats" ) == 0
+			 || strcmp( elem->base_type, "float3" ) == 0
+			 || strcmp( elem->base_type, "float4" ) == 0
+			 || strcmp( elem->base_type, "float4x4" ) == 0 ) {
     double *ptr = *( ( double ** )elem->value_ptr );
     for ( int i = 0; i < elem->value_size; i++ ) {
       if ( i == elem->value_size - 1 ) {
@@ -92,15 +95,6 @@ void powergl_collada_print_elem_value( FILE *file, complex_element *elem ) {
         fprintf( file, "%lu", ptr[i] );
       } else {
         fprintf( file, "%lu ", ptr[i] );
-      }
-    }
-  } else if ( strcmp( elem->base_type, "float4x4" ) == 0 ) {
-    double *ptr = *( ( double ** )elem->value_ptr );
-    for ( int i = 0; i < elem->value_size; i++ ) {
-      if ( i == elem->value_size - 1 ) {
-        fprintf( file, "%.7g", ptr[i] );
-      } else {
-        fprintf( file, "%.7g ", ptr[i] );
       }
     }
   } else if ( strcmp( elem->base_type, "float" ) == 0 ) {
@@ -502,10 +496,11 @@ static int init_targetable_float3( complex_element *parent_complex, const char *
 }
 
 static int init_targetable_float4( complex_element *parent_complex, const char *name,  const char **attr, size_t nattr ) {
-	if ( strcmp( parent_complex->name, "fx_common_color_or_texture" ) == 0 ) {	
+	if ( strcmp( parent_complex->name, "ambient" ) == 0
+			 ||  strcmp( parent_complex->name, "diffuse" ) == 0) {	
     element( fx_common_color_or_texture ) * parent = ( element( fx_common_color_or_texture ) * ) parent_complex;
 		element( targetable_float4 )* this = NULL;
-		
+
 		if ( strcmp(name,"color") == 0 ) {
 			parent->cc_color = powergl_resize( NULL, sizeof( element( targetable_float4 ) ) );
 			this = parent->cc_color;
@@ -610,7 +605,7 @@ static int init_light( complex_element *parent_complex, const char **attr, size_
 
 
 static int init_directional( complex_element *parent_complex, const char **attr, size_t nattr ) {
-  if ( strcmp( parent_complex->name, "light_technique_common" ) == 0 ) {
+  if ( strcmp( parent_complex->name, "technique_common" ) == 0 ) {
     element( light_technique_common ) * parent = ( element( light_technique_common ) * ) parent_complex;
     parent->cc_directional = powergl_resize( NULL, sizeof( element( directional ) ) );
     element( directional )* this = parent->cc_directional;
@@ -692,7 +687,7 @@ static int init_technique( complex_element *parent_complex, const char **attr, s
 }
 
 static int init_lambert( complex_element *parent_complex, const char **attr, size_t nattr ) {
-	if ( strcmp( parent_complex->name, "technique_FX_COMMON" ) == 0 ) {
+	if ( strcmp( parent_complex->name, "technique" ) == 0 ) {
     element( technique_FX_COMMON ) * parent = ( element( technique_FX_COMMON ) * ) parent_complex;
     parent->c_lambert = powergl_resize( NULL, sizeof( element( lambert ) ) );
     element( lambert )* this = parent->c_lambert;
@@ -784,7 +779,7 @@ static int init_instance_effect( complex_element *parent_complex, const char **a
 }
 
 static int init_instance_material( complex_element *parent_complex, const char **attr, size_t nattr ) {
-	if ( strcmp( parent_complex->name, "bind_material_technique_common" ) == 0 ) {
+	if ( strcmp( parent_complex->name, "technique_common" ) == 0 ) {
     element( bind_material_technique_common ) * parent = ( element( bind_material_technique_common ) * ) parent_complex;
     element( instance_material ) **ptr = parent->ch_instance_material;
     ptr = powergl_resize( ptr, ++parent->n_instance_material * sizeof( element( instance_material ) * ) );
@@ -1611,86 +1606,142 @@ static int init_collada( complex_element *parent_complex, const char **attr, siz
 
 
 static void elemend( void *userdata, const char *elem ) {
-  g_undefined_element_flag = 0;
-  g_parser_status = 2;
-  g_current_depth--;
 
-  if ( g_current_depth == 5 ) {
+  g_parser_status = 2;
+
+	complex_element *parent = ((complex_element*) g_current_elem)->parent;
+
+  if ( g_current_depth == 6 ) {
     if ( strcmp( elem, "perspective" ) == 0 ) {
+			g_undefined_element_flag = 0;
     } else if ( strcmp( elem, "orthographic" ) == 0 ) {
+			g_undefined_element_flag = 0;
     } else if ( strcmp( elem, "float_array" ) == 0 ) {
+			g_undefined_element_flag = 0;
     } else if ( strcmp( elem, "int_array" ) == 0 ) {
+			g_undefined_element_flag = 0;
     } else if ( strcmp( elem, "technique_common" ) == 0 ) {
+			g_undefined_element_flag = 0;
     } else if ( strcmp( elem, "input" ) == 0 ) {
+			g_undefined_element_flag = 0;
     } else if ( strcmp( elem, "p" ) == 0 ) {
+			g_undefined_element_flag = 0;
     } else if ( strcmp( elem, "lambert" ) == 0 ) {
+			g_undefined_element_flag = 0;
     } else if ( strcmp( elem, "color" ) == 0 ) {
+			g_undefined_element_flag = 0;
     } else if ( strcmp( elem, "bind_material" ) == 0 ) {
+			g_undefined_element_flag = 0;
     } else {
       g_undefined_element_flag = 1;
     }
-  } else if ( g_current_depth == 4 ) {
+  } else if ( g_current_depth == 5 ) {
     if ( strcmp( elem, "technique_common" ) == 0 ) {
+			g_undefined_element_flag = 0;
     } else if ( strcmp( elem, "source" ) == 0 ) {
+			g_undefined_element_flag = 0;
     } else if ( strcmp( elem, "vertices" ) == 0 ) {
+			g_undefined_element_flag = 0;
     } else if ( strcmp( elem, "triangles" ) == 0 ) {
+			g_undefined_element_flag = 0;
     } else if ( strcmp( elem, "matrix" ) == 0 ) {
+			g_undefined_element_flag = 0;
     } else if ( strcmp( elem, "instance_camera" ) == 0 ) {
+			g_undefined_element_flag = 0;
     } else if ( strcmp( elem, "instance_geometry" ) == 0 ) {
+			g_undefined_element_flag = 0;
     } else if ( strcmp( elem, "instance_light" ) == 0 ) {
+			g_undefined_element_flag = 0;
     } else if ( strcmp( elem, "technique" ) == 0 ) {
+			if ( strcmp( parent->name, "profile_COMMON") == 0 ) {
+				g_undefined_element_flag = 0;
+			} else {
+				g_undefined_element_flag = 1;
+			}
     } else if ( strcmp( elem, "directional" ) == 0 ) {
+			g_undefined_element_flag = 0;
     } else {
       g_undefined_element_flag = 1;
     }
-  } else if ( g_current_depth == 6 ) {
+  } else if ( g_current_depth == 7 ) {
     if ( strcmp( elem, "xfov" ) == 0 ) {
+			g_undefined_element_flag = 0;
     } else if ( strcmp( elem, "yfov" ) == 0 ) {
+			g_undefined_element_flag = 0;
     } else if ( strcmp( elem, "aspect_ratio" ) == 0 ) {
+			g_undefined_element_flag = 0;
     } else if ( strcmp( elem, "znear" ) == 0 ) {
+			g_undefined_element_flag = 0;
     } else if ( strcmp( elem, "zfar" ) == 0 ) {
+			g_undefined_element_flag = 0;
     } else if ( strcmp( elem, "accessor" ) == 0 ) {
+			g_undefined_element_flag = 0;
     } else if ( strcmp( elem, "ambient" ) == 0 ) {
+			g_undefined_element_flag = 0;
     } else if ( strcmp( elem, "diffuse" ) == 0 ) {
+			g_undefined_element_flag = 0;
     } else if ( strcmp( elem, "technique_common" ) == 0 ) {
-    } else {
-      g_undefined_element_flag = 1;
-    }
-  } else if ( g_current_depth == 1 ) {
-    if ( strcmp( elem, "library_cameras" ) == 0 ) {
-    } else if ( strcmp( elem, "library_geometries" ) == 0 ) {
-    } else if ( strcmp( elem, "library_visual_scenes" ) == 0 ) {
-    } else if ( strcmp( elem, "library_lights" ) == 0 ) {
-    } else if ( strcmp( elem, "library_materials" ) == 0 ) {
-    }	else if ( strcmp( elem, "library_effects" ) == 0 ) {
-    } else if ( strcmp( elem, "scene" ) == 0 ) {
+			g_undefined_element_flag = 0;
     } else {
       g_undefined_element_flag = 1;
     }
   } else if ( g_current_depth == 2 ) {
-    if ( strcmp( elem, "up_axis" ) == 0 ) {
-    } else if ( strcmp( elem, "camera" ) == 0 ) {
-    } else if ( strcmp( elem, "light" ) == 0 ) {
-    }	else if ( strcmp( elem, "effect" ) == 0 ) {
-    } else if ( strcmp( elem, "material" ) == 0 ) {
-    } else if ( strcmp( elem, "geometry" ) == 0 ) {
-    } else if ( strcmp( elem, "visual_scene" ) == 0 ) {
-    } else if ( strcmp( elem, "instance_visual_scene" ) == 0 ) {
+    if ( strcmp( elem, "library_cameras" ) == 0 ) {
+			g_undefined_element_flag = 0;
+    } else if ( strcmp( elem, "library_geometries" ) == 0 ) {
+			g_undefined_element_flag = 0;
+    } else if ( strcmp( elem, "library_visual_scenes" ) == 0 ) {
+			g_undefined_element_flag = 0;
+    } else if ( strcmp( elem, "library_lights" ) == 0 ) {
+			g_undefined_element_flag = 0;
+    } else if ( strcmp( elem, "library_materials" ) == 0 ) {
+			g_undefined_element_flag = 0;
+    }	else if ( strcmp( elem, "library_effects" ) == 0 ) {
+			g_undefined_element_flag = 0;
+    } else if ( strcmp( elem, "scene" ) == 0 ) {
+			g_undefined_element_flag = 0;
     } else {
       g_undefined_element_flag = 1;
     }
   } else if ( g_current_depth == 3 ) {
-    if ( strcmp( elem, "optics" ) == 0 ) {
-    } else if ( strcmp( elem, "mesh" ) == 0 ) {
-    } else if ( strcmp( elem, "node" ) == 0 ) {
-    } else if ( strcmp( elem, "profile_COMMON" ) == 0 ) {
-    } else if ( strcmp( elem, "technique_common" ) == 0 ) {
-    } else if ( strcmp( elem, "instance_effect" ) == 0 ) {
+    if ( strcmp( elem, "up_axis" ) == 0 ) {
+			g_undefined_element_flag = 1;
+    } else if ( strcmp( elem, "camera" ) == 0 ) {
+			g_undefined_element_flag = 0;
+    } else if ( strcmp( elem, "light" ) == 0 ) {
+			g_undefined_element_flag = 0;
+    }	else if ( strcmp( elem, "effect" ) == 0 ) {
+			g_undefined_element_flag = 0;
+    } else if ( strcmp( elem, "material" ) == 0 ) {
+			g_undefined_element_flag = 0;
+    } else if ( strcmp( elem, "geometry" ) == 0 ) {
+			g_undefined_element_flag = 0;
+    } else if ( strcmp( elem, "visual_scene" ) == 0 ) {
+			g_undefined_element_flag = 0;
+    } else if ( strcmp( elem, "instance_visual_scene" ) == 0 ) {
+			g_undefined_element_flag = 0;
     } else {
       g_undefined_element_flag = 1;
     }
-  } else if ( g_current_depth == 0 ) {
+  } else if ( g_current_depth == 4 ) {
+    if ( strcmp( elem, "optics" ) == 0 ) {
+			g_undefined_element_flag = 0;
+    } else if ( strcmp( elem, "mesh" ) == 0 ) {
+			g_undefined_element_flag = 0;
+    } else if ( strcmp( elem, "node" ) == 0 ) {
+			g_undefined_element_flag = 0;
+    } else if ( strcmp( elem, "profile_COMMON" ) == 0 ) {
+			g_undefined_element_flag = 0;
+    } else if ( strcmp( elem, "technique_common" ) == 0 ) {
+			g_undefined_element_flag = 0;
+    } else if ( strcmp( elem, "instance_effect" ) == 0 ) {
+			g_undefined_element_flag = 0;
+    } else {
+      g_undefined_element_flag = 1;
+    }
+  } else if ( g_current_depth == 1 ) {
     if ( strcmp( elem, "COLLADA" ) == 0 ) {
+			g_undefined_element_flag = 0;
 #if DEBUG_OUTPUT
       printf("%s\n", ((complex_element*) g_current_elem)->name);
 #endif
@@ -1699,24 +1750,35 @@ static void elemend( void *userdata, const char *elem ) {
     } else {
       g_undefined_element_flag = 1;
     }
-  } else if ( g_current_depth == 7 ) {
+  } else if ( g_current_depth == 8 ) {
     if ( strcmp( elem, "param" ) == 0 ) {
+			g_undefined_element_flag = 0;
     } else if ( strcmp( elem, "color" ) == 0 ) {
+			if ( strcmp( parent->name, "ambient") == 0
+					 || strcmp( parent->name, "diffuse") == 0 ) {
+				g_undefined_element_flag = 0;
+			} else {
+				g_undefined_element_flag = 1;
+			}
     } else if ( strcmp( elem, "instance_material" ) == 0 ) {
+			g_undefined_element_flag = 0;
     } else {
       g_undefined_element_flag = 1;
     }
   }
+	
 
-  g_current_depth++;
-
-  if ( g_undefined_element_flag != 1 ) {
+  if ( g_undefined_element_flag == 0 ) {
 #if DEBUG_OUTPUT
-    printf("%s\n", ((complex_element*) g_current_elem)->name);
+    printf("child = %s\n", ((complex_element*) g_current_elem)->name);
 #endif
     g_current_elem = ( ( complex_element * ) g_current_elem )->parent;
-    g_current_depth--;
+#if DEBUG_OUTPUT
+    printf("parent = %s\n", ((complex_element*) g_current_elem)->name);
+#endif
   }
+
+	g_current_depth--;
 }
 
 static unsigned long *parse_list_of_uints_tail( size_t *value_size, const XML_Char *str, int len ) {
@@ -1940,6 +2002,11 @@ static void parse_double( complex_element *this, int merge_data_flag, const XML_
 }
 
 static void chardata( void *userdata, const XML_Char *string, int len ) {
+	
+	if ( g_undefined_element_flag == 1 ) {
+		return;
+	}
+	
   int data_parsed = 1;
   int merge_data_flag = 0;
   // bu fonksiyonda string komple geldigi icin parse edilirken kontroller eklenecek !
@@ -1976,12 +2043,16 @@ static void chardata( void *userdata, const XML_Char *string, int len ) {
       parse_double( ( complex_element * )g_current_elem, merge_data_flag, string, len );
     } else if ( strcmp( g_current_elem_tag, "zfar" ) == 0 ) {
       parse_double( ( complex_element * )g_current_elem, merge_data_flag, string, len );
-    } else if ( strcmp( g_current_elem_tag, "color" ) == 0 ) {
+    } else {
+      data_parsed = 0;
+    }
+  } else if ( g_current_depth == 8 ) {
+		if ( strcmp( g_current_elem_tag, "color" ) == 0 ) {
       parse_list_of_floats( ( complex_element * )g_current_elem, merge_data_flag, string, len );
     } else {
       data_parsed = 0;
     }
-  } else if ( g_current_depth == 3 ) {
+	}	else if ( g_current_depth == 3 ) {
     if ( strncmp( g_current_elem_tag, "up", 2 ) == 0 ) {
     } else {
       data_parsed = 0;
@@ -1990,7 +2061,7 @@ static void chardata( void *userdata, const XML_Char *string, int len ) {
     data_parsed = 0;
   }
 
-#if DEBUG_OUTPTU
+#if DEBUG_OUTPUT
   if(data_parsed){
     for(int tab_count=0;tab_count<g_current_depth;++tab_count){
       printf("  ");
@@ -2005,7 +2076,6 @@ static void chardata( void *userdata, const XML_Char *string, int len ) {
 
 static void elemstart( void *userdata, const char *elem, const char **attr ) {
   g_current_elem_tag = elem;
-  g_undefined_element_flag = 0;
   g_parser_status = 0;
 
   reset_parsed_attrib_states();
@@ -2029,89 +2099,118 @@ static void elemstart( void *userdata, const char *elem, const char **attr ) {
   // o yuzden ya parse_attribs en ustte bir kez cagirilacak yada dikkatli sekilde her biri iicn ayri ayri cagirilacak
   if ( g_current_depth == 5 ) {
     if ( strcmp( elem, "perspective" ) == 0 ) {
+			g_undefined_element_flag = 0;
       result = init_perspective( parent );
     } else if ( strcmp( elem, "orthographic" ) == 0 ) {
+      g_undefined_element_flag = 0;
       result = init_orthographic( parent );
     } else if ( strcmp( elem, "float_array" ) == 0 ) {
+      g_undefined_element_flag = 0;
       result = init_float_array( parent, attr, nattr );
     } else if ( strcmp( elem, "int_array" ) == 0 ) {
+      g_undefined_element_flag = 0;
       result = init_int_array( parent, attr, nattr );
     } else if ( strcmp( elem, "technique_common" ) == 0 ) {
+      g_undefined_element_flag = 0;
       result = init_technique_common( parent );
       if ( result == 0 ) {
         g_undefined_element_flag = 1;
       }
     } else if ( strcmp( elem, "input" ) == 0 ) {
+      g_undefined_element_flag = 0;
       result = init_input( parent, attr, nattr );
       if ( result == 0 ) {
         g_undefined_element_flag = 1;
       }
     } else if ( strcmp( elem, "p" ) == 0 ) {
+      g_undefined_element_flag = 0;
       result = init_p( parent );
       if ( result == 0 ) {
         g_undefined_element_flag = 1;
       }
     } else if ( strcmp( elem, "lambert" ) == 0 ) {
-			result = init_lambert( parent, attr, nattr );
+			g_undefined_element_flag = 0;
+      result = init_lambert( parent, attr, nattr );
     } else if ( strcmp( elem, "color" ) == 0 ) {
-			result = init_targetable_float3( parent, "color", attr, nattr);
+			g_undefined_element_flag = 0;
+      result = init_targetable_float3( parent, "color", attr, nattr);
       if ( result == 0 ) {
         g_undefined_element_flag = 1;
       }
     } else if ( strcmp( elem, "bind_material" ) == 0 ) {
-			result = init_bind_material( parent, attr, nattr );
+			g_undefined_element_flag = 0;
+      result = init_bind_material( parent, attr, nattr );
     } else {
       g_undefined_element_flag = 1;
     }
   } else if ( g_current_depth == 4 ) {
     if ( strcmp( elem, "technique_common" ) == 0 ) {
+      g_undefined_element_flag = 0;
       result = init_technique_common( parent );
       if ( result == 0 ) {
         g_undefined_element_flag = 1;
       }
     } else if ( strcmp( elem, "source" ) == 0 ) {
+      g_undefined_element_flag = 0;
       result = init_source( parent, attr, nattr );
     } else if ( strcmp( elem, "vertices" ) == 0 ) {
+      g_undefined_element_flag = 0;
       result = init_vertices( parent, attr, nattr );
     } else if ( strcmp( elem, "triangles" ) == 0 ) {
+      g_undefined_element_flag = 0;
       result = init_triangles( parent, attr, nattr );
     } else if ( strcmp( elem, "matrix" ) == 0 ) {
+      g_undefined_element_flag = 0;
       result = init_matrix( parent, attr, nattr );
     } else if ( strcmp( elem, "instance_camera" ) == 0 ) {
+      g_undefined_element_flag = 0;
       result = init_instance_camera( parent, attr, nattr );
     } else if ( strcmp( elem, "instance_geometry" ) == 0 ) {
+      g_undefined_element_flag = 0;
       result = init_instance_geometry( parent, attr, nattr );
     } else if ( strcmp( elem, "instance_light" ) == 0 ) {
-			result = init_instance_light( parent, attr, nattr );
+			g_undefined_element_flag = 0;
+      result = init_instance_light( parent, attr, nattr );
     } else if ( strcmp( elem, "technique" ) == 0 ) {
-			result = init_technique( parent, attr, nattr );
+			g_undefined_element_flag = 0;
+      result = init_technique( parent, attr, nattr );
 			if ( result == 0 ) {
         g_undefined_element_flag = 1;
 			}
     } else if ( strcmp( elem, "directional" ) == 0 ) {
-			result = init_directional( parent, attr, nattr );
+			g_undefined_element_flag = 0;
+      result = init_directional( parent, attr, nattr );
     } else {
       g_undefined_element_flag = 1;
     }
   } else if ( g_current_depth == 6 ) {
     if ( strcmp( elem, "xfov" ) == 0 ) {
+      g_undefined_element_flag = 0;
       result =  init_targetable_float( parent, "xfov", attr, nattr );
     } else if ( strcmp( elem, "yfov" ) == 0 ) {
+      g_undefined_element_flag = 0;
       result = init_targetable_float( parent, "yfov", attr, nattr );
     } else if ( strcmp( elem, "aspect_ratio" ) == 0 ) {
+      g_undefined_element_flag = 0;
       result = init_targetable_float( parent, "aspect_ratio", attr, nattr );
     } else if ( strcmp( elem, "znear" ) == 0 ) {
+      g_undefined_element_flag = 0;
       result = init_targetable_float( parent, "znear", attr, nattr );
     } else if ( strcmp( elem, "zfar" ) == 0 ) {
+      g_undefined_element_flag = 0;
       result = init_targetable_float( parent, "zfar", attr, nattr );
     } else if ( strcmp( elem, "accessor" ) == 0 ) {
+      g_undefined_element_flag = 0;
       result = init_accessor( parent, attr, nattr );
     } else if ( strcmp( elem, "ambient" ) == 0 ) {
-			result = init_fx_common_color_or_texture( parent, "ambient", attr, nattr );
+			g_undefined_element_flag = 0;
+      result = init_fx_common_color_or_texture( parent, "ambient", attr, nattr );
     } else if ( strcmp( elem, "diffuse" ) == 0 ) {
-			result = init_fx_common_color_or_texture( parent, "diffuse", attr, nattr );
+			g_undefined_element_flag = 0;
+      result = init_fx_common_color_or_texture( parent, "diffuse", attr, nattr );
     } else if ( strcmp( elem, "technique_common" ) == 0 ) {
-			result = init_technique_common( parent );
+			g_undefined_element_flag = 0;
+      result = init_technique_common( parent );
 			if ( result == 0 ) {
         g_undefined_element_flag = 1;
 			}
@@ -2120,74 +2219,102 @@ static void elemstart( void *userdata, const char *elem, const char **attr ) {
     }
   } else if ( g_current_depth == 1 ) {
     if ( strcmp( elem, "library_cameras" ) == 0 ) {
+      g_undefined_element_flag = 0;
       result = init_library_cameras( parent, attr, nattr );
     } else if ( strcmp( elem, "library_geometries" ) == 0 ) {
+      g_undefined_element_flag = 0;
       result = init_library_geometries( parent, attr, nattr );
     } else if ( strcmp( elem, "library_visual_scenes" ) == 0 ) {
+      g_undefined_element_flag = 0;
       result = init_library_visual_scenes( parent, attr, nattr );
     } else if ( strcmp( elem, "scene" ) == 0 ) {
+      g_undefined_element_flag = 0;
       result = init_scene( parent );
     } else if ( strcmp( elem, "library_lights" ) == 0 ) {
-			result = init_library_lights( parent, attr, nattr );
+			g_undefined_element_flag = 0;
+      result = init_library_lights( parent, attr, nattr );
     } else if ( strcmp( elem, "library_materials" ) == 0 ) {
-			result = init_library_materials( parent, attr, nattr );
+			g_undefined_element_flag = 0;
+      result = init_library_materials( parent, attr, nattr );
     }	else if ( strcmp( elem, "library_effects" ) == 0 ) {
-			result = init_library_effects( parent, attr, nattr );
+			g_undefined_element_flag = 0;
+      result = init_library_effects( parent, attr, nattr );
     } else {
       g_undefined_element_flag = 1;
     }
   } else if ( g_current_depth == 2 ) {
     if ( strcmp( elem, "up_axis" ) == 0 ) {
+			g_undefined_element_flag = 1;
       // not implemented
     } else if ( strcmp( elem, "camera" ) == 0 ) {
+      g_undefined_element_flag = 0;
       result = init_camera( parent, attr, nattr );
     } else if ( strcmp( elem, "geometry" ) == 0 ) {
+      g_undefined_element_flag = 0;
       result =  init_geometry( parent, attr, nattr );
     } else if ( strcmp( elem, "visual_scene" ) == 0 ) {
+      g_undefined_element_flag = 0;
       result =  init_visual_scene( parent, attr, nattr );
     } else if ( strcmp( elem, "instance_visual_scene" ) == 0 ) {
+      g_undefined_element_flag = 0;
       result =  init_instance_visual_scene( parent, attr, nattr );
     } else if ( strcmp( elem, "light" ) == 0 ) {
-			result = init_light( parent, attr, nattr );
+			g_undefined_element_flag = 0;
+      result = init_light( parent, attr, nattr );
     }	else if ( strcmp( elem, "effect" ) == 0 ) {
-			result = init_effect( parent, attr, nattr );
+			g_undefined_element_flag = 0;
+      result = init_effect( parent, attr, nattr );
     } else if ( strcmp( elem, "material" ) == 0 ) {
-			result = init_material( parent, attr, nattr );
+			g_undefined_element_flag = 0;
+      result = init_material( parent, attr, nattr );
     } else {
       g_undefined_element_flag = 1;
     }
   } else if ( g_current_depth == 3 ) {
     if ( strcmp( elem, "optics" ) == 0 ) {
+      g_undefined_element_flag = 0;
       result = init_optics( parent );
     } else if ( strcmp( elem, "mesh" ) == 0 ) {
+      g_undefined_element_flag = 0;
       result = init_mesh( parent );
     } else if ( strcmp( elem, "node" ) == 0 ) {
+      g_undefined_element_flag = 0;
       result = init_node( parent, attr, nattr );
     } else if ( strcmp( elem, "profile_COMMON" ) == 0 ) {
-			result = init_profile_COMMON( parent, attr, nattr );
+			g_undefined_element_flag = 0;
+      result = init_profile_COMMON( parent, attr, nattr );
     } else if ( strcmp( elem, "technique_common" ) == 0 ) {
-			result = init_technique_common( parent );
+			g_undefined_element_flag = 0;
+      result = init_technique_common( parent );
       if ( result == 0 ) {
         g_undefined_element_flag = 1;
       }
     } else if ( strcmp( elem, "instance_effect" ) == 0 ) {
-			result = init_instance_effect( parent, attr, nattr );
+			g_undefined_element_flag = 0;
+      result = init_instance_effect( parent, attr, nattr );
     } else {
       g_undefined_element_flag = 1;
     }
   } else if ( g_current_depth == 0 ) {
     if ( strcmp( elem, "COLLADA" ) == 0 ) {
+      g_undefined_element_flag = 0;
       result = init_collada( parent, attr, nattr );
     } else {
       g_undefined_element_flag = 1;
     }
   } else if ( g_current_depth == 7 ) {
     if ( strcmp( elem, "param" ) == 0 ) {
+      g_undefined_element_flag = 0;
       result = init_param( parent, attr, nattr );
     } else if ( strcmp( elem, "color" ) == 0 ) {
-			result = init_targetable_float4( parent, "color",  attr, nattr );
+			g_undefined_element_flag = 0;
+      result = init_targetable_float4( parent, "color",  attr, nattr );
+			if ( result == 0 ) {
+        g_undefined_element_flag = 1;
+			}
     } else if ( strcmp( elem, "instance_material" ) == 0 ) {
-			result = init_instance_material( parent, attr, nattr );
+			g_undefined_element_flag = 0;
+      result = init_instance_material( parent, attr, nattr );
     } else {
       g_undefined_element_flag = 1;
     }
@@ -2195,17 +2322,17 @@ static void elemstart( void *userdata, const char *elem, const char **attr ) {
 
   if ( result == 0 ) {
 #if DEBUG_OUTPUT
-    fprintf(stderr,"%s element couldnt init\n", g_current_elem_tag);
+		//  fprintf(stderr,"%s element couldnt init\n", g_current_elem_tag);
 #endif
   }
 
-  if ( !g_undefined_element_flag ) {
-    g_current_depth++;
-  } else {
+  if ( g_undefined_element_flag == 1 ) {
 #if DEBUG_OUTPUT
     //fprintf(stderr,"%s element is not defined\n", g_current_elem_tag);
 #endif
   }
+	
+	g_current_depth++;
 }
 
 static int resolve_refs( complex_element *root, int n_resolved ) {
@@ -2420,7 +2547,9 @@ void powergl_collada_delete_complex_element( complex_element *root, size_t depth
     printf( "[%lu] memfree  = [ element -> value_ptr [%p] ]\n", n_free++, root->value_ptr );
 #endif
     if ( strcmp( "list_of_floats", root->base_type ) == 0
-         || strcmp( "float4x4", root->base_type ) == 0 ) {
+         || strcmp( "float4x4", root->base_type ) == 0
+				 || strcmp( "float4", root->base_type ) == 0
+				 || strcmp( "float3", root->base_type ) == 0 ) {
 
       double **ptr = ( double ** ) root->value_ptr;
 
