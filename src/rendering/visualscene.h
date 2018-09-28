@@ -16,6 +16,9 @@ struct powergl_rendering_visualscene_t {
   // default camera object index
   int i_camera;
 
+	// default light object index
+  int i_light;
+
   // pipeline
   powergl_rendering_pipeline pipeline;
 

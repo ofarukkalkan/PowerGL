@@ -54,6 +54,15 @@ void powergl_ident4x4( GLfloat m[4][4] ) {
   m[3][3] = 1.0f;
 }
 
+//this func. transforms vector v using m transformation matrix and does normalization on result vector to get H = 1
+void powergl_transformvec4( const GLfloat v[4], const GLfloat m[4][4], GLfloat result[4] ) {
+
+  result[0] = v[0] * m[0][0] + v[1] * m[1][0] + v[2] * m[2][0] + v[3] * m[3][0];
+  result[1] = v[0] * m[0][1] + v[1] * m[1][1] + v[2] * m[2][1] + v[3] * m[3][1];
+  result[2] = v[0] * m[0][2] + v[1] * m[1][2] + v[2] * m[2][2] + v[3] * m[3][2];
+  result[3] = v[0] * m[0][3] + v[1] * m[1][3] + v[2] * m[2][3] + v[3] * m[3][3];
+}
+
 void powergl_mult4x4( GLfloat m[4][4], GLfloat n[4][4], GLfloat r[4][4] ) {
   r[0][0] = m[0][0] * n[0][0] + m[0][1] * n[1][0] + m[0][2] * n[2][0] + m[0][3] * n[3][0];
   r[0][1] = m[0][0] * n[0][1] + m[0][1] * n[1][1] + m[0][2] * n[2][1] + m[0][3] * n[3][1];
@@ -208,8 +217,8 @@ void powergl_perspectiveRH( GLfloat projection[4][4], float fovy, float aspect, 
   projection[1][1] = 1.0f / ( tanHalfFovy );
   projection[2][3] = -1.0f;
   /* depth range 0 to 1
-  projection[2][2] = zFar / (zFar - zNear);
-  projection[3][2] = -(zFar * zNear) / (zFar - zNear);
+     projection[2][2] = zFar / (zFar - zNear);
+     projection[3][2] = -(zFar * zNear) / (zFar - zNear);
   */
   /* depth range -1 to 1*/
   projection[2][2] = - ( zFar + zNear ) / ( zFar - zNear );

@@ -8,11 +8,16 @@
 #include <string.h>
 #include <math.h>
 
+static const size_t powergl_vertex_offset = 0;
+static const size_t powergl_normal_offset = 1;
+static const size_t powergl_color_offset = 2;
+static const size_t powergl_vertex_input_supported = 3;
+
 static float to_radians( float degrees ) {
   return degrees * ( 3.141592f / 180.0f );
 }
 
-static void build_geometry_triangle_index( powergl_rendering_geometry *obj, collada_type( triangles ) *triangles, collada_type( input_local_offset ) *vertex_input, collada_type( input_local_offset ) *color_input ) {
+static void build_geometry_triangle_index( powergl_rendering_geometry *obj, collada_type( triangles ) *triangles, collada_type( input_local_offset ) *vertex_input, collada_type( input_local_offset ) *color_input, collada_type( input_local_offset ) *normal_input ) {
 
   printf( "%s\n", __func__ );
 
@@ -22,12 +27,10 @@ static void build_geometry_triangle_index( powergl_rendering_geometry *obj, coll
   // each triangle has how many vertex attribute in _ imported file _
   size_t input_count = triangles->n_input_local_offset;
 
-  // currently rendererer supports _ 2 _ vertex input attribute
-  size_t input_count_supported = 2;
-
   // offset values for each vertex attribute
   size_t vertex_offset = vertex_input->a_offset.value;
   size_t color_offset;
+	size_t normal_offset;
 
   if ( color_input != NULL ) {
     color_offset = color_input->a_offset.value;
@@ -35,11 +38,17 @@ static void build_geometry_triangle_index( powergl_rendering_geometry *obj, coll
     printf( "no color input found \n" );
   }
 
+	if ( normal_input != NULL ) {
+    normal_offset = normal_input->a_offset.value;
+  } else {
+    printf( "no normal input found \n" );
+  }
+
   // vertex count 3 = triangle has 3 vertex
   size_t vertex_count = 3 * p_count;
 
   // total index count
-  size_t n_index = vertex_count * input_count_supported;
+  size_t n_index = vertex_count * powergl_vertex_input_supported;
 
 
   obj->index = powergl_resize( NULL, sizeof( GLuint ) * n_index );
@@ -51,13 +60,17 @@ static void build_geometry_triangle_index( powergl_rendering_geometry *obj, coll
   for ( size_t l = 0; l < vertex_count; l++ ) {
 
     // this index array is building vbo, ibo and cbo sources
-    obj->index[ l * input_count_supported + 0 ] = p_arr->_ext.value[ l * input_count  + vertex_offset ];
+    obj->index[ l * powergl_vertex_input_supported + powergl_vertex_offset ] = p_arr->_ext.value[ l * input_count  + vertex_offset ];
 
-    if ( color_input != NULL ) {
-      obj->index[ l * input_count_supported + 1 ] = p_arr->_ext.value[ l * input_count  + color_offset ];
+		if ( normal_input != NULL ) {
+      obj->index[ l * powergl_vertex_input_supported + powergl_normal_offset ] = p_arr->_ext.value[ l * input_count  + normal_offset ];
     }
 
-    printf( "%u %u ", obj->index[ l * input_count_supported + 0 ], obj->index[ l * input_count_supported + 1] );
+    if ( color_input != NULL ) {
+      obj->index[ l * powergl_vertex_input_supported + powergl_color_offset ] = p_arr->_ext.value[ l * input_count  + color_offset ];
+    }
+
+    printf( "%u %u %u ", obj->index[ l * powergl_vertex_input_supported +  powergl_vertex_offset ], obj->index[ l * powergl_vertex_input_supported + powergl_normal_offset], obj->index[ l * powergl_vertex_input_supported + powergl_color_offset] );
 
   } // copy indices from p collada_type for each vertex
 
@@ -110,16 +123,14 @@ static void build_geometry_triangle_color( powergl_rendering_geometry *obj, coll
 
     }
 
-    size_t color_offset = 1;
     size_t p_count = triangles->a_count.value;
     size_t vertex_count = p_count * 3;
-    size_t input_count = 2;
 
     obj->color = powergl_resize( NULL, sizeof( powergl_vec3 ) * vertex_count );
 
     for ( size_t i = 0; i < vertex_count ; i++ ) {
 
-      size_t index = obj->index[ i * input_count + color_offset ];
+      size_t index = obj->index[ i * powergl_vertex_input_supported + powergl_color_offset ];
 
       if ( offsets[ 0 ] > -1 )
         obj->color[ i ].x = float_arr->_ext.value[ index * stride + offsets[0] ];
@@ -139,10 +150,74 @@ static void build_geometry_triangle_color( powergl_rendering_geometry *obj, coll
 
 }
 
-static void build_geometry_normal( powergl_rendering_geometry *obj, collada_type( input_local_offset ) *normal_input ) {
+static void build_geometry_triangle_normal( powergl_rendering_geometry *obj, collada_type( triangles ) *triangles, collada_type( input_local_offset ) *normal_input ) {
 
-  printf( "%s\n", __func__ );
-  // planned but not implemented yet
+	printf( "%s\n", __func__ );
+
+  collada_type( source ) *src = ( collada_type( source ) * )normal_input->r_source.ptr;
+  collada_type( accessor ) *srcAcc = src->c_source_technique_common->c_accessor;
+
+  if ( srcAcc->r_float_array.ptr != NULL ) {
+
+    collada_type( float_array ) *float_arr = ( collada_type( float_array ) * ) srcAcc->r_float_array.ptr;
+
+    size_t stride = srcAcc->a_stride.value;
+
+    if ( stride == 0 )
+      stride = 1; // stride is must greater than 0 and default is 1
+
+    // if ( stride * count != ... ) // if stride * count is not equal to float_array or int_array collada_types count it is not valid
+
+    collada_type( param ) **params = srcAcc->ch_param;
+    int offsets[3] = { -1, -1, -1};
+
+    for ( int k = 0; k < srcAcc->n_param; k++ ) {
+
+      if ( strlen( params[k]->a_name.value ) > 0 ) {
+
+        if ( strncmp( params[k]->a_name.value, "X", 1 ) == 0 ) {
+
+          offsets[0] = k;
+
+        } else if ( strncmp( params[k]->a_name.value, "Y", 1 ) == 0 ) {
+
+          offsets[1] = k;
+
+        } else if ( strncmp( params[k]->a_name.value, "Z", 1 ) == 0 ) {
+
+          offsets[2] = k;
+
+        }
+
+      }
+
+    }
+		
+    size_t p_count = triangles->a_count.value;
+    size_t vertex_count = p_count * 3;
+
+    obj->normal = powergl_resize( NULL, sizeof( powergl_vec3 ) * vertex_count );
+
+    for ( size_t i = 0; i < vertex_count ; i++ ) {
+
+      size_t index = obj->index[ i * powergl_vertex_input_supported + powergl_normal_offset ];
+
+      if ( offsets[ 0 ] > -1 )
+        obj->normal[ i ].x = float_arr->_ext.value[ index * stride + offsets[0] ];
+      if ( offsets[ 1 ] > -1 )
+        obj->normal[ i ].y = float_arr->_ext.value[ index * stride + offsets[1] ];
+      if ( offsets[ 2 ] > -1 )
+        obj->normal[ i ].z = float_arr->_ext.value[ index * stride + offsets[2] ];
+
+      powergl_printvec3( &obj->normal[i] );
+
+    }
+
+    obj->normal_flag = 1;
+    obj->n_normal = vertex_count;
+
+  }
+	
 }
 
 static void build_geometry_triangle_vertex( powergl_rendering_geometry *obj, collada_type( triangles ) *triangles, collada_type( input_local_offset ) *vertex_input ) {
@@ -208,17 +283,15 @@ static void build_geometry_triangle_vertex( powergl_rendering_geometry *obj, col
         } // count how many params has name attribute
 
 
-
-        size_t vertex_offset = 0;
         size_t p_count = triangles->a_count.value;
         size_t vertex_count = p_count * 3;
-        size_t input_count = 2;
+
 
         obj->vertex = powergl_resize( NULL, sizeof( powergl_vec3 ) * vertex_count );
 
         for ( size_t i = 0; i < vertex_count ; i++ ) {
 
-          size_t index = obj->index[ i * input_count + vertex_offset ];
+          size_t index = obj->index[ i * powergl_vertex_input_supported + powergl_vertex_offset ];
 
           if ( offsets[ 0 ] > -1 )
             obj->vertex[ i ].x = float_arr->_ext.value[ index * stride + offsets[0] ];
@@ -273,11 +346,15 @@ static void build_geometry_triangle( powergl_rendering_geometry *obj, collada_ty
     if ( vertex_input != NULL ) {
 
 
-      build_geometry_triangle_index( obj, triangles, vertex_input, color_input );
+      build_geometry_triangle_index( obj, triangles, vertex_input, color_input, normal_input );
       build_geometry_triangle_vertex( obj, triangles, vertex_input );
 
       if ( color_input != NULL ) {
         build_geometry_triangle_color( obj, triangles, color_input );
+      }
+
+			if ( normal_input != NULL ) {
+        build_geometry_triangle_normal( obj, triangles, normal_input );
       }
 
     }
@@ -404,13 +481,13 @@ static void build_camera( collada_type( node ) * node, powergl_rendering_object 
     if ( cam->type == 'p' ) {
 
 
-      if ( pers->cc_yfov != NULL && cam->yfov < 180.0f && cam->yfov > 0.0f ) {
+      if ( pers->cc_yfov != NULL ) {
 
         powergl_perspectiveRH( cam->projection, cam->yfov, cam->aspect_ratio, cam->znear, cam->zfar );
         cam->projection_flag = 1;
         printf( "[aspect_ratio = %f] [xfov = %f] [yfov = %f]  [znear = %f] [zfar= %f]\n", cam->aspect_ratio, cam->xfov, cam->yfov, cam->znear, cam->zfar );
 
-      } else if ( pers->cc_xfov != NULL && cam->xfov < 180.0f && cam->xfov > 0.0f ) {
+      } else if ( pers->cc_xfov != NULL ) {
 
         cam->yfov = cam->xfov / cam->aspect_ratio;
         powergl_perspectiveRH( cam->projection, cam->yfov, cam->aspect_ratio, cam->znear, cam->zfar );
@@ -419,7 +496,8 @@ static void build_camera( collada_type( node ) * node, powergl_rendering_object 
 
       } else {
 
-        powergl_perspectiveRH( cam->projection, 1.57f, 1.33f, 0.1f, 100.0f );
+        powergl_perspectiveRH( cam->projection, 2.16f, 1.33f, 0.1f, 100.0f );
+	printf( "defaults ! [aspect_ratio = %f] [xfov = %f] [yfov = %f]  [znear = %f] [zfar= %f]\n", 1.33f, 2.09f, 1.57f, 0.1f, 100.0f );
         cam->projection_flag = 1;
 
       }
@@ -430,6 +508,84 @@ static void build_camera( collada_type( node ) * node, powergl_rendering_object 
 
   }
 
+}
+
+static void build_light( collada_type( node ) * node, powergl_rendering_object *obj ) {
+
+  printf( "%s\n", __func__ );
+
+  //////////////////////////////////////////// color
+	
+  powergl_rendering_light *light = obj->light;
+  collada_type( light ) *light_elem = ( collada_type( light ) * ) node->ch_instance_light[0]->r_light.ptr;
+  collada_type( light_technique_common ) *tc = light_elem->c_light_technique_common;
+		
+  if ( tc != NULL && tc->cc_directional != NULL ) {
+
+    collada_type( directional ) *sun = tc->cc_directional;
+		
+    if ( sun-> c_color != NULL) {
+
+      if ( sun->c_color->_ext.value != NULL ) {
+
+	double *ptr = sun->c_color->_ext.value;
+				
+	for ( size_t i = 0; i < 3; ++i) {
+					
+	  obj->light->color[i] = ptr[i];
+				
+	}
+
+      }
+
+    } else {
+			
+      for ( size_t i = 0; i < 3; ++i) {
+					
+	obj->light->color[i] = 1.0f;
+
+      }
+			
+    }
+
+    printf("light color\n%g %g %g\n",obj->light->color[0],obj->light->color[1],obj->light->color[2]);
+				
+    obj->light->color_flag = 1;
+
+    ////////////////////////////////////////// direction
+
+    // set w = 0 to get infinite 
+    // default for collada directional light dir
+    GLfloat v[4] = { 0.0f, 0.0f, -1.0f, 0.0f };
+    GLfloat result[4];
+
+    printf("light transform matrix\n");
+    powergl_print4x4(obj->matrix);
+
+    powergl_transformvec4(v, obj->matrix, result);
+    
+    printf("transformed light coord\n");
+    for ( size_t i = 0; i < 4; i++ ) {
+      printf("%g ",result[i]);
+    }
+    printf("\n");
+
+    powergl_vec3 dir = {.x = result[0], .y = result[1], .z = result[2] };
+    powergl_vec3 norm_dir;
+		
+    powergl_normvec3(&dir, &norm_dir);
+		
+    obj->light->dir[0] = norm_dir.x;
+    obj->light->dir[1] = norm_dir.y;
+    obj->light->dir[2] = norm_dir.z;
+
+    printf("normalized light dir\n%g %g %g\n",obj->light->dir[0],obj->light->dir[1],obj->light->dir[2]);
+
+    obj->light->type = 'd';
+
+    obj->light->dir_flag = 1;
+		
+  }
 }
 
 static void build_transform( collada_type( node ) * node, powergl_rendering_object *obj ) {
@@ -467,7 +623,8 @@ static void build_from_dae( powergl_rendering_visualscene *this, const char *fil
   size_t size = vscene->n_node;
   this->objects = powergl_resize( NULL, sizeof( powergl_rendering_object * ) * size );
   this->n_object = size;
-  this->i_camera = -1;
+  this->i_camera = 0;
+	this->i_light = 0;
 
   for ( size_t i = 0; i < size; i++ ) {
 
@@ -480,14 +637,14 @@ static void build_from_dae( powergl_rendering_visualscene *this, const char *fil
 
       build_transform( node, this->objects[i] );
 
-    } // if node has transform collada_types
+    } // if node has transform
 
     if ( node->n_instance_geometry > 0 ) {
       this->objects[i]->geometry = powergl_resize( NULL, sizeof( powergl_rendering_geometry ) );
       powergl_rendering_geometry_create( this->objects[i]->geometry );
       build_geometry( node, this->objects[i]->geometry );
 
-    } // if node has instance_geometry collada_type
+    } // if node has instance_geometry
 
     if ( node->n_instance_camera > 0 ) {
       this->objects[i]->camera = powergl_resize( NULL, sizeof( powergl_rendering_camera ) );
@@ -495,7 +652,15 @@ static void build_from_dae( powergl_rendering_visualscene *this, const char *fil
       build_camera( node, this->objects[i] );
       this->i_camera = i;
 
-    } // if node has instance_camera collada_type
+    } // if node has instance_camera
+
+		if ( node->n_instance_light > 0 ) {
+      this->objects[i]->light = powergl_resize( NULL, sizeof( powergl_rendering_light ) );
+      powergl_rendering_light_create( this->objects[i]->light );
+      build_light( node, this->objects[i] );
+			this->i_light = i;
+
+    } // if node has instance_light
 
 
   } // for each node
@@ -517,6 +682,6 @@ int powergl_rendering_visualscene_run( powergl_rendering_visualscene *vscene ) {
 
   }
 
-  powergl_rendering_pipeline_render( &vscene->pipeline, vscene->objects, vscene->n_object, vscene->i_camera );
+  powergl_rendering_pipeline_render( &vscene->pipeline, vscene->objects, vscene->n_object, vscene->i_camera, vscene->i_light );
 
 }

@@ -23,14 +23,17 @@ typedef struct {
 struct powergl_rendering_pipeline_t {
 
   powergl_vsis vis;
+	powergl_vsis nis;
   powergl_vsis cis;
   GLuint vs;
   GLuint fs;
   GLuint gp;
   GLuint uni_matrix;
+	GLuint uni_light_color;
+	GLuint uni_light_dir;
 };
 
 int powergl_rendering_pipeline_create( powergl_rendering_pipeline *, powergl_rendering_object **, size_t );
-int powergl_rendering_pipeline_render( powergl_rendering_pipeline *, powergl_rendering_object **, size_t, int );
+int powergl_rendering_pipeline_render( powergl_rendering_pipeline *, powergl_rendering_object **, size_t, size_t, size_t );
 
 #endif
