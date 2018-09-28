@@ -6,15 +6,10 @@
 
 int powergl_rendering_pipeline_render( powergl_rendering_pipeline *ppl, powergl_rendering_object **objs, size_t n_object, size_t i_camera, size_t i_light) {
 
-  GLfloat tmp[4][4];
-
   powergl_rendering_object *obj;
   powergl_rendering_geometry *geo;
 
-  glUseProgram( ppl->gp );
-  glEnableVertexAttribArray( ppl->vis.index );
-  glEnableVertexAttribArray( ppl->nis.index );
-  glEnableVertexAttribArray( ppl->cis.index );
+  glUseProgram( ppl->gp ); 
 
   for ( size_t i = 0; i < n_object; ++i ) {
 
@@ -30,49 +25,51 @@ int powergl_rendering_pipeline_render( powergl_rendering_pipeline *ppl, powergl_
 
     }
 
+
     glBindVertexArray( geo->vao );
 
     if ( objs[i_camera]->camera->view_flag == 1 || objs[i_camera]->camera->projection_flag == 1 || obj->matrix_flag == 1 ) {
 
       if ( objs[i_camera]->camera->view_flag == 1 || objs[i_camera]->camera->projection_flag == 1 ) {
 
-	powergl_ident4x4( tmp );
 	powergl_ident4x4( objs[i_camera]->camera->vp );
-	powergl_mult4x4( objs[i_camera]->camera->vp, objs[i_camera]->camera->view, tmp );
-	powergl_mult4x4( objs[i_camera]->camera->vp, objs[i_camera]->camera->projection, tmp );
+	powergl_mult4x4( objs[i_camera]->camera->vp, objs[i_camera]->camera->view );
+	powergl_mult4x4( objs[i_camera]->camera->vp, objs[i_camera]->camera->projection );
 
 	objs[i_camera]->camera->view_flag = 0;
 	objs[i_camera]->camera->projection_flag = 0;
 
-      }
+      } 
 
-      powergl_ident4x4( tmp );
       powergl_ident4x4( obj->mvp );
-      powergl_mult4x4( obj->mvp, obj->matrix, tmp );
-      powergl_mult4x4( obj->mvp, objs[i_camera]->camera->vp, tmp );
+      powergl_mult4x4( obj->mvp, obj->matrix);
+      powergl_mult4x4( obj->mvp, objs[i_camera]->camera->vp );      
 
       obj->matrix_flag = 0;
 
-      glUniformMatrix4fv( ppl->uni_matrix, 1, GL_FALSE, &obj->mvp[0][0] );
-      printf( "mvp transformation\n" );
-      powergl_print4x4( obj->mvp );
+      //printf( "mvp transformation changed\n" );
+      //powergl_print4x4( obj->mvp );
+
 
     }
+
+    glUniformMatrix4fv( ppl->uni_matrix, 1, GL_FALSE, &obj->mvp[0][0] );
+
 
     if (objs[i_light]->light->color_flag == 1) {
       objs[i_light]->light->color_flag = 0;
       glUniform3fv( ppl->uni_light_color, 1, &objs[i_light]->light->color[0] );
-      printf( "light color\n" );
+      //printf( "light color changed\n" );
     }
 
     if (objs[i_light]->light->dir_flag == 1) {
       objs[i_light]->light->dir_flag = 0;
       glUniform3fv( ppl->uni_light_dir, 1, &objs[i_light]->light->dir[0] );
-      printf( "light dir\n" );
+      //printf( "light dir changed\n" );
     }
 
     if ( geo->vertex_flag == 1 ) {
-      printf( "vertex buffer filled\n" );
+      //printf( "vertex buffer filled\n" );
       glBindBuffer( GL_ARRAY_BUFFER, geo->vbo );
       glBufferData( GL_ARRAY_BUFFER, sizeof( powergl_vec3 ) * geo->n_vertex, geo->vertex, GL_STATIC_DRAW );
       glVertexAttribPointer( ppl->vis.index, ppl->vis.size, ppl->vis.type, ppl->vis.normalized, ppl->vis.stride, ppl->vis.offset );
@@ -80,7 +77,7 @@ int powergl_rendering_pipeline_render( powergl_rendering_pipeline *ppl, powergl_
     }
 
     if ( geo->normal_flag == 1 ) {
-      printf( "normal buffer filled\n" );
+      //printf( "normal buffer filled\n" );
       glBindBuffer( GL_ARRAY_BUFFER, geo->nbo );
       glBufferData( GL_ARRAY_BUFFER, sizeof( powergl_vec3 ) * geo->n_normal, geo->normal, GL_STATIC_DRAW );
       glVertexAttribPointer( ppl->nis.index, ppl->nis.size, ppl->nis.type, ppl->nis.normalized, ppl->nis.stride, ppl->nis.offset );
@@ -88,7 +85,7 @@ int powergl_rendering_pipeline_render( powergl_rendering_pipeline *ppl, powergl_
     }
 
     if ( geo->color_flag == 1 ) {
-      printf( "color buffer filled\n" );
+      //printf( "color buffer filled\n" );
       glBindBuffer( GL_ARRAY_BUFFER, geo->cbo );
       glBufferData( GL_ARRAY_BUFFER, sizeof( powergl_vec3 ) * geo->n_color, geo->color, GL_STATIC_DRAW );
       glVertexAttribPointer( ppl->cis.index, ppl->cis.size, ppl->cis.type, ppl->cis.normalized, ppl->cis.stride, ppl->cis.offset );
@@ -104,19 +101,6 @@ int powergl_rendering_pipeline_render( powergl_rendering_pipeline *ppl, powergl_
 }
 
 int powergl_rendering_pipeline_create( powergl_rendering_pipeline *ppl, powergl_rendering_object **objs, size_t n_object ) {
-
-  for ( size_t i = 0; i < n_object; i++ ) {
-
-    if ( objs[i]->geometry ) {
-
-      glGenVertexArrays( 1, &objs[i]->geometry->vao );
-      glGenBuffers( 1, &objs[i]->geometry->vbo );
-      glGenBuffers( 1, &objs[i]->geometry->nbo );
-      glGenBuffers( 1, &objs[i]->geometry->cbo );
-
-    }
-
-  }
 
   /*vertex shader input attibute specs*/
 
@@ -144,9 +128,30 @@ int powergl_rendering_pipeline_create( powergl_rendering_pipeline *ppl, powergl_
   ppl->cis.stride = 0;
   ppl->cis.offset = 0;
 
+    for ( size_t i = 0; i < n_object; i++ ) {
+
+    if ( objs[i]->geometry != NULL ) {
+
+      glGenVertexArrays( 1, &objs[i]->geometry->vao );
+      glGenBuffers( 1, &objs[i]->geometry->vbo );
+      glGenBuffers( 1, &objs[i]->geometry->nbo );
+      glGenBuffers( 1, &objs[i]->geometry->cbo );
+
+      glBindVertexArray(objs[i]->geometry->vao);
+      
+      glEnableVertexAttribArray( ppl->vis.index );
+      glEnableVertexAttribArray( ppl->nis.index );
+      glEnableVertexAttribArray( ppl->cis.index );
+
+      glBindVertexArray(0);
+
+    }
+
+  }
+
   /*shader compiler input specs*/
-  const GLchar *const vsrc[] = {
-    "#version 330 core\n\
+    const GLchar *const vsrc[] = {
+      "#version 330 core\n\
     layout( location = 0 ) in vec3 vPosition;\n		\
     layout( location = 1 ) in vec3 vNormal;\n		\
     layout( location = 2 ) in vec3 vColor;\n   \
@@ -158,15 +163,15 @@ int powergl_rendering_pipeline_create( powergl_rendering_pipeline *ppl, powergl_
       colorToFs = ( lightColor * max(dot(vNormal, reflect(lightDir,vNormal)),0) );\n \
       gl_Position = mvp * vec4( vPosition, 1.0f );\n			\
     }"
-  };
-  const GLchar *const fsrc[] = {
-    "#version 330 core\n\
+    };
+    const GLchar *const fsrc[] = {
+      "#version 330 core\n\
     in vec3 colorToFs;\n			\
     out vec4 fColor;\n\
-    void main(){\n						\
-      fColor = vec4( colorToFs ,1.0f );\n	\
+    void main(){\n			  \
+      fColor = vec4( colorToFs ,1.0f );\n \
     }"
-  };
+    };
   /*vertex shader*/
   ppl->vs = glCreateShader( GL_VERTEX_SHADER );
   glShaderSource( ppl->vs, 1, vsrc, NULL );

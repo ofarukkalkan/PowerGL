@@ -17,11 +17,11 @@ struct powergl_rendering_light_t {
 
   char type;
 
-	GLfloat color[3];
-	char color_flag;
+  GLfloat color[3];
+  char color_flag;
 	
-	GLfloat dir[3];
-	char dir_flag;
+  GLfloat dir[3];
+  char dir_flag;
 	
 };
 
@@ -51,14 +51,14 @@ struct powergl_rendering_geometry_t {
 
   GLuint vao;
   GLuint vbo;
-	GLuint nbo;
+  GLuint nbo;
   GLuint cbo;
 
   powergl_vec3 *vertex;
   char vertex_flag;
   size_t n_vertex;
 
-	powergl_vec3 *normal;
+  powergl_vec3 *normal;
   char normal_flag;
   size_t n_normal;
 
@@ -80,8 +80,8 @@ struct powergl_rendering_object_t {
   // camera
   powergl_rendering_camera *camera;
 
-	// light
-	powergl_rendering_light *light;
+  // light
+  powergl_rendering_light *light;
 
   // transform
   GLfloat matrix[4][4];
@@ -92,6 +92,7 @@ struct powergl_rendering_object_t {
   GLfloat lookat[3][3];
   GLfloat translate[3];
   GLfloat rotation[4];
+  char rotation_flag;
   GLfloat scale[3];
   GLfloat skew[3];
 
@@ -106,6 +107,7 @@ int powergl_rendering_camera_create( powergl_rendering_camera * );
 int powergl_rendering_light_create( powergl_rendering_light * );
 int powergl_rendering_object_create( powergl_rendering_object * );
 int powergl_rendering_object_run( powergl_rendering_object * );
-
+int powergl_rendering_object_rotate ( powergl_rendering_object *obj, float axisx,float axisy,float axisz, float radians );
+int powergl_rendering_geometry_transform_normals(powergl_rendering_geometry *geo, GLfloat m[4][4]);
 
 #endif

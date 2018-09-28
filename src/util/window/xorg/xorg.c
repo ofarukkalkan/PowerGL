@@ -1,6 +1,8 @@
 #include "xorg.h"
 #include <stdio.h>
 
+#define DEBUG_OUTPUT 0
+
 enum msgSource {
   SOURCE_API = 0x8246,
   SOURCE_SYSTEM = 0x8247,
@@ -30,11 +32,11 @@ enum msgSeverity {
 };
 
 void errorCallback( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const GLvoid *userParam ) {
-  printf( "\nSource = [ %d ] \n", ( int ) source );
-  printf( "Type = [ %d ]\n", ( int ) type );
-  printf(	"Severity = [ %d ]\n", ( int ) severity );
-  printf(	"ID = [ %d ]\n", ( int ) id );
-  printf(	"Msg = [ %s ]\n", ( const char * )message );
+  fprintf(stderr, "\nSource = [ %d ] \n", ( int ) source );
+  fprintf(stderr, "Type = [ %d ]\n", ( int ) type );
+  fprintf(stderr, "Severity = [ %d ]\n", ( int ) severity );
+  fprintf(stderr, "ID = [ %d ]\n", ( int ) id );
+  fprintf(stderr, "Msg = [ %s ]\n", ( const char * )message );
 }
 
 int powergl_util_window_xorg_create( powergl_util_window_xorg *wnd ) {
@@ -73,29 +75,35 @@ int powergl_util_window_xorg_create( powergl_util_window_xorg *wnd ) {
   /* X Server e baglanma */
   wnd->display = XOpenDisplay( NULL );
   if ( wnd->display != NULL ) {
-    fprintf( stdout, "\nX Server baglantisi basarili" );
+#if DEBUG_OUTPUT
+    fprintf( stdout, "X Server baglantisi basarili\n" );
+#endif
   } else {
-    fprintf( stderr, "\nhata : X Server baglantisi basarisiz" );
+    fprintf( stderr, "hata : X Server baglantisi basarisiz\n" );
     return 0;
   }
   /* suan ki ekran id sini elde etme */
   wnd->screenid = DefaultScreen( wnd->display );
-  fprintf( stderr, "\nEkran id : %d", wnd->screenid );
-
+#if DEBUG_OUTPUT
+  fprintf( stdout, "Ekran id : %d\n", wnd->screenid );
+#endif
   /* verilen ozelliklerle eslesen frame buffer formatlarini getir */
   fbconfigs = glXChooseFBConfig( wnd->display, wnd->screenid, fbattribs, &count );
   if ( count ) {
-    fprintf( stdout, "\nEslesen fbconfig sayisi : %d", count );
+#if DEBUG_OUTPUT
+    fprintf( stdout, "Eslesen fbconfig sayisi : %d\n", count );
+#endif
     /* ilkini sec (ne oldugu belli degil !) */
     wnd->fbconfig = fbconfigs[0];
   } else {
-    fprintf( stderr, "\nhata : eslesen fbconfig yok" );
+    fprintf( stderr, "hata : eslesen fbconfig yok\n" );
     return 0;
   }
 
   visualinfo = glXGetVisualFromFBConfig( wnd->display, wnd->fbconfig );
-  fprintf( stderr, "\nsecilen visual id : 0x%x", ( unsigned int )visualinfo->visualid );
-
+#if DEBUG_OUTPUT
+  fprintf( stdout, "secilen visual id : 0x%x\n", ( unsigned int )visualinfo->visualid );
+#endif
   /* eslesen fbconfigleri temizle */
   XFree( fbconfigs );
 
@@ -114,19 +122,21 @@ int powergl_util_window_xorg_create( powergl_util_window_xorg *wnd ) {
   /* test penceresini olustur */
   wnd->window =
     XCreateWindow(
-      wnd->display, rootwindow,
-      0, 0,
-      640, 480, 0,
-      visualinfo->depth, InputOutput,
-      visualinfo->visual,
-      CWBorderPixel | CWColormap | CWEventMask,
-      &windowattribs
-    );
+		  wnd->display, rootwindow,
+		  0, 0,
+		  640, 480, 0,
+		  visualinfo->depth, InputOutput,
+		  visualinfo->visual,
+		  CWBorderPixel | CWColormap | CWEventMask,
+		  &windowattribs
+		  );
 
   if ( wnd->window ) {
-    fprintf( stdout, "\ntest penceresi olusturuldu" );
+#if DEBUG_OUTPUT
+    fprintf( stdout, "test penceresi olusturuldu\n" );
+#endif
   } else {
-    fprintf( stderr, "\nhata : test penceresi olusturulamadi" );
+    fprintf( stderr, "hata : test penceresi olusturulamadi\n" );
     return 0;
   }
   XFree( visualinfo );
@@ -143,18 +153,22 @@ int powergl_util_window_xorg_create( powergl_util_window_xorg *wnd ) {
   glXCreateContextAttribsARB = ( PFNGLXCREATECONTEXTATTRIBSARBPROC )glXGetProcAddressARB( ( const GLubyte * ) "glXCreateContextAttribsARB" );
   wnd->context = glXCreateContextAttribsARB( wnd->display, wnd->fbconfig, 0, True, contextattribs );
   if ( wnd->context ) {
-    fprintf( stdout, "\ncontext olusturuldu" );
+#if DEBUG_OUTPUT
+    fprintf( stdout, "context olusturuldu\n" );
+#endif
   } else {
-    fprintf( stderr, "\nhata : context olusturulamadi" );
+    fprintf( stderr, "hata : context olusturulamadi\n" );
     return 0;
   }
 
   /* context baglama */
   result = glXMakeCurrent( wnd->display, wnd->window, wnd->context );
   if ( result ) {
-    fprintf( stdout, "\ncontext baglandi" );
+#if DEBUG_OUTPUT
+    fprintf( stdout, "context baglandi\n" );
+#endif
   } else {
-    fprintf( stderr, "\nhata : context baglanamadi" );
+    fprintf( stderr, "hata : context baglanamadi\n" );
     return 0;
   }
 
@@ -165,7 +179,7 @@ int powergl_util_window_xorg_create( powergl_util_window_xorg *wnd ) {
   if ( glXSwapIntervalMESA != NULL ) {
     glXSwapIntervalMESA( 0 );
   } else {
-    fprintf( stderr, "\nhata : swap interval ayarlanamadi" );
+    fprintf( stderr, "hata : swap interval ayarlanamadi\n" );
     return 0;
   }
   return 1;
@@ -173,8 +187,6 @@ int powergl_util_window_xorg_create( powergl_util_window_xorg *wnd ) {
 }
 
 int powergl_util_window_xorg_run( powergl_util_window_xorg *wnd ) {
-
-
 
   XEvent event;
 
@@ -188,7 +200,7 @@ int powergl_util_window_xorg_run( powergl_util_window_xorg *wnd ) {
 
   powergl_util_app_create( &wnd->_base.root_app );
 
-here:
+ here:
 
   while ( XPending( wnd->display ) > 0 ) {
     XNextEvent( wnd->display, &event );
@@ -211,7 +223,7 @@ here:
 
   goto here;
 
-exit:
+ exit:
 
   return 1;
 }

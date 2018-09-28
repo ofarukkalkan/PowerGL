@@ -38,6 +38,7 @@ int powergl_rendering_geometry_create( powergl_rendering_geometry *geometry ) {
 
 int powergl_rendering_object_create( powergl_rendering_object *obj ) {
   obj->matrix_flag = 0;
+  obj->rotation_flag = 0;
   powergl_zero4x4( obj->matrix );
   powergl_zero4x4( obj->mvp );
   obj->geometry = NULL;
@@ -45,11 +46,39 @@ int powergl_rendering_object_create( powergl_rendering_object *obj ) {
   obj->light = NULL;
 }
 
-int powergl_rendering_object_run( powergl_rendering_object *obj ) {
-  /*
-  GLfloat tmp[4][4];
-  powergl_vec3 rotaxis={1.0f,1.0f,1.0f};
-  powergl_rot4x4(obj->matrix,tmp,0.0011f,&rotaxis);
+int powergl_rendering_object_rotate( powergl_rendering_object *obj, float axisx,float axisy,float axisz, float radians ) {
+  GLfloat rotation[4][4];
+  
+  powergl_ident4x4(rotation);
+  
+  powergl_vec3 rotaxis = {axisx, axisy, axisy};
+  powergl_rot4x4(rotation, radians, &rotaxis);
+  powergl_rot4x4(obj->matrix, radians, &rotaxis);
+  
+  if ( obj->geometry != NULL && obj->geometry->normal != NULL ) {
+    powergl_rendering_geometry_transform_normals(obj->geometry, rotation);
+  }
+  
   obj->matrix_flag=1;
-  */
+}
+
+int powergl_rendering_geometry_transform_normals(powergl_rendering_geometry *geo, GLfloat m[4][4]){
+  GLfloat v[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+  GLfloat result[4];
+  for ( size_t i=0; i < geo->n_normal; i++ ) {
+    v[0] = geo->normal[i].x;
+    v[1] = geo->normal[i].y;
+    v[2] = geo->normal[i].z;
+    powergl_transformvec4(v, m, result);
+    geo->normal[i].x = result[0];
+    geo->normal[i].y = result[1];
+    geo->normal[i].z = result[2];
+  }
+  geo->normal_flag = 1;
+}
+
+int powergl_rendering_object_run( powergl_rendering_object *obj ) {
+  
+  powergl_rendering_object_rotate(obj, 1.0f, 1.0f, 1.0f, 0.001f);
+  
 }

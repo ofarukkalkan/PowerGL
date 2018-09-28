@@ -63,7 +63,9 @@ void powergl_transformvec4( const GLfloat v[4], const GLfloat m[4][4], GLfloat r
   result[3] = v[0] * m[0][3] + v[1] * m[1][3] + v[2] * m[2][3] + v[3] * m[3][3];
 }
 
-void powergl_mult4x4( GLfloat m[4][4], GLfloat n[4][4], GLfloat r[4][4] ) {
+void powergl_mult4x4( GLfloat m[4][4], GLfloat n[4][4]) {
+  GLfloat r[4][4];
+  
   r[0][0] = m[0][0] * n[0][0] + m[0][1] * n[1][0] + m[0][2] * n[2][0] + m[0][3] * n[3][0];
   r[0][1] = m[0][0] * n[0][1] + m[0][1] * n[1][1] + m[0][2] * n[2][1] + m[0][3] * n[3][1];
   r[0][2] = m[0][0] * n[0][2] + m[0][1] * n[1][2] + m[0][2] * n[2][2] + m[0][3] * n[3][2];
@@ -158,10 +160,11 @@ int powergl_inv4x4( GLfloat m[16], GLfloat invOut[16] ) {
   return 1;
 }
 
-void powergl_rot4x4( GLfloat m[4][4], GLfloat n[4][4], float angle, powergl_vec3 *axis ) {
+void powergl_rot4x4( GLfloat m[4][4], float angle, powergl_vec3 *axis ) {
   float a, c, s, tmp, rot[9];
   powergl_vec3 temp;
-
+  GLfloat n[3][3];
+  
   a = angle;
   c = cosf( a );
   s = sinf( a );
