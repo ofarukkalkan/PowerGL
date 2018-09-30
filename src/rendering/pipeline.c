@@ -160,7 +160,7 @@ int powergl_rendering_pipeline_create( powergl_rendering_pipeline *ppl, powergl_
     uniform vec3 lightColor;\n		       \
     uniform vec3 lightDir;\n		       \
     void main(){\n							\
-      colorToFs = ( lightColor * max(dot(vNormal, reflect(lightDir,vNormal)),0) );\n \
+      colorToFs = vColor * ( lightColor * max(dot(vNormal, reflect(lightDir,vNormal)),0) );\n \
       gl_Position = mvp * vec4( vPosition, 1.0f );\n			\
     }"
     };

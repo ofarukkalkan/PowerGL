@@ -79,6 +79,6 @@ int powergl_rendering_geometry_transform_normals(powergl_rendering_geometry *geo
 
 int powergl_rendering_object_run( powergl_rendering_object *obj ) {
   
-  powergl_rendering_object_rotate(obj, 1.0f, 1.0f, 1.0f, 0.001f);
+  // powergl_rendering_object_rotate(obj, 1.0f, 1.0f, 1.0f, 0.001f);
   
 }

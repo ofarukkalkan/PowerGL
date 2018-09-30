@@ -9,7 +9,7 @@
 #include <string.h>
 #include <expat.h>
 
-#define DEBUG_OUTPUT 0
+#define DEBUG_OUTPUT 1
 
 #define element(NAME)				\
   powergl_collada_ ## NAME
@@ -1632,7 +1632,11 @@ static void elemend( void *userdata, const char *elem ) {
     } else if ( strcmp( elem, "lambert" ) == 0 ) {
       g_undefined_element_flag = 0;
     } else if ( strcmp( elem, "color" ) == 0 ) {
-      g_undefined_element_flag = 0;
+      if ( strcmp( parent->name, "directional") == 0 ) {
+	g_undefined_element_flag = 0;
+      } else {
+	g_undefined_element_flag = 1;
+      }
     } else if ( strcmp( elem, "bind_material" ) == 0 ) {
       g_undefined_element_flag = 0;
     } else {
@@ -1680,9 +1684,17 @@ static void elemend( void *userdata, const char *elem ) {
     } else if ( strcmp( elem, "accessor" ) == 0 ) {
       g_undefined_element_flag = 0;
     } else if ( strcmp( elem, "ambient" ) == 0 ) {
-      g_undefined_element_flag = 0;
+      if ( strcmp( parent->name, "lambert") == 0 ) {
+	g_undefined_element_flag = 0;
+      } else {
+	g_undefined_element_flag = 1;
+      }
     } else if ( strcmp( elem, "diffuse" ) == 0 ) {
-      g_undefined_element_flag = 0;
+      if ( strcmp( parent->name, "lambert") == 0 ) {
+	g_undefined_element_flag = 0;
+      } else {
+	g_undefined_element_flag = 1;
+      }
     } else if ( strcmp( elem, "technique_common" ) == 0 ) {
       g_undefined_element_flag = 0;
     } else {
@@ -2116,30 +2128,18 @@ static void elemstart( void *userdata, const char *elem, const char **attr ) {
     } else if ( strcmp( elem, "technique_common" ) == 0 ) {
       g_undefined_element_flag = 0;
       result = init_technique_common( parent );
-      if ( result == 0 ) {
-        g_undefined_element_flag = 1;
-      }
     } else if ( strcmp( elem, "input" ) == 0 ) {
       g_undefined_element_flag = 0;
       result = init_input( parent, attr, nattr );
-      if ( result == 0 ) {
-        g_undefined_element_flag = 1;
-      }
     } else if ( strcmp( elem, "p" ) == 0 ) {
       g_undefined_element_flag = 0;
       result = init_p( parent );
-      if ( result == 0 ) {
-        g_undefined_element_flag = 1;
-      }
     } else if ( strcmp( elem, "lambert" ) == 0 ) {
       g_undefined_element_flag = 0;
       result = init_lambert( parent, attr, nattr );
     } else if ( strcmp( elem, "color" ) == 0 ) {
       g_undefined_element_flag = 0;
       result = init_targetable_float3( parent, "color", attr, nattr);
-      if ( result == 0 ) {
-        g_undefined_element_flag = 1;
-      }
     } else if ( strcmp( elem, "bind_material" ) == 0 ) {
       g_undefined_element_flag = 0;
       result = init_bind_material( parent, attr, nattr );
@@ -2150,9 +2150,6 @@ static void elemstart( void *userdata, const char *elem, const char **attr ) {
     if ( strcmp( elem, "technique_common" ) == 0 ) {
       g_undefined_element_flag = 0;
       result = init_technique_common( parent );
-      if ( result == 0 ) {
-        g_undefined_element_flag = 1;
-      }
     } else if ( strcmp( elem, "source" ) == 0 ) {
       g_undefined_element_flag = 0;
       result = init_source( parent, attr, nattr );
@@ -2177,9 +2174,6 @@ static void elemstart( void *userdata, const char *elem, const char **attr ) {
     } else if ( strcmp( elem, "technique" ) == 0 ) {
       g_undefined_element_flag = 0;
       result = init_technique( parent, attr, nattr );
-      if ( result == 0 ) {
-        g_undefined_element_flag = 1;
-      }
     } else if ( strcmp( elem, "directional" ) == 0 ) {
       g_undefined_element_flag = 0;
       result = init_directional( parent, attr, nattr );
@@ -2214,9 +2208,6 @@ static void elemstart( void *userdata, const char *elem, const char **attr ) {
     } else if ( strcmp( elem, "technique_common" ) == 0 ) {
       g_undefined_element_flag = 0;
       result = init_technique_common( parent );
-      if ( result == 0 ) {
-        g_undefined_element_flag = 1;
-      }
     } else {
       g_undefined_element_flag = 1;
     }
@@ -2289,9 +2280,6 @@ static void elemstart( void *userdata, const char *elem, const char **attr ) {
     } else if ( strcmp( elem, "technique_common" ) == 0 ) {
       g_undefined_element_flag = 0;
       result = init_technique_common( parent );
-      if ( result == 0 ) {
-        g_undefined_element_flag = 1;
-      }
     } else if ( strcmp( elem, "instance_effect" ) == 0 ) {
       g_undefined_element_flag = 0;
       result = init_instance_effect( parent, attr, nattr );
@@ -2312,9 +2300,6 @@ static void elemstart( void *userdata, const char *elem, const char **attr ) {
     } else if ( strcmp( elem, "color" ) == 0 ) {
       g_undefined_element_flag = 0;
       result = init_targetable_float4( parent, "color",  attr, nattr );
-      if ( result == 0 ) {
-        g_undefined_element_flag = 1;
-      }
     } else if ( strcmp( elem, "instance_material" ) == 0 ) {
       g_undefined_element_flag = 0;
       result = init_instance_material( parent, attr, nattr );
@@ -2327,6 +2312,8 @@ static void elemstart( void *userdata, const char *elem, const char **attr ) {
 #if DEBUG_OUTPUT
     //  fprintf(stderr,"%s element couldnt init\n", g_current_elem_tag);
 #endif
+
+    g_undefined_element_flag = 1;
   }
 
   if ( g_undefined_element_flag == 1 ) {
