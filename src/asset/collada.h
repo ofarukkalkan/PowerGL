@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 
-#define collada_type(NAME)											\
+#define collada_type(NAME)			\
   powergl_collada_ ## NAME
 
 typedef struct simple_element_t simple_element;
@@ -138,12 +138,91 @@ typedef struct powergl_collada_node_type_enum_t powergl_collada_node_type_enum;
 powergl_collada_collada *powergl_collada_parse( const char *filename );
 void powergl_collada_export_dae_file( complex_element *root, const char *file_name );
 void powergl_collada_delete_complex_element( complex_element *elemm, size_t depth );
+
 void powergl_collada_print_element( FILE *file, complex_element *elem, int depth );
 void powergl_collada_print_attribute( FILE *file, simple_element *elem );
 void powergl_collada_print_elem_value( FILE *file, complex_element *elem );
 
+int powergl_collada_init_targetable_float( complex_element *parent_complex, const char *name,  const char **attr, size_t nattr );
+int powergl_collada_check_color(complex_element *parent_complex);
+int powergl_collada_init_targetable_float3( complex_element *parent_complex, const char *name,  const char **attr, size_t nattr );
+int powergl_collada_init_targetable_float4( complex_element *parent_complex, const char *name,  const char **attr, size_t nattr );
+int powergl_collada_init_library_effects( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_check_COLLADA(complex_element *parent_complex);
+int powergl_collada_init_library_materials( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_check_library_lights(complex_element *parent_complex);
+int powergl_collada_init_light( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_check_technique_common(complex_element *parent_complex);
+int powergl_collada_init_directional( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_check_library_effects(complex_element *parent_complex);
+int powergl_collada_init_effect( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_check_effect(complex_element *parent_complex);
+int powergl_collada_init_profile_COMMON( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_init_technique( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_check_technique(complex_element *parent_complex);
+int powergl_collada_init_lambert( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_check_directional(complex_element *parent_complex);
+int powergl_collada_check_ambient(complex_element *parent_complex);
+int powergl_collada_check_diffuse(complex_element *parent_complex);
+int powergl_collada_init_color( complex_element *parent_complex, const char *name, const char **attr, size_t nattr );
+int powergl_collada_check_lambert(complex_element *parent_complex);
+int powergl_collada_check_lambert(complex_element *parent_complex);
+int powergl_collada_init_fx_common_color_or_texture( complex_element *parent_complex, const char *name, const char **attr, size_t nattr );
+int powergl_collada_check_library_materials(complex_element *parent_complex);
+int powergl_collada_init_material( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_check_material(complex_element *parent_complex);
+int powergl_collada_init_instance_effect( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_init_instance_material( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_check_instance_geometry(complex_element *parent_complex);
+int powergl_collada_init_bind_material( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_check_node(complex_element *parent_complex);
+int powergl_collada_init_instance_geometry( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_init_instance_light( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_init_instance_camera( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_init_matrix( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_check_visual_scene(complex_element *parent_complex);
+int powergl_collada_init_node( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_check_triangles(complex_element *parent_complex);
+int powergl_collada_init_p( complex_element *parent_complex );
+int powergl_collada_check_vertices(complex_element *parent_complex);
+int powergl_collada_init_input( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_check_accessor(complex_element *parent_complex);
+int powergl_collada_init_param( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_init_accessor( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_check_source(complex_element *parent_complex);
+int powergl_collada_init_int_array( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_init_float_array( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_check_mesh(complex_element *parent_complex);
+int powergl_collada_init_triangles( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_init_vertices( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_init_source( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_check_geometry(complex_element *parent_complex);
+int powergl_collada_init_mesh( complex_element *parent_complex );
+int powergl_collada_init_orthographic( complex_element *parent_complex );
+int powergl_collada_init_perspective( complex_element *parent_complex );
+int powergl_collada_check_optics(complex_element *parent_complex);
+int powergl_collada_check_light(complex_element *parent_complex);
+int powergl_collada_check_bind_material(complex_element *parent_complex);
+int powergl_collada_init_technique_common( complex_element *parent_complex );
+int powergl_collada_check_camera(complex_element *parent_complex);
+int powergl_collada_init_optics( complex_element *parent_complex );
+int powergl_collada_check_scene(complex_element *parent_complex);
+int powergl_collada_init_instance_visual_scene( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_check_library_visual_scenes(complex_element *parent_complex);
+int powergl_collada_init_visual_scene( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_check_library_geometries(complex_element *parent_complex);
+int powergl_collada_init_geometry( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_check_library_cameras(complex_element *parent_complex);
+int powergl_collada_init_camera( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_init_library_lights( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_init_library_cameras( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_init_library_geometries( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_init_library_visual_scenes( complex_element *parent_complex, const char **attr, size_t nattr );
+int powergl_collada_init_scene( complex_element *parent_complex );
+int powergl_collada_init_collada( complex_element *parent_complex, const char **attr, size_t nattr );
 
 
+  
 struct powergl_collada_float_t {
   simple_element _base;
   double value;
@@ -220,14 +299,14 @@ struct powergl_collada_node_type_enum_t {
 
 
 
-struct powergl_collada_targetable_float_t {
+ struct powergl_collada_targetable_float_t {
 
-  complex_element _base;
-  powergl_collada_float _ext;
+   complex_element _base;
+   powergl_collada_float _ext;
 
-  powergl_collada_string a_sid;
+   powergl_collada_string a_sid;
 
-	powergl_collada_perspective *p_perspective;
+   powergl_collada_perspective *p_perspective;
 
 };
 

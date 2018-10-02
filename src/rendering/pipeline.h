@@ -34,6 +34,6 @@ struct powergl_rendering_pipeline_t {
 };
 
 int powergl_rendering_pipeline_create( powergl_rendering_pipeline *, powergl_rendering_object **, size_t );
-int powergl_rendering_pipeline_render( powergl_rendering_pipeline *, powergl_rendering_object **, size_t, size_t, size_t );
+int powergl_rendering_pipeline_render( powergl_rendering_pipeline *, powergl_rendering_object **, size_t, powergl_rendering_object*, powergl_rendering_object* );
 
 #endif

@@ -44,6 +44,9 @@ int powergl_rendering_object_create( powergl_rendering_object *obj ) {
   obj->geometry = NULL;
   obj->camera = NULL;
   obj->light = NULL;
+
+  obj->children = NULL;
+  obj->n_child = 0;
 }
 
 int powergl_rendering_object_rotate( powergl_rendering_object *obj, float axisx,float axisy,float axisz, float radians ) {

@@ -8,6 +8,8 @@
 #include <string.h>
 #include <math.h>
 
+#define DEBUG_OUTPUT 0
+
 static const size_t powergl_vertex_offset = 0;
 static const size_t powergl_normal_offset = 1;
 static const size_t powergl_color_offset = 2;
@@ -23,9 +25,6 @@ static void build_geometry_triangle_index( powergl_rendering_geometry *obj, coll
 #endif
   // how many triangles are there in _ imported file _
   size_t p_count = triangles->a_count.value;
-
-  // each triangle has how many vertex attribute in _ imported file _
-  size_t input_count = triangles->n_input_local_offset;
 
   // offset values for each vertex attribute
   size_t vertex_offset = vertex_input->a_offset.value;
@@ -50,12 +49,13 @@ static void build_geometry_triangle_index( powergl_rendering_geometry *obj, coll
   // total index count
   size_t n_index = vertex_count * powergl_vertex_input_supported;
 
-
   obj->index = powergl_resize( NULL, sizeof( GLuint ) * n_index );
-
 
   // get xml collada_type that contains index values
   collada_type( p ) *p_arr = triangles->c_p;
+
+  // each triangle has how many vertex attribute in _ imported file _
+  size_t input_count = p_arr->_base.value_size / ( 3 * p_count );
 
   for ( size_t l = 0; l < vertex_count; l++ ) {
 
@@ -621,6 +621,59 @@ static void build_transform( collada_type( node ) * node, powergl_rendering_obje
 
 }
 
+static void build_objects(powergl_rendering_visualscene *scene ,collada_type(node) *node, powergl_rendering_object *obj){
+  
+  if ( node->n_matrix > 0 ) {
+
+    build_transform( node, obj );
+
+  } // if node has transform
+
+  if ( node->n_instance_geometry > 0 ) {
+    obj->geometry = powergl_resize( NULL, sizeof( powergl_rendering_geometry ) );
+    powergl_rendering_geometry_create( obj->geometry );
+    build_geometry( node, obj->geometry );
+
+  } // if node has instance_geometry
+
+  if ( node->n_instance_camera > 0 ) {
+    obj->camera = powergl_resize( NULL, sizeof( powergl_rendering_camera ) );
+    powergl_rendering_camera_create( obj->camera );
+    build_camera( node, obj );
+
+    if ( scene->main_camera == NULL ) {
+      scene->main_camera = obj;
+    }
+
+  } // if node has instance_camera
+
+  if ( node->n_instance_light > 0 ) {
+    obj->light = powergl_resize( NULL, sizeof( powergl_rendering_light ) );
+    powergl_rendering_light_create( obj->light );
+    build_light( node, obj );
+
+    if ( scene->main_light == NULL ) {
+      scene->main_light = obj;
+    }
+
+  } // if node has instance_light
+
+  if ( node->n_node > 0 ) {
+    
+    obj->children = powergl_resize( NULL, sizeof(powergl_rendering_object*) * node->n_node);
+    obj->n_child = node->n_node;
+
+    for ( size_t i = 0; i < node->n_node; i++ ) {
+
+      obj->children[i] = powergl_resize( NULL, sizeof( powergl_rendering_object ) );
+      powergl_rendering_object_create( obj->children[i] );
+
+      build_objects(scene, node->ch_node[i], obj->children[i]);
+    }
+    
+  }
+}
+
 static void build_from_dae( powergl_rendering_visualscene *this, const char *file ) {
 #if DEBUG_OUTPUT
   printf( "%s\n", __func__ );
@@ -635,8 +688,8 @@ static void build_from_dae( powergl_rendering_visualscene *this, const char *fil
   size_t size = vscene->n_node;
   this->objects = powergl_resize( NULL, sizeof( powergl_rendering_object * ) * size );
   this->n_object = size;
-  this->i_camera = 0;
-  this->i_light = 0;
+  this->main_camera = NULL;
+  this->main_light = NULL;
 
   for ( size_t i = 0; i < size; i++ ) {
 
@@ -644,39 +697,13 @@ static void build_from_dae( powergl_rendering_visualscene *this, const char *fil
 
     this->objects[i] = powergl_resize( NULL, sizeof( powergl_rendering_object ) );
     powergl_rendering_object_create( this->objects[i] );
-
-    if ( node->n_matrix > 0 ) {
-
-      build_transform( node, this->objects[i] );
-
-    } // if node has transform
-
-    if ( node->n_instance_geometry > 0 ) {
-      this->objects[i]->geometry = powergl_resize( NULL, sizeof( powergl_rendering_geometry ) );
-      powergl_rendering_geometry_create( this->objects[i]->geometry );
-      build_geometry( node, this->objects[i]->geometry );
-
-    } // if node has instance_geometry
-
-    if ( node->n_instance_camera > 0 ) {
-      this->objects[i]->camera = powergl_resize( NULL, sizeof( powergl_rendering_camera ) );
-      powergl_rendering_camera_create( this->objects[i]->camera );
-      build_camera( node, this->objects[i] );
-      this->i_camera = i;
-
-    } // if node has instance_camera
-
-    if ( node->n_instance_light > 0 ) {
-      this->objects[i]->light = powergl_resize( NULL, sizeof( powergl_rendering_light ) );
-      powergl_rendering_light_create( this->objects[i]->light );
-      build_light( node, this->objects[i] );
-      this->i_light = i;
-
-    } // if node has instance_light
-
+   
+    build_objects(this, node, this->objects[i]);
+    
   } // for each node
 
 }
+
 
 int powergl_rendering_visualscene_create( powergl_rendering_visualscene *vscene, const char *daefile ) {
 
@@ -693,6 +720,6 @@ int powergl_rendering_visualscene_run( powergl_rendering_visualscene *vscene ) {
 
   }
 
-  powergl_rendering_pipeline_render( &vscene->pipeline, vscene->objects, vscene->n_object, vscene->i_camera, vscene->i_light );
+  powergl_rendering_pipeline_render( &vscene->pipeline, vscene->objects, vscene->n_object, vscene->main_camera, vscene->main_light );
 
 }

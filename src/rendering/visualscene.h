@@ -13,11 +13,11 @@ struct powergl_rendering_visualscene_t {
   powergl_rendering_object **objects;
   size_t n_object;
 
-  // default camera object index
-  int i_camera;
+  // default camera object
+  powergl_rendering_object *main_camera;
 
-	// default light object index
-  int i_light;
+  // default light object 
+  powergl_rendering_object *main_light;
 
   // pipeline
   powergl_rendering_pipeline pipeline;

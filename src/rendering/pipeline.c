@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 
-int powergl_rendering_pipeline_render( powergl_rendering_pipeline *ppl, powergl_rendering_object **objs, size_t n_object, size_t i_camera, size_t i_light) {
+int powergl_rendering_pipeline_render( powergl_rendering_pipeline *ppl, powergl_rendering_object **objs, size_t n_object, powergl_rendering_object *main_camera, powergl_rendering_object *main_light) {
 
   powergl_rendering_object *obj;
   powergl_rendering_geometry *geo;
@@ -28,22 +28,22 @@ int powergl_rendering_pipeline_render( powergl_rendering_pipeline *ppl, powergl_
 
     glBindVertexArray( geo->vao );
 
-    if ( objs[i_camera]->camera->view_flag == 1 || objs[i_camera]->camera->projection_flag == 1 || obj->matrix_flag == 1 ) {
+    if ( main_camera->camera->view_flag == 1 || main_camera->camera->projection_flag == 1 || obj->matrix_flag == 1 ) {
 
-      if ( objs[i_camera]->camera->view_flag == 1 || objs[i_camera]->camera->projection_flag == 1 ) {
+      if ( main_camera->camera->view_flag == 1 || main_camera->camera->projection_flag == 1 ) {
 
-	powergl_ident4x4( objs[i_camera]->camera->vp );
-	powergl_mult4x4( objs[i_camera]->camera->vp, objs[i_camera]->camera->view );
-	powergl_mult4x4( objs[i_camera]->camera->vp, objs[i_camera]->camera->projection );
+	powergl_ident4x4( main_camera->camera->vp );
+	powergl_mult4x4( main_camera->camera->vp, main_camera->camera->view );
+	powergl_mult4x4( main_camera->camera->vp, main_camera->camera->projection );
 
-	objs[i_camera]->camera->view_flag = 0;
-	objs[i_camera]->camera->projection_flag = 0;
+	main_camera->camera->view_flag = 0;
+	main_camera->camera->projection_flag = 0;
 
       } 
 
       powergl_ident4x4( obj->mvp );
       powergl_mult4x4( obj->mvp, obj->matrix);
-      powergl_mult4x4( obj->mvp, objs[i_camera]->camera->vp );      
+      powergl_mult4x4( obj->mvp, main_camera->camera->vp );      
 
       obj->matrix_flag = 0;
 
@@ -56,15 +56,15 @@ int powergl_rendering_pipeline_render( powergl_rendering_pipeline *ppl, powergl_
     glUniformMatrix4fv( ppl->uni_matrix, 1, GL_FALSE, &obj->mvp[0][0] );
 
 
-    if (objs[i_light]->light->color_flag == 1) {
-      objs[i_light]->light->color_flag = 0;
-      glUniform3fv( ppl->uni_light_color, 1, &objs[i_light]->light->color[0] );
+    if (main_light->light->color_flag == 1) {
+      main_light->light->color_flag = 0;
+      glUniform3fv( ppl->uni_light_color, 1, &main_light->light->color[0] );
       //printf( "light color changed\n" );
     }
 
-    if (objs[i_light]->light->dir_flag == 1) {
-      objs[i_light]->light->dir_flag = 0;
-      glUniform3fv( ppl->uni_light_dir, 1, &objs[i_light]->light->dir[0] );
+    if (main_light->light->dir_flag == 1) {
+      main_light->light->dir_flag = 0;
+      glUniform3fv( ppl->uni_light_dir, 1, &main_light->light->dir[0] );
       //printf( "light dir changed\n" );
     }
 
@@ -94,10 +94,43 @@ int powergl_rendering_pipeline_render( powergl_rendering_pipeline *ppl, powergl_
 
 
     glDrawArrays( GL_TRIANGLES, 0, obj->geometry->n_vertex );
+
+    if ( obj->n_child > 0 ) {
+    
+      powergl_rendering_pipeline_render( ppl, obj->children, obj->n_child, main_camera, main_light );
+
+    }
+      
   }
 
-
   return 1;
+}
+
+void init_gpu_objects(powergl_rendering_pipeline *ppl ,powergl_rendering_object *obj) {
+
+  if ( obj->geometry != NULL ) {
+
+    glGenVertexArrays( 1, &obj->geometry->vao );
+    glGenBuffers( 1, &obj->geometry->vbo );
+    glGenBuffers( 1, &obj->geometry->nbo );
+    glGenBuffers( 1, &obj->geometry->cbo );
+
+    glBindVertexArray(obj->geometry->vao);
+      
+    glEnableVertexAttribArray( ppl->vis.index );
+    glEnableVertexAttribArray( ppl->nis.index );
+    glEnableVertexAttribArray( ppl->cis.index );
+
+    glBindVertexArray(0);
+
+  }
+  
+  for ( size_t i = 0; i < obj->n_child; i++ ) {
+    
+    init_gpu_objects(ppl, obj->children[i]);
+    
+  }
+  
 }
 
 int powergl_rendering_pipeline_create( powergl_rendering_pipeline *ppl, powergl_rendering_object **objs, size_t n_object ) {
@@ -128,30 +161,15 @@ int powergl_rendering_pipeline_create( powergl_rendering_pipeline *ppl, powergl_
   ppl->cis.stride = 0;
   ppl->cis.offset = 0;
 
-    for ( size_t i = 0; i < n_object; i++ ) {
+  for ( size_t i = 0; i < n_object; i++ ) {
 
-    if ( objs[i]->geometry != NULL ) {
-
-      glGenVertexArrays( 1, &objs[i]->geometry->vao );
-      glGenBuffers( 1, &objs[i]->geometry->vbo );
-      glGenBuffers( 1, &objs[i]->geometry->nbo );
-      glGenBuffers( 1, &objs[i]->geometry->cbo );
-
-      glBindVertexArray(objs[i]->geometry->vao);
-      
-      glEnableVertexAttribArray( ppl->vis.index );
-      glEnableVertexAttribArray( ppl->nis.index );
-      glEnableVertexAttribArray( ppl->cis.index );
-
-      glBindVertexArray(0);
-
-    }
+    init_gpu_objects(ppl, objs[i]);
 
   }
 
   /*shader compiler input specs*/
-    const GLchar *const vsrc[] = {
-      "#version 330 core\n\
+  const GLchar *const vsrc[] = {
+    "#version 330 core\n\
     layout( location = 0 ) in vec3 vPosition;\n		\
     layout( location = 1 ) in vec3 vNormal;\n		\
     layout( location = 2 ) in vec3 vColor;\n   \
@@ -163,15 +181,15 @@ int powergl_rendering_pipeline_create( powergl_rendering_pipeline *ppl, powergl_
       colorToFs = vColor * ( lightColor * max(dot(vNormal, reflect(lightDir,vNormal)),0) );\n \
       gl_Position = mvp * vec4( vPosition, 1.0f );\n			\
     }"
-    };
-    const GLchar *const fsrc[] = {
-      "#version 330 core\n\
+  };
+  const GLchar *const fsrc[] = {
+    "#version 330 core\n\
     in vec3 colorToFs;\n			\
     out vec4 fColor;\n\
     void main(){\n			  \
       fColor = vec4( colorToFs ,1.0f );\n \
     }"
-    };
+  };
   /*vertex shader*/
   ppl->vs = glCreateShader( GL_VERTEX_SHADER );
   glShaderSource( ppl->vs, 1, vsrc, NULL );

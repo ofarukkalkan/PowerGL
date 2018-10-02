@@ -74,6 +74,10 @@ struct powergl_rendering_geometry_t {
 
 struct powergl_rendering_object_t {
 
+  // sub objects
+  powergl_rendering_object **children;
+  size_t n_child;
+
   // geometry
   powergl_rendering_geometry *geometry;
 
