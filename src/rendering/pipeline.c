@@ -9,95 +9,94 @@ int powergl_rendering_pipeline_render( powergl_rendering_pipeline *ppl, powergl_
   powergl_rendering_object *obj;
   powergl_rendering_geometry *geo;
 
-  glUseProgram( ppl->gp ); 
+  glUseProgram( ppl->gp );
+
+  if (main_light->light->color_flag == 1) {
+    main_light->light->color_flag = 0;
+    glUniform3fv( ppl->uni_light_color, 1, &main_light->light->color[0] );
+    //printf( "light color changed\n" );
+  }
+
+  if (main_light->light->dir_flag == 1) {
+    main_light->light->dir_flag = 0;
+    glUniform3fv( ppl->uni_light_dir, 1, &main_light->light->dir[0] );
+    //printf( "light dir changed\n" );
+  }
+
+  if ( main_camera->camera->view_flag == 1 || main_camera->camera->projection_flag == 1 ) {
+
+    powergl_ident4x4( main_camera->camera->vp );
+    powergl_mult4x4( main_camera->camera->vp, main_camera->camera->view );
+    powergl_mult4x4( main_camera->camera->vp, main_camera->camera->projection );
+
+    main_camera->camera->view_flag = 0;
+    main_camera->camera->projection_flag = 0;
+
+  }
+
 
   for ( size_t i = 0; i < n_object; ++i ) {
 
     obj = objs[i];
 
-    if ( obj->geometry == NULL ) {
-
-      continue;
-
-    } else {
-
-      geo = obj->geometry;
-
+    // first we need to draw child objects because other way we lose parent transformation matrix
+    // if we lose parent transformation matrix then child objects cannot see what happened to their parent
+    if ( obj->n_child > 0 ) {  
+      powergl_rendering_pipeline_render( ppl, obj->children, obj->n_child, main_camera, main_light );
     }
 
-
-    glBindVertexArray( geo->vao );
-
-    if ( main_camera->camera->view_flag == 1 || main_camera->camera->projection_flag == 1 || obj->matrix_flag == 1 ) {
-
-      if ( main_camera->camera->view_flag == 1 || main_camera->camera->projection_flag == 1 ) {
-
-	powergl_ident4x4( main_camera->camera->vp );
-	powergl_mult4x4( main_camera->camera->vp, main_camera->camera->view );
-	powergl_mult4x4( main_camera->camera->vp, main_camera->camera->projection );
-
-	main_camera->camera->view_flag = 0;
-	main_camera->camera->projection_flag = 0;
-
-      } 
+    if ( obj->matrix_flag == 1 ) {
 
       powergl_ident4x4( obj->mvp );
+
       powergl_mult4x4( obj->mvp, obj->matrix);
+
+      if ( obj->parent != NULL && obj->parent->matrix_flag == 1 ) {
+	powergl_mult4x4( obj->mvp, obj->parent->matrix);
+      }
+
       powergl_mult4x4( obj->mvp, main_camera->camera->vp );      
 
       obj->matrix_flag = 0;
 
-      //printf( "mvp transformation changed\n" );
-      //powergl_print4x4( obj->mvp );
-
-
+      /* printf( "mvp transformation changed\n" ); */
+      /* powergl_print4x4( obj->matrix ); */
     }
 
     glUniformMatrix4fv( ppl->uni_matrix, 1, GL_FALSE, &obj->mvp[0][0] );
 
+    for ( size_t j = 0; j < obj->n_geometry; j++) {
 
-    if (main_light->light->color_flag == 1) {
-      main_light->light->color_flag = 0;
-      glUniform3fv( ppl->uni_light_color, 1, &main_light->light->color[0] );
-      //printf( "light color changed\n" );
-    }
+      geo = obj->geometry[j];
 
-    if (main_light->light->dir_flag == 1) {
-      main_light->light->dir_flag = 0;
-      glUniform3fv( ppl->uni_light_dir, 1, &main_light->light->dir[0] );
-      //printf( "light dir changed\n" );
-    }
+      glBindVertexArray( geo->vao );
 
-    if ( geo->vertex_flag == 1 ) {
-      //printf( "vertex buffer filled\n" );
-      glBindBuffer( GL_ARRAY_BUFFER, geo->vbo );
-      glBufferData( GL_ARRAY_BUFFER, sizeof( powergl_vec3 ) * geo->n_vertex, geo->vertex, GL_STATIC_DRAW );
-      glVertexAttribPointer( ppl->vis.index, ppl->vis.size, ppl->vis.type, ppl->vis.normalized, ppl->vis.stride, ppl->vis.offset );
-      geo->vertex_flag = 0;
-    }
+      if ( geo->vertex_flag == 1 ) {
+	//printf( "vertex buffer filled\n" );
+	glBindBuffer( GL_ARRAY_BUFFER, geo->vbo );
+	glBufferData( GL_ARRAY_BUFFER, sizeof( powergl_vec3 ) * geo->n_vertex, geo->vertex, GL_STATIC_DRAW );
+	glVertexAttribPointer( ppl->vis.index, ppl->vis.size, ppl->vis.type, ppl->vis.normalized, ppl->vis.stride, ppl->vis.offset );
+	geo->vertex_flag = 0;
+      }
 
-    if ( geo->normal_flag == 1 ) {
-      //printf( "normal buffer filled\n" );
-      glBindBuffer( GL_ARRAY_BUFFER, geo->nbo );
-      glBufferData( GL_ARRAY_BUFFER, sizeof( powergl_vec3 ) * geo->n_normal, geo->normal, GL_STATIC_DRAW );
-      glVertexAttribPointer( ppl->nis.index, ppl->nis.size, ppl->nis.type, ppl->nis.normalized, ppl->nis.stride, ppl->nis.offset );
-      geo->normal_flag = 0;
-    }
+      if ( geo->normal_flag == 1 ) {
+	//printf( "normal buffer filled\n" );
+	glBindBuffer( GL_ARRAY_BUFFER, geo->nbo );
+	glBufferData( GL_ARRAY_BUFFER, sizeof( powergl_vec3 ) * geo->n_normal, geo->normal, GL_STATIC_DRAW );
+	glVertexAttribPointer( ppl->nis.index, ppl->nis.size, ppl->nis.type, ppl->nis.normalized, ppl->nis.stride, ppl->nis.offset );
+	geo->normal_flag = 0;
+      }
 
-    if ( geo->color_flag == 1 ) {
-      //printf( "color buffer filled\n" );
-      glBindBuffer( GL_ARRAY_BUFFER, geo->cbo );
-      glBufferData( GL_ARRAY_BUFFER, sizeof( powergl_vec3 ) * geo->n_color, geo->color, GL_STATIC_DRAW );
-      glVertexAttribPointer( ppl->cis.index, ppl->cis.size, ppl->cis.type, ppl->cis.normalized, ppl->cis.stride, ppl->cis.offset );
-      geo->color_flag = 0;
-    }
+      if ( geo->color_flag == 1 ) {
+	//printf( "color buffer filled\n" );
+	glBindBuffer( GL_ARRAY_BUFFER, geo->cbo );
+	glBufferData( GL_ARRAY_BUFFER, sizeof( powergl_vec3 ) * geo->n_color, geo->color, GL_STATIC_DRAW );
+	glVertexAttribPointer( ppl->cis.index, ppl->cis.size, ppl->cis.type, ppl->cis.normalized, ppl->cis.stride, ppl->cis.offset );
+	geo->color_flag = 0;
+      }
 
 
-    glDrawArrays( GL_TRIANGLES, 0, obj->geometry->n_vertex );
-
-    if ( obj->n_child > 0 ) {
-    
-      powergl_rendering_pipeline_render( ppl, obj->children, obj->n_child, main_camera, main_light );
+      glDrawArrays( GL_TRIANGLES, 0, geo->n_vertex );
 
     }
       
@@ -108,21 +107,25 @@ int powergl_rendering_pipeline_render( powergl_rendering_pipeline *ppl, powergl_
 
 void init_gpu_objects(powergl_rendering_pipeline *ppl ,powergl_rendering_object *obj) {
 
-  if ( obj->geometry != NULL ) {
+  for ( size_t i = 0; i < obj->n_geometry; i++ ) {
+    
+    if ( obj->geometry[i] != NULL ) {
 
-    glGenVertexArrays( 1, &obj->geometry->vao );
-    glGenBuffers( 1, &obj->geometry->vbo );
-    glGenBuffers( 1, &obj->geometry->nbo );
-    glGenBuffers( 1, &obj->geometry->cbo );
+      glGenVertexArrays( 1, &obj->geometry[i]->vao );
+      glGenBuffers( 1, &obj->geometry[i]->vbo );
+      glGenBuffers( 1, &obj->geometry[i]->nbo );
+      glGenBuffers( 1, &obj->geometry[i]->cbo );
 
-    glBindVertexArray(obj->geometry->vao);
+      glBindVertexArray(obj->geometry[i]->vao);
       
-    glEnableVertexAttribArray( ppl->vis.index );
-    glEnableVertexAttribArray( ppl->nis.index );
-    glEnableVertexAttribArray( ppl->cis.index );
+      glEnableVertexAttribArray( ppl->vis.index );
+      glEnableVertexAttribArray( ppl->nis.index );
+      glEnableVertexAttribArray( ppl->cis.index );
 
-    glBindVertexArray(0);
+      glBindVertexArray(0);
 
+    }
+    
   }
   
   for ( size_t i = 0; i < obj->n_child; i++ ) {

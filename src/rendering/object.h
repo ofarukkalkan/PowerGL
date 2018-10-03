@@ -74,13 +74,17 @@ struct powergl_rendering_geometry_t {
 
 struct powergl_rendering_object_t {
 
+  // parent
+  powergl_rendering_object *parent;
+
   // sub objects
   powergl_rendering_object **children;
   size_t n_child;
 
   // geometry
-  powergl_rendering_geometry *geometry;
-
+  powergl_rendering_geometry **geometry;
+  size_t n_geometry;
+  
   // camera
   powergl_rendering_camera *camera;
 
@@ -109,7 +113,7 @@ struct powergl_rendering_object_t {
 int powergl_rendering_geometry_create( powergl_rendering_geometry * );
 int powergl_rendering_camera_create( powergl_rendering_camera * );
 int powergl_rendering_light_create( powergl_rendering_light * );
-int powergl_rendering_object_create( powergl_rendering_object * );
+int powergl_rendering_object_create( powergl_rendering_object *, powergl_rendering_object * );
 int powergl_rendering_object_run( powergl_rendering_object * );
 int powergl_rendering_object_rotate ( powergl_rendering_object *obj, float axisx,float axisy,float axisz, float radians );
 int powergl_rendering_geometry_transform_normals(powergl_rendering_geometry *geo, GLfloat m[4][4]);
