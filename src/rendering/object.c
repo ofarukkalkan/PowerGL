@@ -36,7 +36,7 @@ int powergl_rendering_geometry_create( powergl_rendering_geometry *geometry ) {
   geometry->n_index = 0;
 }
 
-int powergl_rendering_object_create( powergl_rendering_object *obj, powergl_rendering_object *parent ) {
+void powergl_rendering_object_create( powergl_rendering_object *obj, powergl_rendering_object *parent ) {
   obj->parent = parent;
   
   obj->matrix_flag = 0;
@@ -53,6 +53,10 @@ int powergl_rendering_object_create( powergl_rendering_object *obj, powergl_rend
 
   obj->children = NULL;
   obj->n_child = 0;
+
+  obj->id = NULL;
+  obj->name = NULL;
+  
 }
 
 int powergl_rendering_object_rotate( powergl_rendering_object *obj, float axisx,float axisy,float axisz, float radians ) {
@@ -68,6 +72,7 @@ int powergl_rendering_object_rotate( powergl_rendering_object *obj, float axisx,
     if ( obj->geometry[i] != NULL && obj->geometry[i]->normal != NULL ) {
       powergl_rendering_geometry_transform_normals(obj->geometry[i], rotation);
     }
+    
   }
   
   obj->matrix_flag = 1;
@@ -89,18 +94,14 @@ int powergl_rendering_geometry_transform_normals(powergl_rendering_geometry *geo
 }
 
 
-int powergl_rendering_object_run( powergl_rendering_object *obj ) {
-  
-  /* if ( obj->parent == NULL ) { */
-  /*   powergl_rendering_object_rotate(obj, 1.0f, 0.0f, 0.0f, 0.001f); */
-  /* } */
+void powergl_rendering_object_run( powergl_rendering_object *obj ) {
   
   if ( obj->parent != NULL && obj->parent->matrix_flag == 1 ) {
     obj->matrix_flag = 1;
   }
   
   for ( size_t i = 0; i < obj->n_child; i++ ) {
-    powergl_rendering_object_run(obj->children[i]);
+    obj->run(obj->children[i]);
   }
   
 }

@@ -7,10 +7,17 @@
 
 typedef struct powergl_util_app_t powergl_util_app;
 
+typedef void powergl_create_app_func(powergl_util_app *);
+typedef void powergl_run_app_func(powergl_util_app *);
+
 struct powergl_util_app_t {
 
   // visual scene
-  powergl_rendering_visualscene scene;
+  powergl_rendering_visualscene *scene;
+
+  // virtual functions
+  powergl_run_app_func *run;
+  powergl_create_app_func *create;
 };
 
 int powergl_util_app_create( powergl_util_app * );

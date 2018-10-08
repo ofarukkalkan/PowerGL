@@ -7,6 +7,9 @@
 
 typedef struct powergl_rendering_visualscene_t powergl_rendering_visualscene;
 
+typedef void powergl_create_visualscene_func(powergl_rendering_visualscene *);
+typedef void powergl_run_visualscene_func(powergl_rendering_visualscene *);
+
 struct powergl_rendering_visualscene_t {
 
   // objects
@@ -22,10 +25,11 @@ struct powergl_rendering_visualscene_t {
   // pipeline
   powergl_rendering_pipeline pipeline;
 
+  powergl_run_visualscene_func *run;
+  powergl_create_visualscene_func *create;
+
 };
 
-int powergl_rendering_visualscene_create( powergl_rendering_visualscene *, const char * );
-int powergl_rendering_visualscene_run( powergl_rendering_visualscene * );
 void powergl_rendering_visualscene_build_from_dae( powergl_rendering_visualscene *, const char * );
 
 

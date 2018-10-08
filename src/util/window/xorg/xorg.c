@@ -198,7 +198,7 @@ int powergl_util_window_xorg_run( powergl_util_window_xorg *wnd ) {
   //glEnable(GL_MULTISAMPLE);
   glClearColor( 0.3f, 0.6f, 0.9f, 1.0f );
 
-  powergl_util_app_create( &wnd->_base.root_app );
+  powergl_util_app_create( wnd->_base.root_app );
 
  here:
 
@@ -217,7 +217,7 @@ int powergl_util_window_xorg_run( powergl_util_window_xorg *wnd ) {
 
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-  powergl_util_app_run( &wnd->_base.root_app );
+  powergl_util_app_run( wnd->_base.root_app );
 
   glXSwapBuffers( wnd->display, wnd->window );
 

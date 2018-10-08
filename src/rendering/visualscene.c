@@ -630,6 +630,11 @@ static void build_transform( collada_type( node ) * node, powergl_rendering_obje
 }
 
 static void build_objects(powergl_rendering_visualscene *scene ,collada_type(node) *node, powergl_rendering_object *obj){
+
+  if ( node->a_id.value != NULL ) {
+    obj->id = powergl_resize(NULL, sizeof(char) * (strlen(node->a_id.value) + 1));
+    strcpy(obj->id, node->a_id.value);
+  }
   
   if ( node->n_matrix > 0 ) {
 
@@ -681,6 +686,7 @@ static void build_objects(powergl_rendering_visualscene *scene ,collada_type(nod
   }
 }
 
+
 static void build_from_dae( powergl_rendering_visualscene *this, const char *file ) {
 #if DEBUG_OUTPUT
   printf( "%s\n", __func__ );
@@ -708,25 +714,5 @@ static void build_from_dae( powergl_rendering_visualscene *this, const char *fil
     build_objects(this, node, this->objects[i]);
     
   } // for each node
-
-}
-
-
-int powergl_rendering_visualscene_create( powergl_rendering_visualscene *vscene, const char *daefile ) {
-
-  build_from_dae( vscene, daefile );
-  powergl_rendering_pipeline_create( &vscene->pipeline, vscene->objects, vscene->n_object );
-}
-
-
-int powergl_rendering_visualscene_run( powergl_rendering_visualscene *vscene ) {
-
-  for ( size_t i = 0 ; i < vscene->n_object; i++ ) {
-
-    powergl_rendering_object_run( vscene->objects[i] );
-
-  }
-
-  powergl_rendering_pipeline_render( &vscene->pipeline, vscene->objects, vscene->n_object, vscene->main_camera, vscene->main_light );
 
 }

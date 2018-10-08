@@ -13,6 +13,9 @@ typedef struct powergl_rendering_geometry_t powergl_rendering_geometry;
 typedef struct powergl_rendering_camera_t powergl_rendering_camera;
 typedef struct powergl_rendering_light_t powergl_rendering_light;
 
+typedef void powergl_run_object_func(powergl_rendering_object*);
+typedef void powergl_create_object_func(powergl_rendering_object*);
+
 struct powergl_rendering_light_t {
 
   char type;
@@ -106,15 +109,21 @@ struct powergl_rendering_object_t {
 
 
   // info
-  const char *id;
-  const char *name;
+  char *id;
+  char *name;
+
+  // virtual functions
+  powergl_run_object_func *run;
+  powergl_create_object_func *create;
+  
 };
+
+void powergl_rendering_object_create( powergl_rendering_object *,powergl_rendering_object *);
+void powergl_rendering_object_run( powergl_rendering_object *);
 
 int powergl_rendering_geometry_create( powergl_rendering_geometry * );
 int powergl_rendering_camera_create( powergl_rendering_camera * );
 int powergl_rendering_light_create( powergl_rendering_light * );
-int powergl_rendering_object_create( powergl_rendering_object *, powergl_rendering_object * );
-int powergl_rendering_object_run( powergl_rendering_object * );
 int powergl_rendering_object_rotate ( powergl_rendering_object *obj, float axisx,float axisy,float axisz, float radians );
 int powergl_rendering_geometry_transform_normals(powergl_rendering_geometry *geo, GLfloat m[4][4]);
 

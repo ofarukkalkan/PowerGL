@@ -22,6 +22,9 @@ AC_PROG_RANLIB
 
 # Checks for libraries.
 AC_CHECK_LIB([m], [sqrtf])
+AC_CHECK_LIB([GL], [glEnable])
+AC_CHECK_LIB([X11], [XFree])
+AC_CHECK_LIB([expat], [XML_Parse])
 
 # Checks for header files.
 AC_CHECK_HEADERS([stddef.h stdlib.h string.h])
