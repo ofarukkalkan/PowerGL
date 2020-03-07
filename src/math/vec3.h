@@ -3,13 +3,15 @@
 
 #include <math.h>
 
-typedef struct {
-  float x;
-  float y;
-  float z;
+typedef struct
+{
+    float x;
+    float y;
+    float z;
 } powergl_vec3;
 
 void powergl_printvec3( powergl_vec3 *v );
+void powergl_copyvec3( powergl_vec3 *v, powergl_vec3 *v1 );
 void powergl_normvec3( const powergl_vec3 *m, powergl_vec3 *r );
 void powergl_subvec3( const powergl_vec3 *m, const powergl_vec3 *n, powergl_vec3 *r );
 void powergl_mulvec3( const powergl_vec3 *m, const powergl_vec3 *n, powergl_vec3 *r );

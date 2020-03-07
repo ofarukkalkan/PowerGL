@@ -3,7 +3,8 @@ SUBDIRS = \
 	util \
 	rendering \
 	math \
-	asset
+	physics \
+	collada
 
 lib_LTLIBRARIES = libpowergl.la
 libpowergl_ladir = $(includedir)/powergl
@@ -16,5 +17,6 @@ libpowergl_la_LIBADD = \
 	util/libpowerglutil.la \
 	rendering/libpowerglrendering.la \
 	math/libpowerglmath.la \
-	asset/libpowerglasset.la
+	physics/libpowerglphysics.la \
+	collada/libpowerglcollada.la
 
