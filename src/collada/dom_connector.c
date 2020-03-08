@@ -1,10 +1,8 @@
 #include "dom_connector.h"
 
-static const size_t g_max_unit_per_line = 50;
-
 void powergl_collada_add_child(arr_dom_connector *this, size_t index, dom_connector *child)
 {
-    this[index].nodes = powergl_resize(this[index].nodes, ++this[index].n_node * sizeof(dom_connector*));
+  this[index].nodes = powergl_resize(this[index].nodes, ++this[index].n_node, sizeof(dom_connector*));
     this[index].nodes[this[index].n_node-1] = child;
 }
 
@@ -15,13 +13,13 @@ void powergl_collada_set_ref(arr_dom_connector *this, size_t index, dom_connecto
 
 void powergl_collada_parse_attrib(arr_dom_connector *this, size_t index, const char *value)
 {
-    this[index].nodes[0]->value = powergl_resize(NULL, (strlen(value)+1) * sizeof(char));
+  this[index].nodes[0]->value = powergl_resize(NULL, (strlen(value)+1), sizeof(char));
     strcpy(this[index].nodes[0]->value, value);
 }
 
 void powergl_collada_parse_content(arr_dom_connector *this, size_t index, const char *value)
 {
-    this[index].nodes[0]->value = powergl_resize(NULL, (strlen(value)+1) * sizeof(char));
+  this[index].nodes[0]->value = powergl_resize(NULL, (strlen(value)+1), sizeof(char));
     strcpy(this[index].nodes[0]->value, value);
 }
 

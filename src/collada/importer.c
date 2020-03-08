@@ -26,7 +26,7 @@ static size_t g_ref_index;
 int powergl_collada_init_node(dom_connector *this, dom_connector *parent, const char *name, const char **attr, size_t nattr )
 {
     g_current_elem = this;
-    this->name = powergl_resize(NULL, (strlen(name)+1) * sizeof(char));
+    this->name = powergl_resize(NULL, (strlen(name)+1), sizeof(char));
     strcpy(this->name, name);
     /////////////
     //init parent's field
@@ -49,7 +49,7 @@ int powergl_collada_init_node(dom_connector *this, dom_connector *parent, const 
     /////////////
     //init sub nodes
     /////
-    this->nodes = powergl_resize(NULL, this->n_map * sizeof(arr_dom_connector));
+    this->nodes = powergl_resize(NULL, this->n_map, sizeof(arr_dom_connector));
     for(size_t i=0; i<this->n_map; i++)
         {
             this->nodes[i].n_node = 0;
@@ -62,9 +62,9 @@ int powergl_collada_init_node(dom_connector *this, dom_connector *parent, const 
                         {
                             if(strcmp(this->map[i].name, attr[j*2]) == 0)
                                 {
-                                    dom_connector *newattr = powergl_resize(NULL, sizeof(dom_connector));
+				  dom_connector *newattr = powergl_resize(NULL, 1, sizeof(dom_connector));
                                     newattr->parent = this;
-                                    newattr->name = powergl_resize(NULL, (strlen(attr[j*2])+1) * sizeof(char));
+                                    newattr->name = powergl_resize(NULL, (strlen(attr[j*2])+1), sizeof(char));
                                     strcpy(newattr->name, attr[j*2]);
                                     this->add_child(this, i, newattr);
                                     this->parse_attrib(this, i, attr[j*2+1]);
@@ -74,9 +74,9 @@ int powergl_collada_init_node(dom_connector *this, dom_connector *parent, const 
                 break;
                 case 2:
                 {
-                    dom_connector *newcontent = powergl_resize(NULL, sizeof(dom_connector));
+		  dom_connector *newcontent = powergl_resize(NULL, 1, sizeof(dom_connector));
                     newcontent->parent = this;
-                    newcontent->name = powergl_resize(NULL, (strlen("content")+1) * sizeof(char));
+                    newcontent->name = powergl_resize(NULL, (strlen("content")+1), sizeof(char));
                     strcpy(newcontent->name,"content");
                     this->add_child(this, i, newcontent);
                     g_content_flag = 1;
@@ -85,20 +85,20 @@ int powergl_collada_init_node(dom_connector *this, dom_connector *parent, const 
                 }
                 case 3:
                 {
-                    dom_connector *newref = powergl_resize(NULL, sizeof(dom_connector));
+		  dom_connector *newref = powergl_resize(NULL, 1, sizeof(dom_connector));
                     newref->parent = this;
-                    newref->name = powergl_resize(NULL, (strlen(this->map[i].base_type)+1) * sizeof(char));
+                    newref->name = powergl_resize(NULL, (strlen(this->map[i].base_type)+1), sizeof(char));
                     strcpy(newref->name, this->map[i].base_type);
                     this->add_child(this, i, newref);
                     g_ref_content_flag = 1;
                     g_ref_index = i;
-                    g_pending_references = powergl_resize( g_pending_references, ++g_n_pending_reference * sizeof( dom_connector * ) );
+                    g_pending_references = powergl_resize( g_pending_references, ++g_n_pending_reference,  sizeof( dom_connector * ) );
                     g_pending_references[g_n_pending_reference - 1] = newref;
                     for(size_t j=0; j<this->n_map; j++)
                         {
                             if(this->map[j].node_type == 1  &&  strcmp(this->map[j].name, this->map[g_ref_index].name) == 0)
                                 {
-                                    this->nodes[g_ref_index].nodes[0]->value = powergl_resize(NULL, (strlen(this->nodes[j].nodes[0]->value)+1) * sizeof(char));
+				  this->nodes[g_ref_index].nodes[0]->value = powergl_resize(NULL, (strlen(this->nodes[j].nodes[0]->value)+1), sizeof(char));
                                     strcpy(this->nodes[g_ref_index].nodes[0]->value, this->nodes[j].nodes[0]->value);
                                     g_ref_content_flag = 0;
                                 }
@@ -147,7 +147,7 @@ static void elemend( void *userdata, const char *elem )
                                 {
                                     if(this->map[j].node_type == 2  &&  strcmp(this->map[j].name, this->map[g_ref_index].name) == 0)
                                         {
-                                            this->nodes[g_ref_index].nodes[0]->value = powergl_resize(NULL, (strlen(this->nodes[j].nodes[0]->value)+1) * sizeof(char));
+					  this->nodes[g_ref_index].nodes[0]->value = powergl_resize(NULL, (strlen(this->nodes[j].nodes[0]->value)+1), sizeof(char));
                                             strcpy(this->nodes[g_ref_index].nodes[0]->value, this->nodes[j].nodes[0]->value);
                                             g_ref_content_flag = 0;
                                         }
@@ -178,12 +178,12 @@ static void chardata( void *userdata, const XML_Char *string, int len )
         {
             if ( g_parser_status == 1 )   // eger onceki asamada chardata calistiysa onceki ile burdaki string i birlestir
                 {
-                    g_content_buffer = powergl_resize(g_content_buffer, (strlen(g_content_buffer) + len + 1) * sizeof(char));
+		  g_content_buffer = powergl_resize(g_content_buffer, (strlen(g_content_buffer) + len + 1), sizeof(char));
                     strncat(g_content_buffer, string, len);
                 }
             else
                 {
-                    g_content_buffer = powergl_resize(NULL, (len+1) * sizeof(char));
+		  g_content_buffer = powergl_resize(NULL, (len+1),  sizeof(char));
                     strncpy(g_content_buffer, string, len);
                 }
 #if DEBUG_OUTPUT
@@ -315,7 +315,6 @@ dom_connector *powergl_collada_parse ( const char *filename )
     FILE *f;
     long fsize;
     char *string;
-    size_t i;
     /* init local */
     string = NULL;
     fsize = 0;

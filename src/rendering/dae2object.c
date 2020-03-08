@@ -7,10 +7,10 @@ static const size_t powergl_vertex_input_supported = 3;
 
 static float to_radians( float degrees )
 {
-    return degrees * ( 3.141592f / 180.0f );
+    return degrees * ( 3.141592 / 180.0 );
 }
 
-void powergl_build_geometry_triangle_index( powergl_rendering_geometry *geo, powergl_collada_core_triangles *triangles, powergl_collada_core_input_local_offset *vertex_input, powergl_collada_core_input_local_offset  *color_input, powergl_collada_core_input_local_offset  *normal_input )
+void powergl_build_geometry_triangle_index( powergl_geometry *geo, powergl_collada_core_triangles *triangles, powergl_collada_core_input_local_offset *vertex_input, powergl_collada_core_input_local_offset  *color_input, powergl_collada_core_input_local_offset  *normal_input )
 {
 #if DEBUG_OUTPUT
     printf( "%s\n", __func__ );
@@ -41,7 +41,7 @@ void powergl_build_geometry_triangle_index( powergl_rendering_geometry *geo, pow
     size_t vertex_count = 3 * p_count;
     // total index count
     size_t n_index = vertex_count * powergl_vertex_input_supported;
-    geo->index = powergl_resize( NULL, sizeof( GLuint ) * n_index );
+    geo->index = powergl_resize( NULL, n_index, sizeof( GLuint ) );
     // get xml collada_type that contains index values
     powergl_collada_core_ListOfUInts  *p_arr = triangles->c_p[0];
     // each triangle has how many vertex attribute in _ imported file _
@@ -66,7 +66,7 @@ void powergl_build_geometry_triangle_index( powergl_rendering_geometry *geo, pow
     geo->n_index = n_index;
 }
 
-void powergl_build_geometry_triangle_color( powergl_rendering_geometry *geo, powergl_collada_core_triangles  *triangles, powergl_collada_core_input_local_offset  *color_input )
+void powergl_build_geometry_triangle_color( powergl_geometry *geo, powergl_collada_core_triangles  *triangles, powergl_collada_core_input_local_offset  *color_input )
 {
 #if DEBUG_OUTPUT
     printf( "%s\n", __func__ );
@@ -102,7 +102,7 @@ void powergl_build_geometry_triangle_color( powergl_rendering_geometry *geo, pow
                 }
             size_t p_count = triangles->c_count;
             size_t vertex_count = p_count * 3;
-            geo->color = powergl_resize( NULL, sizeof( powergl_vec3 ) * vertex_count );
+            geo->color = powergl_resize( NULL, vertex_count, sizeof( powergl_vec3 ));
             for ( size_t i = 0; i < vertex_count ; i++ )
                 {
                     size_t index = geo->index[ i * powergl_vertex_input_supported + powergl_color_offset ];
@@ -121,7 +121,7 @@ void powergl_build_geometry_triangle_color( powergl_rendering_geometry *geo, pow
         }
 }
 
-void powergl_build_geometry_triangle_normal( powergl_rendering_geometry *geo, powergl_collada_core_triangles  *triangles, powergl_collada_core_input_local_offset  *normal_input )
+void powergl_build_geometry_triangle_normal( powergl_geometry *geo, powergl_collada_core_triangles  *triangles, powergl_collada_core_input_local_offset  *normal_input )
 {
 #if DEBUG_OUTPUT
     printf( "%s\n", __func__ );
@@ -157,7 +157,7 @@ void powergl_build_geometry_triangle_normal( powergl_rendering_geometry *geo, po
                 }
             size_t p_count = triangles->c_count;
             size_t vertex_count = p_count * 3;
-            geo->normal = powergl_resize( NULL, sizeof( powergl_vec3 ) * vertex_count );
+            geo->normal = powergl_resize( NULL, vertex_count, sizeof( powergl_vec3 ));
             for ( size_t i = 0; i < vertex_count ; i++ )
                 {
                     size_t index = geo->index[ i * powergl_vertex_input_supported + powergl_normal_offset ];
@@ -176,7 +176,7 @@ void powergl_build_geometry_triangle_normal( powergl_rendering_geometry *geo, po
         }
 }
 
-void powergl_build_geometry_triangle_vertex( powergl_rendering_geometry *geo, powergl_collada_core_triangles  *triangles, powergl_collada_core_input_local_offset  *vertex_input )
+void powergl_build_geometry_triangle_vertex( powergl_geometry *geo, powergl_collada_core_triangles  *triangles, powergl_collada_core_input_local_offset  *vertex_input )
 {
 #if DEBUG_OUTPUT
     printf( "%s\n", __func__ );
@@ -225,7 +225,7 @@ void powergl_build_geometry_triangle_vertex( powergl_rendering_geometry *geo, po
                                 } // count how many params has name attribute
                             size_t p_count = triangles->c_count;
                             size_t vertex_count = p_count * 3;
-                            geo->vertex = powergl_resize( NULL, sizeof( powergl_vec3 ) * vertex_count );
+                            geo->vertex = powergl_resize( NULL, vertex_count, sizeof( powergl_vec3 ) );
                             for ( size_t i = 0; i < vertex_count ; i++ )
                                 {
                                     size_t index = geo->index[ i * powergl_vertex_input_supported + powergl_vertex_offset ];
@@ -246,7 +246,7 @@ void powergl_build_geometry_triangle_vertex( powergl_rendering_geometry *geo, po
         } // if vertices has an input
 }
 
-void powergl_build_geometry_triangle( powergl_rendering_geometry *geo, powergl_collada_core_triangles  *triangles )
+void powergl_build_geometry_triangle( powergl_geometry *geo, powergl_collada_core_triangles  *triangles )
 {
 #if DEBUG_OUTPUT
     printf( "%s\n", __func__ );
@@ -287,30 +287,29 @@ void powergl_build_geometry_triangle( powergl_rendering_geometry *geo, powergl_c
         } // if triangles collada_type has input collada_types
 }
 
-void powergl_build_geometry( powergl_collada_core_node  * node, powergl_rendering_object *obj )
+void powergl_build_geometry( powergl_collada_core_node  * node, powergl_object *obj )
 {
 #if DEBUG_OUTPUT
     printf( "%s\n", __func__ );
 #endif
     powergl_collada_core_geometry  *geo =  node->c_instance_geometry[0]->r_geometry;
     powergl_collada_core_mesh  *mesh = geo->c_mesh[0];
-    obj->geometry = powergl_resize( NULL, sizeof(powergl_rendering_geometry*) * mesh->n_triangles );
+    obj->geometry = powergl_resize( NULL, mesh->n_triangles, sizeof(powergl_geometry*));
     obj->n_geometry = mesh->n_triangles;
     for ( size_t i = 0; i <  mesh->n_triangles; i++ )
         {
             powergl_collada_core_triangles  *triangle = mesh->c_triangles[i];
-            obj->geometry[i] = powergl_resize( NULL, sizeof(powergl_rendering_geometry) );
-            powergl_rendering_geometry_create( obj->geometry[i] );
+            obj->geometry[i] = powergl_resize( NULL, 1, sizeof(powergl_geometry));
             powergl_build_geometry_triangle( obj->geometry[i], triangle );
         } // if mesh has triangle collada_type
 }
 
-void powergl_build_camera( powergl_collada_core_node  * node, powergl_rendering_object *obj )
+void powergl_build_camera( powergl_collada_core_node  * node, powergl_object *obj )
 {
 #if DEBUG_OUTPUT
     printf( "%s\n", __func__ );
 #endif
-    powergl_rendering_camera *cam = obj->camera;
+    powergl_camera *cam = obj->camera;
     powergl_collada_core_camera  *cam_elem = node->c_instance_camera[0]->r_camera;
     powergl_collada_core_perspective  *pers = cam_elem->c_optics[0]->c_technique_common[0]->c_perspective[0];
     if ( pers != NULL )
@@ -381,13 +380,12 @@ void powergl_build_camera( powergl_collada_core_node  * node, powergl_rendering_
         }
 }
 
-void powergl_build_light( powergl_collada_core_node * node, powergl_rendering_object *obj )
+void powergl_build_light( powergl_collada_core_node * node, powergl_object *obj )
 {
 #if DEBUG_OUTPUT
     printf( "%s\n", __func__ );
 #endif
     //////////////////////////////////////////// color
-    powergl_rendering_light *light = obj->light;
     powergl_collada_core_light *light_elem =  node->c_instance_light[0]->r_light;
     powergl_collada_core_light_technique_common  *tc = light_elem->c_technique_common[0];
     if ( tc != NULL && tc->c_directional != NULL )
@@ -446,7 +444,7 @@ void powergl_build_light( powergl_collada_core_node * node, powergl_rendering_ob
         }
 }
 
-void powergl_build_transform( powergl_collada_core_node * node, powergl_rendering_object *obj )
+void powergl_build_transform( powergl_collada_core_node * node, powergl_object *obj )
 {
 #if DEBUG_OUTPUT
     printf( "%s\n", __func__ );
@@ -456,7 +454,7 @@ void powergl_build_transform( powergl_collada_core_node * node, powergl_renderin
         {
             for ( size_t j = 0; j < 4; j++ )
                 {
-                    obj->matrix[i][j] = ( float ) matrix->content[i * 4 + j];
+                    obj->matrix[i][j] = matrix->content[i * 4 + j];
                 }
         }
     powergl_trans4x4( obj->matrix );
@@ -466,11 +464,11 @@ void powergl_build_transform( powergl_collada_core_node * node, powergl_renderin
     obj->matrix_flag = 1;
 }
 
-void powergl_build_object( powergl_collada_core_node *node, powergl_rendering_object *obj)
+void powergl_build_object( powergl_collada_core_node *node, powergl_object *obj)
 {
     if ( node->c_id != NULL )
         {
-            obj->id = powergl_resize(NULL, sizeof(char) * (strlen(node->c_id) + 1));
+	  obj->id = powergl_resize(NULL, (strlen(node->c_id) + 1), sizeof(char));
             strcpy(obj->id, node->c_id);
         }
     if ( node->n_matrix > 0 )
@@ -483,30 +481,12 @@ void powergl_build_object( powergl_collada_core_node *node, powergl_rendering_ob
         } // if node has instance_geometry
     if ( node->n_instance_camera > 0 )
         {
-            obj->camera = powergl_resize( NULL, sizeof( powergl_rendering_camera ) );
-            powergl_rendering_camera_create( obj->camera );
+	  obj->camera = powergl_resize( NULL, 1, sizeof( powergl_camera ) );
             powergl_build_camera( node, obj );
         } // if node has instance_camera
     if ( node->n_instance_light > 0 )
         {
-            obj->light = powergl_resize( NULL, sizeof( powergl_rendering_light ) );
-            powergl_rendering_light_create( obj->light );
+	  obj->light = powergl_resize( NULL, 1, sizeof( powergl_light ) );
             powergl_build_light( node, obj );
         } // if node has instance_light
-    /*
-    if ( node->n_node > 0 ) {
-
-      obj->children = powergl_resize( NULL, sizeof(powergl_rendering_object*) * node->n_node);
-      obj->n_child = node->n_node;
-
-      for ( size_t i = 0; i < node->n_node; i++ ) {
-
-        obj->children[i] = powergl_resize( NULL, sizeof( powergl_rendering_object ) );
-        powergl_rendering_object_create( obj->children[i], obj);
-
-        powergl_build_object( node->c_node[i], obj->children[i]);
-      }
-
-    }
-    */
 }

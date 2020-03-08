@@ -6,14 +6,14 @@
 
 void powergl_print4x4( float m[4][4] )
 {
-    unsigned i, j;
+  size_t i, j;
     printf( "\n" );
     for ( i = 0; i < 4; ++i )
         {
             printf( "[ " );
             for ( j = 0; j < 4; j++ )
                 {
-                    printf( "%f ", m[i][j] );
+                    printf( "%lf ", m[i][j] );
                 }
             printf( " ]\n" );
         }
@@ -21,54 +21,54 @@ void powergl_print4x4( float m[4][4] )
 
 void powergl_copy4x4( GLfloat m[4][4], const GLfloat n[4][4])
 {
-    unsigned i, j;
-    for ( i = 0; i < 4; ++i )
-        {
-            for ( j = 0; j < 4; j++ )
-                {
-                    m[i][j] = n[i][j];
-                }
-        }
+  size_t i, j;
+  for ( i = 0; i < 4; ++i )
+    {
+      for ( j = 0; j < 4; j++ )
+	{
+	  m[i][j] = n[i][j];
+	}
+    }
 }
 
 void powergl_zero4x4( GLfloat m[4][4] )
 {
-    m[0][0] = 0.0f;
-    m[0][1] = 0.0f;
-    m[0][2] = 0.0f;
-    m[0][3] = 0.0f;
-    m[1][0] = 0.0f;
-    m[1][1] = 0.0f;
-    m[1][2] = 0.0f;
-    m[1][3] = 0.0f;
-    m[2][0] = 0.0f;
-    m[2][1] = 0.0f;
-    m[2][2] = 0.0f;
-    m[2][3] = 0.0f;
-    m[3][0] = 0.0f;
-    m[3][1] = 0.0f;
-    m[3][2] = 0.0f;
-    m[3][3] = 0.0f;
+    m[0][0] = 0.0;
+    m[0][1] = 0.0;
+    m[0][2] = 0.0;
+    m[0][3] = 0.0;
+    m[1][0] = 0.0;
+    m[1][1] = 0.0;
+    m[1][2] = 0.0;
+    m[1][3] = 0.0;
+    m[2][0] = 0.0;
+    m[2][1] = 0.0;
+    m[2][2] = 0.0;
+    m[2][3] = 0.0;
+    m[3][0] = 0.0;
+    m[3][1] = 0.0;
+    m[3][2] = 0.0;
+    m[3][3] = 0.0;
 }
 
 void powergl_ident4x4( GLfloat m[4][4] )
 {
-    m[0][0] = 1.0f;
-    m[0][1] = 0.0f;
-    m[0][2] = 0.0f;
-    m[0][3] = 0.0f;
-    m[1][0] = 0.0f;
-    m[1][1] = 1.0f;
-    m[1][2] = 0.0f;
-    m[1][3] = 0.0f;
-    m[2][0] = 0.0f;
-    m[2][1] = 0.0f;
-    m[2][2] = 1.0f;
-    m[2][3] = 0.0f;
-    m[3][0] = 0.0f;
-    m[3][1] = 0.0f;
-    m[3][2] = 0.0f;
-    m[3][3] = 1.0f;
+    m[0][0] = 1.0;
+    m[0][1] = 0.0;
+    m[0][2] = 0.0;
+    m[0][3] = 0.0;
+    m[1][0] = 0.0;
+    m[1][1] = 1.0;
+    m[1][2] = 0.0;
+    m[1][3] = 0.0;
+    m[2][0] = 0.0;
+    m[2][1] = 0.0;
+    m[2][2] = 1.0;
+    m[2][3] = 0.0;
+    m[3][0] = 0.0;
+    m[3][1] = 0.0;
+    m[3][2] = 0.0;
+    m[3][3] = 1.0;
 }
 
 //this func. transforms vector v using m transformation matrix and does normalization on result vector to get H = 1
@@ -139,7 +139,7 @@ void powergl_trans4x4( GLfloat m[4][4] )
 int powergl_inv4x4( GLfloat m[16], GLfloat invOut[16] )
 {
     GLfloat inv[16];
-    GLfloat det = 0.0f;
+    GLfloat det = 0.0;
     inv[ 0] =  m[5] * m[10] * m[15] - m[5] * m[11] * m[14] - m[9] * m[6] * m[15] + m[9] * m[7] * m[14] + m[13] * m[6] * m[11] - m[13] * m[7] * m[10];
     inv[ 4] = -m[4] * m[10] * m[15] + m[4] * m[11] * m[14] + m[8] * m[6] * m[15] - m[8] * m[7] * m[14] - m[12] * m[6] * m[11] + m[12] * m[7] * m[10];
     inv[ 8] =  m[4] * m[ 9] * m[15] - m[4] * m[11] * m[13] - m[8] * m[5] * m[15] + m[8] * m[7] * m[13] + m[12] * m[5] * m[11] - m[12] * m[7] * m[ 9];
@@ -157,11 +157,11 @@ int powergl_inv4x4( GLfloat m[16], GLfloat invOut[16] )
     inv[11] = -m[0] * m[ 5] * m[11] + m[0] * m[ 7] * m[ 9] + m[4] * m[1] * m[11] - m[4] * m[3] * m[ 9] - m[ 8] * m[1] * m[ 7] + m[ 8] * m[3] * m[ 5];
     inv[15] =  m[0] * m[ 5] * m[10] - m[0] * m[ 6] * m[ 9] - m[4] * m[1] * m[10] + m[4] * m[2] * m[ 9] + m[ 8] * m[1] * m[ 6] - m[ 8] * m[2] * m[ 5];
     det = m[0] * inv[0] + m[1] * inv[4] + m[2] * inv[8] + m[3] * inv[12];
-    if ( det == 0.0f )
+    if ( det == 0.0 )
         {
             return 0;
         }
-    det = 1.0f / det;
+    det = 1.0 / det;
     for ( size_t i = 0; i < 16; i++ )
         {
             invOut[i] = inv[i] * det;
@@ -185,7 +185,7 @@ void powergl_rot4x4( GLfloat m[4][4], float angle, powergl_vec3 *axis )
     c = cosf( a );
     s = sinf( a );
     powergl_normvec3( axis, axis );
-    tmp = 1.0f - c;
+    tmp = 1.0 - c;
     temp.x = axis->x * tmp;
     temp.y = axis->y * tmp;
     temp.z = axis->z * tmp;
@@ -222,19 +222,19 @@ void powergl_rot4x4( GLfloat m[4][4], float angle, powergl_vec3 *axis )
 /* creating rigth handed and 0 to 1 depth ranged perspective projection transformation */
 void powergl_perspectiveRH( GLfloat projection[4][4], float fovy, float aspect, float zNear, float zFar )
 {
-    assert( fabs( aspect - FLT_EPSILON ) > 0.0f );
-    const float tanHalfFovy = tanf( fovy / 2.0f );
+    assert( fabs( aspect - DBL_EPSILON ) > 0.0 );
+    const float tanHalfFovy = tanf( fovy / 2.0 );
     powergl_zero4x4( projection );
-    projection[0][0] = 1.0f / ( aspect * tanHalfFovy );
-    projection[1][1] = 1.0f / ( tanHalfFovy );
-    projection[2][3] = -1.0f;
+    projection[0][0] = 1.0 / ( aspect * tanHalfFovy );
+    projection[1][1] = 1.0 / ( tanHalfFovy );
+    projection[2][3] = -1.0;
     /* depth range 0 to 1
        projection[2][2] = zFar / (zFar - zNear);
        projection[3][2] = -(zFar * zNear) / (zFar - zNear);
     */
     /* depth range -1 to 1*/
     projection[2][2] = - ( zFar + zNear ) / ( zFar - zNear );
-    projection[3][2] = - ( 2.0f * zFar * zNear ) / ( zFar - zNear );
+    projection[3][2] = - ( 2.0 * zFar * zNear ) / ( zFar - zNear );
 }
 
 /* creating view transformation */
@@ -267,20 +267,19 @@ void powergl_lookat( GLfloat view[4][4], powergl_vec3 *eye, powergl_vec3 *target
 void powergl_unproject(powergl_vec3 *result, powergl_vec3 *win, GLfloat mvp[4][4], GLfloat viewport[4])
 {
     GLfloat inv[4][4];
-    GLfloat pv[4][4];
     powergl_ident4x4(inv);
-    int res =  powergl_inv4x4((float*)mvp, (float*)&inv);
+    powergl_inv4x4((float*)mvp, (float*)&inv);
     //powergl_print4x4(mvp);
     //powergl_print4x4(inv);
     GLfloat tmp[4];
     tmp[0] = win->x;
     tmp[1] = win->y;
     tmp[2] = win->z;
-    tmp[3] = 1.0f;
+    tmp[3] = 1.0;
     tmp[0] = (tmp[0] - viewport[0]) / viewport[2];
     tmp[1] = (tmp[1] - viewport[1]) / viewport[3];
-    tmp[0] = tmp[0] * 2.0f - 1.0f;
-    tmp[1] = tmp[1] * 2.0f - 1.0f;
+    tmp[0] = tmp[0] * 2.0 - 1.0;
+    tmp[1] = tmp[1] * 2.0 - 1.0;
     GLfloat res2[4];
     printf("untransformed pos = %f %f %f %f\n", tmp[0], tmp[1], tmp[2], tmp[3]);
     powergl_transformvec4( tmp, inv, res2 );

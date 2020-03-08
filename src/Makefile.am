@@ -1,9 +1,8 @@
 AM_CFLAGS = -I$(top_srcdir)
 SUBDIRS = \
-	util \
+	window \
 	rendering \
 	math \
-	physics \
 	collada
 
 lib_LTLIBRARIES = libpowergl.la
@@ -14,9 +13,8 @@ libpowergl_la_LDFLAGS = -no-undefined
 libpowergl_la_SOURCES = \
 	powergl.c
 libpowergl_la_LIBADD = \
-	util/libpowerglutil.la \
+	window/libpowerglwindow.la \
 	rendering/libpowerglrendering.la \
 	math/libpowerglmath.la \
-	physics/libpowerglphysics.la \
 	collada/libpowerglcollada.la
 

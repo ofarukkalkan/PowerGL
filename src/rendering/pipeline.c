@@ -4,10 +4,10 @@
 
 #include <stdio.h>
 
-int powergl_rendering_pipeline_render( powergl_rendering_pipeline *ppl, powergl_rendering_object **objs, size_t n_object, powergl_rendering_object *main_camera, powergl_rendering_object *main_light)
+int powergl_pipeline_render( powergl_pipeline *ppl, powergl_object **objs, size_t n_object, powergl_object *main_camera, powergl_object *main_light)
 {
-    powergl_rendering_object *obj;
-    powergl_rendering_geometry *geo;
+    powergl_object *obj;
+    powergl_geometry *geo;
     glUseProgram( ppl->gp );
     if (main_light->light->color_flag == 1)
         {
@@ -32,12 +32,7 @@ int powergl_rendering_pipeline_render( powergl_rendering_pipeline *ppl, powergl_
     for ( size_t i = 0; i < n_object; ++i )
         {
             obj = objs[i];
-            // first we need to draw child objects because other way we lose parent transformation matrix
-            // if we lose parent transformation matrix then child objects cannot see what happened to their parent
-            if ( obj->n_child > 0 )
-                {
-                    powergl_rendering_pipeline_render( ppl, obj->children, obj->n_child, main_camera, main_light );
-                }
+
             if ( obj->matrix_flag == 1 )
                 {
                     powergl_ident4x4( obj->mvp );
@@ -86,7 +81,7 @@ int powergl_rendering_pipeline_render( powergl_rendering_pipeline *ppl, powergl_
     return 1;
 }
 
-void powergl_init_gpu_objects(powergl_rendering_pipeline *ppl,powergl_rendering_object *obj)
+void powergl_pipeline_init(powergl_pipeline *ppl,powergl_object *obj)
 {
     for ( size_t i = 0; i < obj->n_geometry; i++ )
         {
@@ -103,13 +98,9 @@ void powergl_init_gpu_objects(powergl_rendering_pipeline *ppl,powergl_rendering_
                     glBindVertexArray(0);
                 }
         }
-    for ( size_t i = 0; i < obj->n_child; i++ )
-        {
-            powergl_init_gpu_objects(ppl, obj->children[i]);
-        }
 }
 
-int powergl_rendering_pipeline_create( powergl_rendering_pipeline *ppl )
+int powergl_pipeline_create( powergl_pipeline *ppl )
 {
     /*vertex shader input attibute specs*/
     /* vertex input */
@@ -142,7 +133,7 @@ int powergl_rendering_pipeline_create( powergl_rendering_pipeline *ppl )
     layout( location = 2 ) in vec3 vColor;\n   \
     out vec3 colorToFs;\n		       \
     uniform mat4 mvp;\n			       \
-    uniform vec3 lightColor;\n		       \
+    uniform vec3 lightColor;\n			       \
     uniform vec3 lightDir;\n		       \
     void main(){\n							\
       colorToFs = vColor * ( lightColor * max(dot(vNormal, reflect(lightDir,vNormal)),0) );\n \
@@ -177,4 +168,6 @@ int powergl_rendering_pipeline_create( powergl_rendering_pipeline *ppl )
     ppl->uni_matrix = glGetUniformLocation( ppl->gp, "mvp" );
     ppl->uni_light_color = glGetUniformLocation( ppl->gp, "lightColor" );
     ppl->uni_light_dir = glGetUniformLocation( ppl->gp, "lightDir" );
+
+    return 0;
 }

@@ -40,12 +40,9 @@ AC_CHECK_FUNCS([strtol strtoul])
 
 AC_CONFIG_FILES([Makefile
 		src/Makefile
-		src/util/Makefile
 		src/rendering/Makefile
 		src/math/Makefile
-		src/physics/Makefile
 		src/collada/Makefile
 		src/collada/core/Makefile
-		src/util/app/Makefile
-		src/util/window/Makefile])
+		src/window/Makefile])
 AC_OUTPUT

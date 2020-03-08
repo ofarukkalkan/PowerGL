@@ -1,17 +1,20 @@
 #include "powergl.h"
 
-void *powergl_resize( void *ptr, size_t newsize )
+void *powergl_resize( void *ptr, size_t count, size_t size )
 {
-    if ( ptr == NULL )
-        {
-            ptr = malloc( newsize );
-            assert( ptr );
-        }
-    else
-        {
-            void *tmp_ptr = realloc( ptr, newsize );
-            assert( tmp_ptr );
-            ptr = tmp_ptr;
-        }
-    return ptr;
+  assert(count);
+  assert(size);
+  
+  if ( ptr == NULL )
+    {
+      ptr = calloc(count, size );
+      assert( ptr );
+    }
+  else
+    {
+      void *tmp_ptr = realloc( ptr, count * size );
+      assert( tmp_ptr );
+      ptr = tmp_ptr;
+    }
+  return ptr;
 }

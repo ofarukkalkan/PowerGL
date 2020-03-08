@@ -1,5 +1,5 @@
-#ifndef _powergl_rendering_pipeline_h
-#define _powergl_rendering_pipeline_h
+#ifndef _powergl_pipeline_h
+#define _powergl_pipeline_h
 
 #define GL_GLEXT_PROTOTYPES
 
@@ -8,7 +8,7 @@
 
 #include "object.h"
 
-typedef struct powergl_rendering_pipeline_t powergl_rendering_pipeline;
+typedef struct powergl_pipeline_t powergl_pipeline;
 
 typedef struct
 {
@@ -21,7 +21,7 @@ typedef struct
 
 } powergl_vsis; // vertex shader input specs
 
-struct powergl_rendering_pipeline_t
+struct powergl_pipeline_t
 {
 
     powergl_vsis vis;
@@ -35,7 +35,7 @@ struct powergl_rendering_pipeline_t
     GLuint uni_light_dir;
 };
 
-int powergl_rendering_pipeline_create( powergl_rendering_pipeline * );
-int powergl_rendering_pipeline_render( powergl_rendering_pipeline *, powergl_rendering_object **, size_t, powergl_rendering_object*, powergl_rendering_object* );
-void powergl_init_gpu_objects(powergl_rendering_pipeline *, powergl_rendering_object *);
+int powergl_pipeline_create( powergl_pipeline * );
+int powergl_pipeline_render( powergl_pipeline *, powergl_object **, size_t, powergl_object*, powergl_object* );
+void powergl_pipeline_init(powergl_pipeline *, powergl_object *);
 #endif

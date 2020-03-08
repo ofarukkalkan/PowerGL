@@ -8,6 +8,5 @@
 typedef void powergl_run_func(void);
 typedef void powergl_create_func(void);
 
-void *powergl_resize( void *ptr, size_t newsize );
-
+void *powergl_resize( void *ptr, size_t count, size_t newsize );
 #endif
