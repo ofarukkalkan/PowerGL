@@ -12,8 +12,7 @@
 typedef struct powergl_window_t powergl_window;
 
 
-struct powergl_window_t
-{
+struct powergl_window_t {
     powergl_visualscene *root_scene;
     SDL_Window *window;
     SDL_GLContext context;
@@ -21,9 +20,9 @@ struct powergl_window_t
     int height;
 };
 
-powergl_window *powergl_window_new( powergl_visualscene *scene );
-int powergl_window_create( powergl_window *, int, int );
-int powergl_window_run( powergl_window * );
+powergl_window *powergl_window_new(powergl_visualscene *scene);
+int powergl_window_create(powergl_window *, int, int);
+int powergl_window_run(powergl_window *);
 
 
 #endif

@@ -9,7 +9,6 @@
 #include "parse_utils.h"
 #include "../powergl.h"
 
-
 typedef struct dom_connector_t dom_connector;
 typedef struct map_dom_connector_t map_dom_connector;
 typedef struct arr_dom_connector_t arr_dom_connector;
@@ -21,21 +20,18 @@ typedef void (*fpparse_attrib)(void *, size_t, const char *);
 typedef void (*fpparse_content)(void *, size_t, const char *);
 
 
-struct map_dom_connector_t
-{
-    char *name;
-    char *base_type;
+struct map_dom_connector_t {
+    const char *name;
+    const char *base_type;
     char node_type;
 };
 
-struct arr_dom_connector_t
-{
+struct arr_dom_connector_t {
     dom_connector  **nodes;
     size_t n_node;
 };
 
-struct dom_connector_t
-{
+struct dom_connector_t {
     ///////////
     //DOM fields
     char *name;
@@ -54,13 +50,12 @@ struct dom_connector_t
     fpparse_content parse_content;
 };
 
-struct supported_type_t
-{
+struct supported_type_t {
     map_dom_connector *map;
     size_t n_map;
     char *name;
     char *parent;
-    void* (*get_instance)(void);
+    void *(*get_instance)(void);
 
 };
 
@@ -68,6 +63,6 @@ void powergl_collada_add_child(arr_dom_connector *, size_t index, dom_connector 
 void powergl_collada_set_ref(arr_dom_connector *, size_t index, dom_connector *);
 void powergl_collada_parse_attrib(arr_dom_connector *, size_t index, const char *);
 void powergl_collada_parse_content(arr_dom_connector *, size_t index, const char *);
-void powergl_collada_print_element( FILE *file, dom_connector *node, int depth );
+void powergl_collada_print_element(FILE *file, dom_connector *node, size_t depth);
 
 #endif

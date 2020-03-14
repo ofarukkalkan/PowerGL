@@ -1,6 +1,6 @@
 #include "core.h"
 static size_t g_n_supported_collada_core_types;
-static supported_type g_supported_collada_core_types[48];
+static supported_type g_supported_collada_core_types[50];
 int powergl_collada_core_check_type(const char *this, const char *parent){
 for(int i=0; i<g_n_supported_collada_core_types; i++){
 if(strcmp(g_supported_collada_core_types[i].name, this) == 0 && strcmp(g_supported_collada_core_types[i].parent, parent) == 0 ){
@@ -451,10 +451,6 @@ this->c_float_array = powergl_resize(this->c_float_array, ++this->n_float_array,
 this->c_float_array[this->n_float_array-1] = (powergl_collada_core_float_array*)child;
 break;
 case 3: powergl_collada_add_child(this->dom.nodes, index, child);
-this->c_int_array = powergl_resize(this->c_int_array, ++this->n_int_array, sizeof(powergl_collada_core_int_array*));
-this->c_int_array[this->n_int_array-1] = (powergl_collada_core_int_array*)child;
-break;
-case 4: powergl_collada_add_child(this->dom.nodes, index, child);
 this->c_technique_common = powergl_resize(this->c_technique_common, ++this->n_technique_common, sizeof(powergl_collada_core_source_technique_common*));
 this->c_technique_common[this->n_technique_common-1] = (powergl_collada_core_source_technique_common*)child;
 break;
@@ -465,7 +461,6 @@ powergl_collada_core_source *this = powergl_resize(NULL, 1, sizeof(powergl_colla
 this->c_id = NULL; this->n_id = 0;
 this->c_name = NULL; this->n_name = 0;
 this->c_float_array = NULL; this->n_float_array = 0;
-this->c_int_array = NULL; this->n_int_array = 0;
 this->c_technique_common = NULL; this->n_technique_common = 0;
 this->dom.nodes = NULL;
 this->dom.map = g_supported_collada_core_types[9].map;
@@ -481,9 +476,6 @@ powergl_collada_core_accessor *this = (powergl_collada_core_accessor*)obj;
 switch(index){
 case 5: powergl_collada_set_ref(this->dom.nodes, index, ptr);
 this->r_float_array = (powergl_collada_core_float_array*)ptr;
-break;
-case 6: powergl_collada_set_ref(this->dom.nodes, index, ptr);
-this->r_int_array = (powergl_collada_core_int_array*)ptr;
 break;
 }
 }
@@ -525,8 +517,6 @@ this->c_param[this->n_param-1] = (powergl_collada_core_param*)child;
 break;
 case 5: powergl_collada_add_child(this->dom.nodes, index, child);
 break;
-case 6: powergl_collada_add_child(this->dom.nodes, index, child);
-break;
 }
 }
 void* new_collada_core_accessor(void){
@@ -537,7 +527,6 @@ this->c_offset = 0;
 this->c_stride = 0;
 this->c_param = NULL; this->n_param = 0;
 this->r_float_array = NULL;
-this->r_int_array = NULL;
 this->dom.nodes = NULL;
 this->dom.map = g_supported_collada_core_types[10].map;
 this->dom.n_map = g_supported_collada_core_types[10].n_map;
@@ -660,56 +649,6 @@ this->dom.parse_attrib = parse_attrib_collada_core_float_array;
 this->dom.parse_content = parse_content_collada_core_float_array;
 return this;
 }
-void set_ref_collada_core_int_array(void *obj, size_t index, dom_connector *ptr){
-}
-void parse_content_collada_core_int_array(void *obj, size_t index, const char *value){
-}
-void parse_attrib_collada_core_int_array(void *obj, size_t index, const char *value){
-powergl_collada_core_int_array *this = (powergl_collada_core_int_array*)obj;
-switch(index){
-case 1: powergl_collada_parse_attrib(this->dom.nodes, index, value);
-this->n_id = strlen(value) + 1;
-this->c_id = powergl_resize(NULL, this->n_id, sizeof(char));
-strcpy(this->c_id, value);
-break;
-case 2: powergl_collada_parse_attrib(this->dom.nodes, index, value);
-this->n_name = strlen(value) + 1;
-this->c_name = powergl_resize(NULL, this->n_name, sizeof(char));
-strcpy(this->c_name, value);
-break;
-case 3: powergl_collada_parse_attrib(this->dom.nodes, index, value);
-this->c_count = strtoul( value, NULL, 10 );
-break;
-}
-}
-void add_child_collada_core_int_array(void *obj, size_t index, dom_connector *child){
-powergl_collada_core_int_array *this = (powergl_collada_core_int_array*)obj;
-switch(index){
-case 0: powergl_collada_add_child(this->dom.nodes, index, child);
-break;
-case 1: powergl_collada_add_child(this->dom.nodes, index, child);
-break;
-case 2: powergl_collada_add_child(this->dom.nodes, index, child);
-break;
-case 3: powergl_collada_add_child(this->dom.nodes, index, child);
-break;
-}
-}
-void* new_collada_core_int_array(void){
-powergl_collada_core_int_array *this = powergl_resize(NULL, 1, sizeof(powergl_collada_core_int_array));
-this->content = NULL; this->n_content = 0;
-this->c_id = NULL; this->n_id = 0;
-this->c_name = NULL; this->n_name = 0;
-this->c_count = 0;
-this->dom.nodes = NULL;
-this->dom.map = g_supported_collada_core_types[13].map;
-this->dom.n_map = g_supported_collada_core_types[13].n_map;
-this->dom.add_child = add_child_collada_core_int_array;
-this->dom.set_ref = set_ref_collada_core_int_array;
-this->dom.parse_attrib = parse_attrib_collada_core_int_array;
-this->dom.parse_content = parse_content_collada_core_int_array;
-return this;
-}
 void set_ref_collada_core_vertices(void *obj, size_t index, dom_connector *ptr){
 }
 void parse_content_collada_core_vertices(void *obj, size_t index, const char *value){
@@ -748,8 +687,8 @@ this->c_id = NULL; this->n_id = 0;
 this->c_name = NULL; this->n_name = 0;
 this->c_input = NULL; this->n_input = 0;
 this->dom.nodes = NULL;
-this->dom.map = g_supported_collada_core_types[14].map;
-this->dom.n_map = g_supported_collada_core_types[14].n_map;
+this->dom.map = g_supported_collada_core_types[13].map;
+this->dom.n_map = g_supported_collada_core_types[13].n_map;
 this->dom.add_child = add_child_collada_core_vertices;
 this->dom.set_ref = set_ref_collada_core_vertices;
 this->dom.parse_attrib = parse_attrib_collada_core_vertices;
@@ -797,8 +736,8 @@ this->c_count = 0;
 this->c_input = NULL; this->n_input = 0;
 this->c_p = NULL; this->n_p = 0;
 this->dom.nodes = NULL;
-this->dom.map = g_supported_collada_core_types[15].map;
-this->dom.n_map = g_supported_collada_core_types[15].n_map;
+this->dom.map = g_supported_collada_core_types[14].map;
+this->dom.n_map = g_supported_collada_core_types[14].n_map;
 this->dom.add_child = add_child_collada_core_triangles;
 this->dom.set_ref = set_ref_collada_core_triangles;
 this->dom.parse_attrib = parse_attrib_collada_core_triangles;
@@ -843,8 +782,8 @@ this->c_id = NULL; this->n_id = 0;
 this->c_name = NULL; this->n_name = 0;
 this->c_technique_common = NULL; this->n_technique_common = 0;
 this->dom.nodes = NULL;
-this->dom.map = g_supported_collada_core_types[16].map;
-this->dom.n_map = g_supported_collada_core_types[16].n_map;
+this->dom.map = g_supported_collada_core_types[15].map;
+this->dom.n_map = g_supported_collada_core_types[15].n_map;
 this->dom.add_child = add_child_collada_core_light;
 this->dom.set_ref = set_ref_collada_core_light;
 this->dom.parse_attrib = parse_attrib_collada_core_light;
@@ -870,8 +809,8 @@ void* new_collada_core_directional(void){
 powergl_collada_core_directional *this = powergl_resize(NULL, 1, sizeof(powergl_collada_core_directional));
 this->c_color = NULL; this->n_color = 0;
 this->dom.nodes = NULL;
-this->dom.map = g_supported_collada_core_types[17].map;
-this->dom.n_map = g_supported_collada_core_types[17].n_map;
+this->dom.map = g_supported_collada_core_types[16].map;
+this->dom.n_map = g_supported_collada_core_types[16].n_map;
 this->dom.add_child = add_child_collada_core_directional;
 this->dom.set_ref = set_ref_collada_core_directional;
 this->dom.parse_attrib = parse_attrib_collada_core_directional;
@@ -916,8 +855,8 @@ this->c_id = NULL; this->n_id = 0;
 this->c_name = NULL; this->n_name = 0;
 this->c_optics = NULL; this->n_optics = 0;
 this->dom.nodes = NULL;
-this->dom.map = g_supported_collada_core_types[18].map;
-this->dom.n_map = g_supported_collada_core_types[18].n_map;
+this->dom.map = g_supported_collada_core_types[17].map;
+this->dom.n_map = g_supported_collada_core_types[17].n_map;
 this->dom.add_child = add_child_collada_core_camera;
 this->dom.set_ref = set_ref_collada_core_camera;
 this->dom.parse_attrib = parse_attrib_collada_core_camera;
@@ -943,8 +882,8 @@ void* new_collada_core_optics(void){
 powergl_collada_core_optics *this = powergl_resize(NULL, 1, sizeof(powergl_collada_core_optics));
 this->c_technique_common = NULL; this->n_technique_common = 0;
 this->dom.nodes = NULL;
-this->dom.map = g_supported_collada_core_types[19].map;
-this->dom.n_map = g_supported_collada_core_types[19].n_map;
+this->dom.map = g_supported_collada_core_types[18].map;
+this->dom.n_map = g_supported_collada_core_types[18].n_map;
 this->dom.add_child = add_child_collada_core_optics;
 this->dom.set_ref = set_ref_collada_core_optics;
 this->dom.parse_attrib = parse_attrib_collada_core_optics;
@@ -990,8 +929,8 @@ this->c_aspect_ratio = NULL; this->n_aspect_ratio = 0;
 this->c_znear = NULL; this->n_znear = 0;
 this->c_zfar = NULL; this->n_zfar = 0;
 this->dom.nodes = NULL;
-this->dom.map = g_supported_collada_core_types[20].map;
-this->dom.n_map = g_supported_collada_core_types[20].n_map;
+this->dom.map = g_supported_collada_core_types[19].map;
+this->dom.n_map = g_supported_collada_core_types[19].n_map;
 this->dom.add_child = add_child_collada_core_perspective;
 this->dom.set_ref = set_ref_collada_core_perspective;
 this->dom.parse_attrib = parse_attrib_collada_core_perspective;
@@ -1036,14 +975,26 @@ this->c_matrix = powergl_resize(this->c_matrix, ++this->n_matrix, sizeof(powergl
 this->c_matrix[this->n_matrix-1] = (powergl_collada_core_targetable_floats*)child;
 break;
 case 4: powergl_collada_add_child(this->dom.nodes, index, child);
+this->c_rotate = powergl_resize(this->c_rotate, ++this->n_rotate, sizeof(powergl_collada_core_targetable_floats*));
+this->c_rotate[this->n_rotate-1] = (powergl_collada_core_targetable_floats*)child;
+break;
+case 5: powergl_collada_add_child(this->dom.nodes, index, child);
+this->c_scale = powergl_resize(this->c_scale, ++this->n_scale, sizeof(powergl_collada_core_targetable_floats*));
+this->c_scale[this->n_scale-1] = (powergl_collada_core_targetable_floats*)child;
+break;
+case 6: powergl_collada_add_child(this->dom.nodes, index, child);
+this->c_translate = powergl_resize(this->c_translate, ++this->n_translate, sizeof(powergl_collada_core_targetable_floats*));
+this->c_translate[this->n_translate-1] = (powergl_collada_core_targetable_floats*)child;
+break;
+case 7: powergl_collada_add_child(this->dom.nodes, index, child);
 this->c_instance_camera = powergl_resize(this->c_instance_camera, ++this->n_instance_camera, sizeof(powergl_collada_core_InstanceWithExtra*));
 this->c_instance_camera[this->n_instance_camera-1] = (powergl_collada_core_InstanceWithExtra*)child;
 break;
-case 5: powergl_collada_add_child(this->dom.nodes, index, child);
+case 8: powergl_collada_add_child(this->dom.nodes, index, child);
 this->c_instance_light = powergl_resize(this->c_instance_light, ++this->n_instance_light, sizeof(powergl_collada_core_InstanceWithExtra*));
 this->c_instance_light[this->n_instance_light-1] = (powergl_collada_core_InstanceWithExtra*)child;
 break;
-case 6: powergl_collada_add_child(this->dom.nodes, index, child);
+case 9: powergl_collada_add_child(this->dom.nodes, index, child);
 this->c_instance_geometry = powergl_resize(this->c_instance_geometry, ++this->n_instance_geometry, sizeof(powergl_collada_core_InstanceWithExtra*));
 this->c_instance_geometry[this->n_instance_geometry-1] = (powergl_collada_core_InstanceWithExtra*)child;
 break;
@@ -1055,12 +1006,15 @@ this->c_id = NULL; this->n_id = 0;
 this->c_sid = NULL; this->n_sid = 0;
 this->c_name = NULL; this->n_name = 0;
 this->c_matrix = NULL; this->n_matrix = 0;
+this->c_rotate = NULL; this->n_rotate = 0;
+this->c_scale = NULL; this->n_scale = 0;
+this->c_translate = NULL; this->n_translate = 0;
 this->c_instance_camera = NULL; this->n_instance_camera = 0;
 this->c_instance_light = NULL; this->n_instance_light = 0;
 this->c_instance_geometry = NULL; this->n_instance_geometry = 0;
 this->dom.nodes = NULL;
-this->dom.map = g_supported_collada_core_types[21].map;
-this->dom.n_map = g_supported_collada_core_types[21].n_map;
+this->dom.map = g_supported_collada_core_types[20].map;
+this->dom.n_map = g_supported_collada_core_types[20].n_map;
 this->dom.add_child = add_child_collada_core_node;
 this->dom.set_ref = set_ref_collada_core_node;
 this->dom.parse_attrib = parse_attrib_collada_core_node;
@@ -1086,8 +1040,8 @@ void* new_collada_core_source_technique_common(void){
 powergl_collada_core_source_technique_common *this = powergl_resize(NULL, 1, sizeof(powergl_collada_core_source_technique_common));
 this->c_accessor = NULL; this->n_accessor = 0;
 this->dom.nodes = NULL;
-this->dom.map = g_supported_collada_core_types[22].map;
-this->dom.n_map = g_supported_collada_core_types[22].n_map;
+this->dom.map = g_supported_collada_core_types[21].map;
+this->dom.n_map = g_supported_collada_core_types[21].n_map;
 this->dom.add_child = add_child_collada_core_source_technique_common;
 this->dom.set_ref = set_ref_collada_core_source_technique_common;
 this->dom.parse_attrib = parse_attrib_collada_core_source_technique_common;
@@ -1113,8 +1067,8 @@ void* new_collada_core_light_technique_common(void){
 powergl_collada_core_light_technique_common *this = powergl_resize(NULL, 1, sizeof(powergl_collada_core_light_technique_common));
 this->c_directional = NULL; this->n_directional = 0;
 this->dom.nodes = NULL;
-this->dom.map = g_supported_collada_core_types[23].map;
-this->dom.n_map = g_supported_collada_core_types[23].n_map;
+this->dom.map = g_supported_collada_core_types[22].map;
+this->dom.n_map = g_supported_collada_core_types[22].n_map;
 this->dom.add_child = add_child_collada_core_light_technique_common;
 this->dom.set_ref = set_ref_collada_core_light_technique_common;
 this->dom.parse_attrib = parse_attrib_collada_core_light_technique_common;
@@ -1140,8 +1094,8 @@ void* new_collada_core_optics_technique_common(void){
 powergl_collada_core_optics_technique_common *this = powergl_resize(NULL, 1, sizeof(powergl_collada_core_optics_technique_common));
 this->c_perspective = NULL; this->n_perspective = 0;
 this->dom.nodes = NULL;
-this->dom.map = g_supported_collada_core_types[24].map;
-this->dom.n_map = g_supported_collada_core_types[24].n_map;
+this->dom.map = g_supported_collada_core_types[23].map;
+this->dom.n_map = g_supported_collada_core_types[23].n_map;
 this->dom.add_child = add_child_collada_core_optics_technique_common;
 this->dom.set_ref = set_ref_collada_core_optics_technique_common;
 this->dom.parse_attrib = parse_attrib_collada_core_optics_technique_common;
@@ -1216,8 +1170,8 @@ this->r_camera = NULL;
 this->r_light = NULL;
 this->r_visual_scene = NULL;
 this->dom.nodes = NULL;
-this->dom.map = g_supported_collada_core_types[25].map;
-this->dom.n_map = g_supported_collada_core_types[25].n_map;
+this->dom.map = g_supported_collada_core_types[24].map;
+this->dom.n_map = g_supported_collada_core_types[24].n_map;
 this->dom.add_child = add_child_collada_core_InstanceWithExtra;
 this->dom.set_ref = set_ref_collada_core_InstanceWithExtra;
 this->dom.parse_attrib = parse_attrib_collada_core_InstanceWithExtra;
@@ -1284,8 +1238,8 @@ this->c_offset = 0;
 this->r_source = NULL;
 this->r_vertices = NULL;
 this->dom.nodes = NULL;
-this->dom.map = g_supported_collada_core_types[26].map;
-this->dom.n_map = g_supported_collada_core_types[26].n_map;
+this->dom.map = g_supported_collada_core_types[25].map;
+this->dom.n_map = g_supported_collada_core_types[25].n_map;
 this->dom.add_child = add_child_collada_core_input_local_offset;
 this->dom.set_ref = set_ref_collada_core_input_local_offset;
 this->dom.parse_attrib = parse_attrib_collada_core_input_local_offset;
@@ -1334,8 +1288,8 @@ this->c_semantic = NULL; this->n_semantic = 0;
 this->c_source = NULL; this->n_source = 0;
 this->r_source = NULL;
 this->dom.nodes = NULL;
-this->dom.map = g_supported_collada_core_types[27].map;
-this->dom.n_map = g_supported_collada_core_types[27].n_map;
+this->dom.map = g_supported_collada_core_types[26].map;
+this->dom.n_map = g_supported_collada_core_types[26].n_map;
 this->dom.add_child = add_child_collada_core_input_local;
 this->dom.set_ref = set_ref_collada_core_input_local;
 this->dom.parse_attrib = parse_attrib_collada_core_input_local;
@@ -1365,8 +1319,8 @@ void* new_collada_core_ListOfUInts(void){
 powergl_collada_core_ListOfUInts *this = powergl_resize(NULL, 1, sizeof(powergl_collada_core_ListOfUInts));
 this->content = NULL; this->n_content = 0;
 this->dom.nodes = NULL;
-this->dom.map = g_supported_collada_core_types[28].map;
-this->dom.n_map = g_supported_collada_core_types[28].n_map;
+this->dom.map = g_supported_collada_core_types[27].map;
+this->dom.n_map = g_supported_collada_core_types[27].n_map;
 this->dom.add_child = add_child_collada_core_ListOfUInts;
 this->dom.set_ref = set_ref_collada_core_ListOfUInts;
 this->dom.parse_attrib = parse_attrib_collada_core_ListOfUInts;
@@ -1407,8 +1361,8 @@ powergl_collada_core_targetable_floats *this = powergl_resize(NULL, 1, sizeof(po
 this->content = NULL; this->n_content = 0;
 this->c_sid = NULL; this->n_sid = 0;
 this->dom.nodes = NULL;
-this->dom.map = g_supported_collada_core_types[29].map;
-this->dom.n_map = g_supported_collada_core_types[29].n_map;
+this->dom.map = g_supported_collada_core_types[28].map;
+this->dom.n_map = g_supported_collada_core_types[28].n_map;
 this->dom.add_child = add_child_collada_core_targetable_floats;
 this->dom.set_ref = set_ref_collada_core_targetable_floats;
 this->dom.parse_attrib = parse_attrib_collada_core_targetable_floats;
@@ -1449,8 +1403,8 @@ powergl_collada_core_targetable_float *this = powergl_resize(NULL, 1, sizeof(pow
 this->content = NULL; this->n_content = 0;
 this->c_sid = NULL; this->n_sid = 0;
 this->dom.nodes = NULL;
-this->dom.map = g_supported_collada_core_types[30].map;
-this->dom.n_map = g_supported_collada_core_types[30].n_map;
+this->dom.map = g_supported_collada_core_types[29].map;
+this->dom.n_map = g_supported_collada_core_types[29].n_map;
 this->dom.add_child = add_child_collada_core_targetable_float;
 this->dom.set_ref = set_ref_collada_core_targetable_float;
 this->dom.parse_attrib = parse_attrib_collada_core_targetable_float;
@@ -1611,7 +1565,7 @@ size = sizeof str_parent / sizeof(char);
 g_supported_collada_core_types[9].parent = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[9].parent, str_parent, size * sizeof(char));
 g_supported_collada_core_types[9].get_instance = new_collada_core_source;
-map_dom_connector map[] = {{ "id", "char*", 1 },{ "name", "char*", 1 },{ "float_array", NULL, 0 },{ "int_array", NULL, 0 },{ "technique_common", "source_technique_common", 0 },};
+map_dom_connector map[] = {{ "id", "char*", 1 },{ "name", "char*", 1 },{ "float_array", NULL, 0 },{ "technique_common", "source_technique_common", 0 },};
 size = sizeof map / sizeof(map_dom_connector);
 g_supported_collada_core_types[9].n_map = size;
 g_supported_collada_core_types[9].map = powergl_resize(NULL, size, sizeof(map_dom_connector));
@@ -1627,7 +1581,7 @@ size = sizeof str_parent / sizeof(char);
 g_supported_collada_core_types[10].parent = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[10].parent, str_parent, size * sizeof(char));
 g_supported_collada_core_types[10].get_instance = new_collada_core_accessor;
-map_dom_connector map[] = {{ "source", "char*", 1 },{ "count", "size_t", 1 },{ "offset", "size_t", 1 },{ "stride", "size_t", 1 },{ "param", NULL, 0 },{ "source", "float_array", 3 },{ "source", "int_array", 3 },};
+map_dom_connector map[] = {{ "source", "char*", 1 },{ "count", "size_t", 1 },{ "offset", "size_t", 1 },{ "stride", "size_t", 1 },{ "param", NULL, 0 },{ "source", "float_array", 3 },};
 size = sizeof map / sizeof(map_dom_connector);
 g_supported_collada_core_types[10].n_map = size;
 g_supported_collada_core_types[10].map = powergl_resize(NULL, size, sizeof(map_dom_connector));
@@ -1665,24 +1619,24 @@ g_supported_collada_core_types[12].n_map = size;
 g_supported_collada_core_types[12].map = powergl_resize(NULL, size, sizeof(map_dom_connector));
 memcpy(g_supported_collada_core_types[g_n_supported_collada_core_types++].map, map, size * sizeof(map_dom_connector));
 }
-static void support_collada_core_type_source_int_array(){
-char str[] = "int_array";
+static void support_collada_core_type_mesh_vertices(){
+char str[] = "vertices";
 size_t size = sizeof str / sizeof(char);
 g_supported_collada_core_types[13].name = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[13].name, str, size * sizeof(char));
-char str_parent[] = "source";
+char str_parent[] = "mesh";
 size = sizeof str_parent / sizeof(char);
 g_supported_collada_core_types[13].parent = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[13].parent, str_parent, size * sizeof(char));
-g_supported_collada_core_types[13].get_instance = new_collada_core_int_array;
-map_dom_connector map[] = {{ "content", "int*", 2 },{ "id", "char*", 1 },{ "name", "char*", 1 },{ "count", "size_t", 1 },};
+g_supported_collada_core_types[13].get_instance = new_collada_core_vertices;
+map_dom_connector map[] = {{ "id", "char*", 1 },{ "name", "char*", 1 },{ "input", "input_local", 0 },};
 size = sizeof map / sizeof(map_dom_connector);
 g_supported_collada_core_types[13].n_map = size;
 g_supported_collada_core_types[13].map = powergl_resize(NULL, size, sizeof(map_dom_connector));
 memcpy(g_supported_collada_core_types[g_n_supported_collada_core_types++].map, map, size * sizeof(map_dom_connector));
 }
-static void support_collada_core_type_mesh_vertices(){
-char str[] = "vertices";
+static void support_collada_core_type_mesh_triangles(){
+char str[] = "triangles";
 size_t size = sizeof str / sizeof(char);
 g_supported_collada_core_types[14].name = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[14].name, str, size * sizeof(char));
@@ -1690,127 +1644,127 @@ char str_parent[] = "mesh";
 size = sizeof str_parent / sizeof(char);
 g_supported_collada_core_types[14].parent = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[14].parent, str_parent, size * sizeof(char));
-g_supported_collada_core_types[14].get_instance = new_collada_core_vertices;
-map_dom_connector map[] = {{ "id", "char*", 1 },{ "name", "char*", 1 },{ "input", "input_local", 0 },};
+g_supported_collada_core_types[14].get_instance = new_collada_core_triangles;
+map_dom_connector map[] = {{ "name", "char*", 1 },{ "count", "size_t", 1 },{ "input", "input_local_offset", 0 },{ "p", "ListOfUInts", 0 },};
 size = sizeof map / sizeof(map_dom_connector);
 g_supported_collada_core_types[14].n_map = size;
 g_supported_collada_core_types[14].map = powergl_resize(NULL, size, sizeof(map_dom_connector));
 memcpy(g_supported_collada_core_types[g_n_supported_collada_core_types++].map, map, size * sizeof(map_dom_connector));
 }
-static void support_collada_core_type_mesh_triangles(){
-char str[] = "triangles";
+static void support_collada_core_type_library_lights_light(){
+char str[] = "light";
 size_t size = sizeof str / sizeof(char);
 g_supported_collada_core_types[15].name = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[15].name, str, size * sizeof(char));
-char str_parent[] = "mesh";
+char str_parent[] = "library_lights";
 size = sizeof str_parent / sizeof(char);
 g_supported_collada_core_types[15].parent = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[15].parent, str_parent, size * sizeof(char));
-g_supported_collada_core_types[15].get_instance = new_collada_core_triangles;
-map_dom_connector map[] = {{ "name", "char*", 1 },{ "count", "size_t", 1 },{ "input", "input_local_offset", 0 },{ "p", "ListOfUInts", 0 },};
+g_supported_collada_core_types[15].get_instance = new_collada_core_light;
+map_dom_connector map[] = {{ "id", "char*", 1 },{ "name", "char*", 1 },{ "technique_common", "light_technique_common", 0 },};
 size = sizeof map / sizeof(map_dom_connector);
 g_supported_collada_core_types[15].n_map = size;
 g_supported_collada_core_types[15].map = powergl_resize(NULL, size, sizeof(map_dom_connector));
 memcpy(g_supported_collada_core_types[g_n_supported_collada_core_types++].map, map, size * sizeof(map_dom_connector));
 }
-static void support_collada_core_type_library_lights_light(){
-char str[] = "light";
+static void support_collada_core_type_technique_common_directional(){
+char str[] = "directional";
 size_t size = sizeof str / sizeof(char);
 g_supported_collada_core_types[16].name = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[16].name, str, size * sizeof(char));
-char str_parent[] = "library_lights";
+char str_parent[] = "technique_common";
 size = sizeof str_parent / sizeof(char);
 g_supported_collada_core_types[16].parent = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[16].parent, str_parent, size * sizeof(char));
-g_supported_collada_core_types[16].get_instance = new_collada_core_light;
-map_dom_connector map[] = {{ "id", "char*", 1 },{ "name", "char*", 1 },{ "technique_common", "light_technique_common", 0 },};
+g_supported_collada_core_types[16].get_instance = new_collada_core_directional;
+map_dom_connector map[] = {{ "color", "targetable_floats", 0 },};
 size = sizeof map / sizeof(map_dom_connector);
 g_supported_collada_core_types[16].n_map = size;
 g_supported_collada_core_types[16].map = powergl_resize(NULL, size, sizeof(map_dom_connector));
 memcpy(g_supported_collada_core_types[g_n_supported_collada_core_types++].map, map, size * sizeof(map_dom_connector));
 }
-static void support_collada_core_type_technique_common_directional(){
-char str[] = "directional";
+static void support_collada_core_type_library_cameras_camera(){
+char str[] = "camera";
 size_t size = sizeof str / sizeof(char);
 g_supported_collada_core_types[17].name = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[17].name, str, size * sizeof(char));
-char str_parent[] = "technique_common";
+char str_parent[] = "library_cameras";
 size = sizeof str_parent / sizeof(char);
 g_supported_collada_core_types[17].parent = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[17].parent, str_parent, size * sizeof(char));
-g_supported_collada_core_types[17].get_instance = new_collada_core_directional;
-map_dom_connector map[] = {{ "color", "targetable_floats", 0 },};
+g_supported_collada_core_types[17].get_instance = new_collada_core_camera;
+map_dom_connector map[] = {{ "id", "char*", 1 },{ "name", "char*", 1 },{ "optics", NULL, 0 },};
 size = sizeof map / sizeof(map_dom_connector);
 g_supported_collada_core_types[17].n_map = size;
 g_supported_collada_core_types[17].map = powergl_resize(NULL, size, sizeof(map_dom_connector));
 memcpy(g_supported_collada_core_types[g_n_supported_collada_core_types++].map, map, size * sizeof(map_dom_connector));
 }
-static void support_collada_core_type_library_cameras_camera(){
-char str[] = "camera";
+static void support_collada_core_type_camera_optics(){
+char str[] = "optics";
 size_t size = sizeof str / sizeof(char);
 g_supported_collada_core_types[18].name = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[18].name, str, size * sizeof(char));
-char str_parent[] = "library_cameras";
+char str_parent[] = "camera";
 size = sizeof str_parent / sizeof(char);
 g_supported_collada_core_types[18].parent = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[18].parent, str_parent, size * sizeof(char));
-g_supported_collada_core_types[18].get_instance = new_collada_core_camera;
-map_dom_connector map[] = {{ "id", "char*", 1 },{ "name", "char*", 1 },{ "optics", NULL, 0 },};
+g_supported_collada_core_types[18].get_instance = new_collada_core_optics;
+map_dom_connector map[] = {{ "technique_common", "optics_technique_common", 0 },};
 size = sizeof map / sizeof(map_dom_connector);
 g_supported_collada_core_types[18].n_map = size;
 g_supported_collada_core_types[18].map = powergl_resize(NULL, size, sizeof(map_dom_connector));
 memcpy(g_supported_collada_core_types[g_n_supported_collada_core_types++].map, map, size * sizeof(map_dom_connector));
 }
-static void support_collada_core_type_camera_optics(){
-char str[] = "optics";
+static void support_collada_core_type_technique_common_perspective(){
+char str[] = "perspective";
 size_t size = sizeof str / sizeof(char);
 g_supported_collada_core_types[19].name = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[19].name, str, size * sizeof(char));
-char str_parent[] = "camera";
+char str_parent[] = "technique_common";
 size = sizeof str_parent / sizeof(char);
 g_supported_collada_core_types[19].parent = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[19].parent, str_parent, size * sizeof(char));
-g_supported_collada_core_types[19].get_instance = new_collada_core_optics;
-map_dom_connector map[] = {{ "technique_common", "optics_technique_common", 0 },};
+g_supported_collada_core_types[19].get_instance = new_collada_core_perspective;
+map_dom_connector map[] = {{ "xfov", "targetable_float", 0 },{ "yfov", "targetable_float", 0 },{ "aspect_ratio", "targetable_float", 0 },{ "znear", "targetable_float", 0 },{ "zfar", "targetable_float", 0 },};
 size = sizeof map / sizeof(map_dom_connector);
 g_supported_collada_core_types[19].n_map = size;
 g_supported_collada_core_types[19].map = powergl_resize(NULL, size, sizeof(map_dom_connector));
 memcpy(g_supported_collada_core_types[g_n_supported_collada_core_types++].map, map, size * sizeof(map_dom_connector));
 }
-static void support_collada_core_type_technique_common_perspective(){
-char str[] = "perspective";
+static void support_collada_core_type_visual_scene_node(){
+char str[] = "node";
 size_t size = sizeof str / sizeof(char);
 g_supported_collada_core_types[20].name = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[20].name, str, size * sizeof(char));
-char str_parent[] = "technique_common";
+char str_parent[] = "visual_scene";
 size = sizeof str_parent / sizeof(char);
 g_supported_collada_core_types[20].parent = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[20].parent, str_parent, size * sizeof(char));
-g_supported_collada_core_types[20].get_instance = new_collada_core_perspective;
-map_dom_connector map[] = {{ "xfov", "targetable_float", 0 },{ "yfov", "targetable_float", 0 },{ "aspect_ratio", "targetable_float", 0 },{ "znear", "targetable_float", 0 },{ "zfar", "targetable_float", 0 },};
+g_supported_collada_core_types[20].get_instance = new_collada_core_node;
+map_dom_connector map[] = {{ "id", "char*", 1 },{ "sid", "char*", 1 },{ "name", "char*", 1 },{ "matrix", "targetable_floats", 0 },{ "rotate", "targetable_floats", 0 },{ "scale", "targetable_floats", 0 },{ "translate", "targetable_floats", 0 },{ "instance_camera", "InstanceWithExtra", 0 },{ "instance_light", "InstanceWithExtra", 0 },{ "instance_geometry", "InstanceWithExtra", 0 },};
 size = sizeof map / sizeof(map_dom_connector);
 g_supported_collada_core_types[20].n_map = size;
 g_supported_collada_core_types[20].map = powergl_resize(NULL, size, sizeof(map_dom_connector));
 memcpy(g_supported_collada_core_types[g_n_supported_collada_core_types++].map, map, size * sizeof(map_dom_connector));
 }
-static void support_collada_core_type_visual_scene_node(){
-char str[] = "node";
+static void support_collada_core_type_0_source_technique_common(){
+char str[] = "source_technique_common";
 size_t size = sizeof str / sizeof(char);
 g_supported_collada_core_types[21].name = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[21].name, str, size * sizeof(char));
-char str_parent[] = "visual_scene";
+char str_parent[] = "0";
 size = sizeof str_parent / sizeof(char);
 g_supported_collada_core_types[21].parent = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[21].parent, str_parent, size * sizeof(char));
-g_supported_collada_core_types[21].get_instance = new_collada_core_node;
-map_dom_connector map[] = {{ "id", "char*", 1 },{ "sid", "char*", 1 },{ "name", "char*", 1 },{ "matrix", "targetable_floats", 0 },{ "instance_camera", "InstanceWithExtra", 0 },{ "instance_light", "InstanceWithExtra", 0 },{ "instance_geometry", "InstanceWithExtra", 0 },};
+g_supported_collada_core_types[21].get_instance = new_collada_core_source_technique_common;
+map_dom_connector map[] = {{ "accessor", NULL, 0 },};
 size = sizeof map / sizeof(map_dom_connector);
 g_supported_collada_core_types[21].n_map = size;
 g_supported_collada_core_types[21].map = powergl_resize(NULL, size, sizeof(map_dom_connector));
 memcpy(g_supported_collada_core_types[g_n_supported_collada_core_types++].map, map, size * sizeof(map_dom_connector));
 }
-static void support_collada_core_type_0_source_technique_common(){
-char str[] = "source_technique_common";
+static void support_collada_core_type_0_light_technique_common(){
+char str[] = "light_technique_common";
 size_t size = sizeof str / sizeof(char);
 g_supported_collada_core_types[22].name = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[22].name, str, size * sizeof(char));
@@ -1818,15 +1772,15 @@ char str_parent[] = "0";
 size = sizeof str_parent / sizeof(char);
 g_supported_collada_core_types[22].parent = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[22].parent, str_parent, size * sizeof(char));
-g_supported_collada_core_types[22].get_instance = new_collada_core_source_technique_common;
-map_dom_connector map[] = {{ "accessor", NULL, 0 },};
+g_supported_collada_core_types[22].get_instance = new_collada_core_light_technique_common;
+map_dom_connector map[] = {{ "directional", NULL, 0 },};
 size = sizeof map / sizeof(map_dom_connector);
 g_supported_collada_core_types[22].n_map = size;
 g_supported_collada_core_types[22].map = powergl_resize(NULL, size, sizeof(map_dom_connector));
 memcpy(g_supported_collada_core_types[g_n_supported_collada_core_types++].map, map, size * sizeof(map_dom_connector));
 }
-static void support_collada_core_type_0_light_technique_common(){
-char str[] = "light_technique_common";
+static void support_collada_core_type_0_optics_technique_common(){
+char str[] = "optics_technique_common";
 size_t size = sizeof str / sizeof(char);
 g_supported_collada_core_types[23].name = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[23].name, str, size * sizeof(char));
@@ -1834,15 +1788,15 @@ char str_parent[] = "0";
 size = sizeof str_parent / sizeof(char);
 g_supported_collada_core_types[23].parent = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[23].parent, str_parent, size * sizeof(char));
-g_supported_collada_core_types[23].get_instance = new_collada_core_light_technique_common;
-map_dom_connector map[] = {{ "directional", NULL, 0 },};
+g_supported_collada_core_types[23].get_instance = new_collada_core_optics_technique_common;
+map_dom_connector map[] = {{ "perspective", NULL, 0 },};
 size = sizeof map / sizeof(map_dom_connector);
 g_supported_collada_core_types[23].n_map = size;
 g_supported_collada_core_types[23].map = powergl_resize(NULL, size, sizeof(map_dom_connector));
 memcpy(g_supported_collada_core_types[g_n_supported_collada_core_types++].map, map, size * sizeof(map_dom_connector));
 }
-static void support_collada_core_type_0_optics_technique_common(){
-char str[] = "optics_technique_common";
+static void support_collada_core_type_0_InstanceWithExtra(){
+char str[] = "InstanceWithExtra";
 size_t size = sizeof str / sizeof(char);
 g_supported_collada_core_types[24].name = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[24].name, str, size * sizeof(char));
@@ -1850,15 +1804,15 @@ char str_parent[] = "0";
 size = sizeof str_parent / sizeof(char);
 g_supported_collada_core_types[24].parent = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[24].parent, str_parent, size * sizeof(char));
-g_supported_collada_core_types[24].get_instance = new_collada_core_optics_technique_common;
-map_dom_connector map[] = {{ "perspective", NULL, 0 },};
+g_supported_collada_core_types[24].get_instance = new_collada_core_InstanceWithExtra;
+map_dom_connector map[] = {{ "sid", "char*", 1 },{ "name", "char*", 1 },{ "url", "char*", 1 },{ "url", "geometry", 3 },{ "url", "camera", 3 },{ "url", "light", 3 },{ "url", "visual_scene", 3 },};
 size = sizeof map / sizeof(map_dom_connector);
 g_supported_collada_core_types[24].n_map = size;
 g_supported_collada_core_types[24].map = powergl_resize(NULL, size, sizeof(map_dom_connector));
 memcpy(g_supported_collada_core_types[g_n_supported_collada_core_types++].map, map, size * sizeof(map_dom_connector));
 }
-static void support_collada_core_type_0_InstanceWithExtra(){
-char str[] = "InstanceWithExtra";
+static void support_collada_core_type_0_input_local_offset(){
+char str[] = "input_local_offset";
 size_t size = sizeof str / sizeof(char);
 g_supported_collada_core_types[25].name = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[25].name, str, size * sizeof(char));
@@ -1866,15 +1820,15 @@ char str_parent[] = "0";
 size = sizeof str_parent / sizeof(char);
 g_supported_collada_core_types[25].parent = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[25].parent, str_parent, size * sizeof(char));
-g_supported_collada_core_types[25].get_instance = new_collada_core_InstanceWithExtra;
-map_dom_connector map[] = {{ "sid", "char*", 1 },{ "name", "char*", 1 },{ "url", "char*", 1 },{ "url", "geometry", 3 },{ "url", "camera", 3 },{ "url", "light", 3 },{ "url", "visual_scene", 3 },};
+g_supported_collada_core_types[25].get_instance = new_collada_core_input_local_offset;
+map_dom_connector map[] = {{ "semantic", "char*", 1 },{ "source", "char*", 1 },{ "set", "size_t", 1 },{ "offset", "size_t", 1 },{ "source", "source", 3 },{ "source", "vertices", 3 },};
 size = sizeof map / sizeof(map_dom_connector);
 g_supported_collada_core_types[25].n_map = size;
 g_supported_collada_core_types[25].map = powergl_resize(NULL, size, sizeof(map_dom_connector));
 memcpy(g_supported_collada_core_types[g_n_supported_collada_core_types++].map, map, size * sizeof(map_dom_connector));
 }
-static void support_collada_core_type_0_input_local_offset(){
-char str[] = "input_local_offset";
+static void support_collada_core_type_0_input_local(){
+char str[] = "input_local";
 size_t size = sizeof str / sizeof(char);
 g_supported_collada_core_types[26].name = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[26].name, str, size * sizeof(char));
@@ -1882,15 +1836,15 @@ char str_parent[] = "0";
 size = sizeof str_parent / sizeof(char);
 g_supported_collada_core_types[26].parent = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[26].parent, str_parent, size * sizeof(char));
-g_supported_collada_core_types[26].get_instance = new_collada_core_input_local_offset;
-map_dom_connector map[] = {{ "semantic", "char*", 1 },{ "source", "char*", 1 },{ "set", "size_t", 1 },{ "offset", "size_t", 1 },{ "source", "source", 3 },{ "source", "vertices", 3 },};
+g_supported_collada_core_types[26].get_instance = new_collada_core_input_local;
+map_dom_connector map[] = {{ "semantic", "char*", 1 },{ "source", "char*", 1 },{ "source", "source", 3 },};
 size = sizeof map / sizeof(map_dom_connector);
 g_supported_collada_core_types[26].n_map = size;
 g_supported_collada_core_types[26].map = powergl_resize(NULL, size, sizeof(map_dom_connector));
 memcpy(g_supported_collada_core_types[g_n_supported_collada_core_types++].map, map, size * sizeof(map_dom_connector));
 }
-static void support_collada_core_type_0_input_local(){
-char str[] = "input_local";
+static void support_collada_core_type_0_ListOfUInts(){
+char str[] = "ListOfUInts";
 size_t size = sizeof str / sizeof(char);
 g_supported_collada_core_types[27].name = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[27].name, str, size * sizeof(char));
@@ -1898,15 +1852,15 @@ char str_parent[] = "0";
 size = sizeof str_parent / sizeof(char);
 g_supported_collada_core_types[27].parent = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[27].parent, str_parent, size * sizeof(char));
-g_supported_collada_core_types[27].get_instance = new_collada_core_input_local;
-map_dom_connector map[] = {{ "semantic", "char*", 1 },{ "source", "char*", 1 },{ "source", "source", 3 },};
+g_supported_collada_core_types[27].get_instance = new_collada_core_ListOfUInts;
+map_dom_connector map[] = {{ "content", "size_t*", 2 },};
 size = sizeof map / sizeof(map_dom_connector);
 g_supported_collada_core_types[27].n_map = size;
 g_supported_collada_core_types[27].map = powergl_resize(NULL, size, sizeof(map_dom_connector));
 memcpy(g_supported_collada_core_types[g_n_supported_collada_core_types++].map, map, size * sizeof(map_dom_connector));
 }
-static void support_collada_core_type_0_ListOfUInts(){
-char str[] = "ListOfUInts";
+static void support_collada_core_type_0_targetable_floats(){
+char str[] = "targetable_floats";
 size_t size = sizeof str / sizeof(char);
 g_supported_collada_core_types[28].name = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[28].name, str, size * sizeof(char));
@@ -1914,15 +1868,15 @@ char str_parent[] = "0";
 size = sizeof str_parent / sizeof(char);
 g_supported_collada_core_types[28].parent = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[28].parent, str_parent, size * sizeof(char));
-g_supported_collada_core_types[28].get_instance = new_collada_core_ListOfUInts;
-map_dom_connector map[] = {{ "content", "size_t*", 2 },};
+g_supported_collada_core_types[28].get_instance = new_collada_core_targetable_floats;
+map_dom_connector map[] = {{ "content", "double*", 2 },{ "sid", "char*", 1 },};
 size = sizeof map / sizeof(map_dom_connector);
 g_supported_collada_core_types[28].n_map = size;
 g_supported_collada_core_types[28].map = powergl_resize(NULL, size, sizeof(map_dom_connector));
 memcpy(g_supported_collada_core_types[g_n_supported_collada_core_types++].map, map, size * sizeof(map_dom_connector));
 }
-static void support_collada_core_type_0_targetable_floats(){
-char str[] = "targetable_floats";
+static void support_collada_core_type_0_targetable_float(){
+char str[] = "targetable_float";
 size_t size = sizeof str / sizeof(char);
 g_supported_collada_core_types[29].name = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[29].name, str, size * sizeof(char));
@@ -1930,101 +1884,99 @@ char str_parent[] = "0";
 size = sizeof str_parent / sizeof(char);
 g_supported_collada_core_types[29].parent = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[29].parent, str_parent, size * sizeof(char));
-g_supported_collada_core_types[29].get_instance = new_collada_core_targetable_floats;
+g_supported_collada_core_types[29].get_instance = new_collada_core_targetable_float;
 map_dom_connector map[] = {{ "content", "double*", 2 },{ "sid", "char*", 1 },};
 size = sizeof map / sizeof(map_dom_connector);
 g_supported_collada_core_types[29].n_map = size;
 g_supported_collada_core_types[29].map = powergl_resize(NULL, size, sizeof(map_dom_connector));
 memcpy(g_supported_collada_core_types[g_n_supported_collada_core_types++].map, map, size * sizeof(map_dom_connector));
 }
-static void support_collada_core_type_0_targetable_float(){
-char str[] = "targetable_float";
-size_t size = sizeof str / sizeof(char);
-g_supported_collada_core_types[30].name = powergl_resize(NULL, size, sizeof(char));
-memcpy(g_supported_collada_core_types[30].name, str, size * sizeof(char));
-char str_parent[] = "0";
-size = sizeof str_parent / sizeof(char);
-g_supported_collada_core_types[30].parent = powergl_resize(NULL, size, sizeof(char));
-memcpy(g_supported_collada_core_types[30].parent, str_parent, size * sizeof(char));
-g_supported_collada_core_types[30].get_instance = new_collada_core_targetable_float;
-map_dom_connector map[] = {{ "content", "double*", 2 },{ "sid", "char*", 1 },};
-size = sizeof map / sizeof(map_dom_connector);
-g_supported_collada_core_types[30].n_map = size;
-g_supported_collada_core_types[30].map = powergl_resize(NULL, size, sizeof(map_dom_connector));
-memcpy(g_supported_collada_core_types[g_n_supported_collada_core_types++].map, map, size * sizeof(map_dom_connector));
-}
 static void support_collada_core_type_source_technique_common(){
 char str[] = "technique_common";
 size_t size = sizeof str / sizeof(char);
-g_supported_collada_core_types[31].name = powergl_resize(NULL, size, sizeof(char));
-memcpy(g_supported_collada_core_types[31].name, str, size * sizeof(char));
+g_supported_collada_core_types[30].name = powergl_resize(NULL, size, sizeof(char));
+memcpy(g_supported_collada_core_types[30].name, str, size * sizeof(char));
 char str_parent[] = "source";
 size = sizeof str_parent / sizeof(char);
-g_supported_collada_core_types[31].parent = powergl_resize(NULL, size, sizeof(char));
-memcpy(g_supported_collada_core_types[31].parent, str_parent, size * sizeof(char));
-g_supported_collada_core_types[31].get_instance = new_collada_core_source_technique_common;
-g_supported_collada_core_types[31].n_map = g_supported_collada_core_types[22].n_map;
-g_supported_collada_core_types[31].map = g_supported_collada_core_types[22].map;
+g_supported_collada_core_types[30].parent = powergl_resize(NULL, size, sizeof(char));
+memcpy(g_supported_collada_core_types[30].parent, str_parent, size * sizeof(char));
+g_supported_collada_core_types[30].get_instance = new_collada_core_source_technique_common;
+g_supported_collada_core_types[30].n_map = g_supported_collada_core_types[21].n_map;
+g_supported_collada_core_types[30].map = g_supported_collada_core_types[21].map;
 g_n_supported_collada_core_types++;
 }
 static void support_collada_core_type_light_technique_common(){
 char str[] = "technique_common";
 size_t size = sizeof str / sizeof(char);
-g_supported_collada_core_types[32].name = powergl_resize(NULL, size, sizeof(char));
-memcpy(g_supported_collada_core_types[32].name, str, size * sizeof(char));
+g_supported_collada_core_types[31].name = powergl_resize(NULL, size, sizeof(char));
+memcpy(g_supported_collada_core_types[31].name, str, size * sizeof(char));
 char str_parent[] = "light";
 size = sizeof str_parent / sizeof(char);
-g_supported_collada_core_types[32].parent = powergl_resize(NULL, size, sizeof(char));
-memcpy(g_supported_collada_core_types[32].parent, str_parent, size * sizeof(char));
-g_supported_collada_core_types[32].get_instance = new_collada_core_light_technique_common;
-g_supported_collada_core_types[32].n_map = g_supported_collada_core_types[23].n_map;
-g_supported_collada_core_types[32].map = g_supported_collada_core_types[23].map;
+g_supported_collada_core_types[31].parent = powergl_resize(NULL, size, sizeof(char));
+memcpy(g_supported_collada_core_types[31].parent, str_parent, size * sizeof(char));
+g_supported_collada_core_types[31].get_instance = new_collada_core_light_technique_common;
+g_supported_collada_core_types[31].n_map = g_supported_collada_core_types[22].n_map;
+g_supported_collada_core_types[31].map = g_supported_collada_core_types[22].map;
 g_n_supported_collada_core_types++;
 }
 static void support_collada_core_type_optics_technique_common(){
 char str[] = "technique_common";
 size_t size = sizeof str / sizeof(char);
-g_supported_collada_core_types[33].name = powergl_resize(NULL, size, sizeof(char));
-memcpy(g_supported_collada_core_types[33].name, str, size * sizeof(char));
+g_supported_collada_core_types[32].name = powergl_resize(NULL, size, sizeof(char));
+memcpy(g_supported_collada_core_types[32].name, str, size * sizeof(char));
 char str_parent[] = "optics";
 size = sizeof str_parent / sizeof(char);
-g_supported_collada_core_types[33].parent = powergl_resize(NULL, size, sizeof(char));
-memcpy(g_supported_collada_core_types[33].parent, str_parent, size * sizeof(char));
-g_supported_collada_core_types[33].get_instance = new_collada_core_optics_technique_common;
-g_supported_collada_core_types[33].n_map = g_supported_collada_core_types[24].n_map;
-g_supported_collada_core_types[33].map = g_supported_collada_core_types[24].map;
+g_supported_collada_core_types[32].parent = powergl_resize(NULL, size, sizeof(char));
+memcpy(g_supported_collada_core_types[32].parent, str_parent, size * sizeof(char));
+g_supported_collada_core_types[32].get_instance = new_collada_core_optics_technique_common;
+g_supported_collada_core_types[32].n_map = g_supported_collada_core_types[23].n_map;
+g_supported_collada_core_types[32].map = g_supported_collada_core_types[23].map;
 g_n_supported_collada_core_types++;
 }
 static void support_collada_core_type_triangles_input(){
 char str[] = "input";
 size_t size = sizeof str / sizeof(char);
-g_supported_collada_core_types[34].name = powergl_resize(NULL, size, sizeof(char));
-memcpy(g_supported_collada_core_types[34].name, str, size * sizeof(char));
+g_supported_collada_core_types[33].name = powergl_resize(NULL, size, sizeof(char));
+memcpy(g_supported_collada_core_types[33].name, str, size * sizeof(char));
 char str_parent[] = "triangles";
 size = sizeof str_parent / sizeof(char);
-g_supported_collada_core_types[34].parent = powergl_resize(NULL, size, sizeof(char));
-memcpy(g_supported_collada_core_types[34].parent, str_parent, size * sizeof(char));
-g_supported_collada_core_types[34].get_instance = new_collada_core_input_local_offset;
-g_supported_collada_core_types[34].n_map = g_supported_collada_core_types[26].n_map;
-g_supported_collada_core_types[34].map = g_supported_collada_core_types[26].map;
+g_supported_collada_core_types[33].parent = powergl_resize(NULL, size, sizeof(char));
+memcpy(g_supported_collada_core_types[33].parent, str_parent, size * sizeof(char));
+g_supported_collada_core_types[33].get_instance = new_collada_core_input_local_offset;
+g_supported_collada_core_types[33].n_map = g_supported_collada_core_types[25].n_map;
+g_supported_collada_core_types[33].map = g_supported_collada_core_types[25].map;
 g_n_supported_collada_core_types++;
 }
 static void support_collada_core_type_vertices_input(){
 char str[] = "input";
 size_t size = sizeof str / sizeof(char);
-g_supported_collada_core_types[35].name = powergl_resize(NULL, size, sizeof(char));
-memcpy(g_supported_collada_core_types[35].name, str, size * sizeof(char));
+g_supported_collada_core_types[34].name = powergl_resize(NULL, size, sizeof(char));
+memcpy(g_supported_collada_core_types[34].name, str, size * sizeof(char));
 char str_parent[] = "vertices";
 size = sizeof str_parent / sizeof(char);
-g_supported_collada_core_types[35].parent = powergl_resize(NULL, size, sizeof(char));
-memcpy(g_supported_collada_core_types[35].parent, str_parent, size * sizeof(char));
-g_supported_collada_core_types[35].get_instance = new_collada_core_input_local;
-g_supported_collada_core_types[35].n_map = g_supported_collada_core_types[27].n_map;
-g_supported_collada_core_types[35].map = g_supported_collada_core_types[27].map;
+g_supported_collada_core_types[34].parent = powergl_resize(NULL, size, sizeof(char));
+memcpy(g_supported_collada_core_types[34].parent, str_parent, size * sizeof(char));
+g_supported_collada_core_types[34].get_instance = new_collada_core_input_local;
+g_supported_collada_core_types[34].n_map = g_supported_collada_core_types[26].n_map;
+g_supported_collada_core_types[34].map = g_supported_collada_core_types[26].map;
 g_n_supported_collada_core_types++;
 }
 static void support_collada_core_type_node_instance_camera(){
 char str[] = "instance_camera";
+size_t size = sizeof str / sizeof(char);
+g_supported_collada_core_types[35].name = powergl_resize(NULL, size, sizeof(char));
+memcpy(g_supported_collada_core_types[35].name, str, size * sizeof(char));
+char str_parent[] = "node";
+size = sizeof str_parent / sizeof(char);
+g_supported_collada_core_types[35].parent = powergl_resize(NULL, size, sizeof(char));
+memcpy(g_supported_collada_core_types[35].parent, str_parent, size * sizeof(char));
+g_supported_collada_core_types[35].get_instance = new_collada_core_InstanceWithExtra;
+g_supported_collada_core_types[35].n_map = g_supported_collada_core_types[24].n_map;
+g_supported_collada_core_types[35].map = g_supported_collada_core_types[24].map;
+g_n_supported_collada_core_types++;
+}
+static void support_collada_core_type_node_instance_geometry(){
+char str[] = "instance_geometry";
 size_t size = sizeof str / sizeof(char);
 g_supported_collada_core_types[36].name = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[36].name, str, size * sizeof(char));
@@ -2033,12 +1985,12 @@ size = sizeof str_parent / sizeof(char);
 g_supported_collada_core_types[36].parent = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[36].parent, str_parent, size * sizeof(char));
 g_supported_collada_core_types[36].get_instance = new_collada_core_InstanceWithExtra;
-g_supported_collada_core_types[36].n_map = g_supported_collada_core_types[25].n_map;
-g_supported_collada_core_types[36].map = g_supported_collada_core_types[25].map;
+g_supported_collada_core_types[36].n_map = g_supported_collada_core_types[24].n_map;
+g_supported_collada_core_types[36].map = g_supported_collada_core_types[24].map;
 g_n_supported_collada_core_types++;
 }
-static void support_collada_core_type_node_instance_geometry(){
-char str[] = "instance_geometry";
+static void support_collada_core_type_node_instance_light(){
+char str[] = "instance_light";
 size_t size = sizeof str / sizeof(char);
 g_supported_collada_core_types[37].name = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[37].name, str, size * sizeof(char));
@@ -2047,68 +1999,68 @@ size = sizeof str_parent / sizeof(char);
 g_supported_collada_core_types[37].parent = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[37].parent, str_parent, size * sizeof(char));
 g_supported_collada_core_types[37].get_instance = new_collada_core_InstanceWithExtra;
-g_supported_collada_core_types[37].n_map = g_supported_collada_core_types[25].n_map;
-g_supported_collada_core_types[37].map = g_supported_collada_core_types[25].map;
-g_n_supported_collada_core_types++;
-}
-static void support_collada_core_type_node_instance_light(){
-char str[] = "instance_light";
-size_t size = sizeof str / sizeof(char);
-g_supported_collada_core_types[38].name = powergl_resize(NULL, size, sizeof(char));
-memcpy(g_supported_collada_core_types[38].name, str, size * sizeof(char));
-char str_parent[] = "node";
-size = sizeof str_parent / sizeof(char);
-g_supported_collada_core_types[38].parent = powergl_resize(NULL, size, sizeof(char));
-memcpy(g_supported_collada_core_types[38].parent, str_parent, size * sizeof(char));
-g_supported_collada_core_types[38].get_instance = new_collada_core_InstanceWithExtra;
-g_supported_collada_core_types[38].n_map = g_supported_collada_core_types[25].n_map;
-g_supported_collada_core_types[38].map = g_supported_collada_core_types[25].map;
+g_supported_collada_core_types[37].n_map = g_supported_collada_core_types[24].n_map;
+g_supported_collada_core_types[37].map = g_supported_collada_core_types[24].map;
 g_n_supported_collada_core_types++;
 }
 static void support_collada_core_type_scene_instance_visual_scene(){
 char str[] = "instance_visual_scene";
 size_t size = sizeof str / sizeof(char);
-g_supported_collada_core_types[39].name = powergl_resize(NULL, size, sizeof(char));
-memcpy(g_supported_collada_core_types[39].name, str, size * sizeof(char));
+g_supported_collada_core_types[38].name = powergl_resize(NULL, size, sizeof(char));
+memcpy(g_supported_collada_core_types[38].name, str, size * sizeof(char));
 char str_parent[] = "scene";
 size = sizeof str_parent / sizeof(char);
-g_supported_collada_core_types[39].parent = powergl_resize(NULL, size, sizeof(char));
-memcpy(g_supported_collada_core_types[39].parent, str_parent, size * sizeof(char));
-g_supported_collada_core_types[39].get_instance = new_collada_core_InstanceWithExtra;
-g_supported_collada_core_types[39].n_map = g_supported_collada_core_types[25].n_map;
-g_supported_collada_core_types[39].map = g_supported_collada_core_types[25].map;
+g_supported_collada_core_types[38].parent = powergl_resize(NULL, size, sizeof(char));
+memcpy(g_supported_collada_core_types[38].parent, str_parent, size * sizeof(char));
+g_supported_collada_core_types[38].get_instance = new_collada_core_InstanceWithExtra;
+g_supported_collada_core_types[38].n_map = g_supported_collada_core_types[24].n_map;
+g_supported_collada_core_types[38].map = g_supported_collada_core_types[24].map;
 g_n_supported_collada_core_types++;
 }
 static void support_collada_core_type_triangles_p(){
 char str[] = "p";
 size_t size = sizeof str / sizeof(char);
-g_supported_collada_core_types[40].name = powergl_resize(NULL, size, sizeof(char));
-memcpy(g_supported_collada_core_types[40].name, str, size * sizeof(char));
+g_supported_collada_core_types[39].name = powergl_resize(NULL, size, sizeof(char));
+memcpy(g_supported_collada_core_types[39].name, str, size * sizeof(char));
 char str_parent[] = "triangles";
 size = sizeof str_parent / sizeof(char);
-g_supported_collada_core_types[40].parent = powergl_resize(NULL, size, sizeof(char));
-memcpy(g_supported_collada_core_types[40].parent, str_parent, size * sizeof(char));
-g_supported_collada_core_types[40].get_instance = new_collada_core_ListOfUInts;
-g_supported_collada_core_types[40].n_map = g_supported_collada_core_types[28].n_map;
-g_supported_collada_core_types[40].map = g_supported_collada_core_types[28].map;
+g_supported_collada_core_types[39].parent = powergl_resize(NULL, size, sizeof(char));
+memcpy(g_supported_collada_core_types[39].parent, str_parent, size * sizeof(char));
+g_supported_collada_core_types[39].get_instance = new_collada_core_ListOfUInts;
+g_supported_collada_core_types[39].n_map = g_supported_collada_core_types[27].n_map;
+g_supported_collada_core_types[39].map = g_supported_collada_core_types[27].map;
 g_n_supported_collada_core_types++;
 }
 static void support_collada_core_type_directional_color(){
 char str[] = "color";
 size_t size = sizeof str / sizeof(char);
-g_supported_collada_core_types[41].name = powergl_resize(NULL, size, sizeof(char));
-memcpy(g_supported_collada_core_types[41].name, str, size * sizeof(char));
+g_supported_collada_core_types[40].name = powergl_resize(NULL, size, sizeof(char));
+memcpy(g_supported_collada_core_types[40].name, str, size * sizeof(char));
 char str_parent[] = "directional";
 size = sizeof str_parent / sizeof(char);
-g_supported_collada_core_types[41].parent = powergl_resize(NULL, size, sizeof(char));
-memcpy(g_supported_collada_core_types[41].parent, str_parent, size * sizeof(char));
-g_supported_collada_core_types[41].get_instance = new_collada_core_targetable_floats;
-g_supported_collada_core_types[41].n_map = g_supported_collada_core_types[29].n_map;
-g_supported_collada_core_types[41].map = g_supported_collada_core_types[29].map;
+g_supported_collada_core_types[40].parent = powergl_resize(NULL, size, sizeof(char));
+memcpy(g_supported_collada_core_types[40].parent, str_parent, size * sizeof(char));
+g_supported_collada_core_types[40].get_instance = new_collada_core_targetable_floats;
+g_supported_collada_core_types[40].n_map = g_supported_collada_core_types[28].n_map;
+g_supported_collada_core_types[40].map = g_supported_collada_core_types[28].map;
 g_n_supported_collada_core_types++;
 }
 static void support_collada_core_type_node_matrix(){
 char str[] = "matrix";
+size_t size = sizeof str / sizeof(char);
+g_supported_collada_core_types[41].name = powergl_resize(NULL, size, sizeof(char));
+memcpy(g_supported_collada_core_types[41].name, str, size * sizeof(char));
+char str_parent[] = "node";
+size = sizeof str_parent / sizeof(char);
+g_supported_collada_core_types[41].parent = powergl_resize(NULL, size, sizeof(char));
+memcpy(g_supported_collada_core_types[41].parent, str_parent, size * sizeof(char));
+g_supported_collada_core_types[41].get_instance = new_collada_core_targetable_floats;
+g_supported_collada_core_types[41].n_map = g_supported_collada_core_types[28].n_map;
+g_supported_collada_core_types[41].map = g_supported_collada_core_types[28].map;
+g_n_supported_collada_core_types++;
+}
+static void support_collada_core_type_node_rotate(){
+char str[] = "rotate";
 size_t size = sizeof str / sizeof(char);
 g_supported_collada_core_types[42].name = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[42].name, str, size * sizeof(char));
@@ -2117,40 +2069,40 @@ size = sizeof str_parent / sizeof(char);
 g_supported_collada_core_types[42].parent = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[42].parent, str_parent, size * sizeof(char));
 g_supported_collada_core_types[42].get_instance = new_collada_core_targetable_floats;
-g_supported_collada_core_types[42].n_map = g_supported_collada_core_types[29].n_map;
-g_supported_collada_core_types[42].map = g_supported_collada_core_types[29].map;
+g_supported_collada_core_types[42].n_map = g_supported_collada_core_types[28].n_map;
+g_supported_collada_core_types[42].map = g_supported_collada_core_types[28].map;
+g_n_supported_collada_core_types++;
+}
+static void support_collada_core_type_node_scale(){
+char str[] = "scale";
+size_t size = sizeof str / sizeof(char);
+g_supported_collada_core_types[43].name = powergl_resize(NULL, size, sizeof(char));
+memcpy(g_supported_collada_core_types[43].name, str, size * sizeof(char));
+char str_parent[] = "node";
+size = sizeof str_parent / sizeof(char);
+g_supported_collada_core_types[43].parent = powergl_resize(NULL, size, sizeof(char));
+memcpy(g_supported_collada_core_types[43].parent, str_parent, size * sizeof(char));
+g_supported_collada_core_types[43].get_instance = new_collada_core_targetable_floats;
+g_supported_collada_core_types[43].n_map = g_supported_collada_core_types[28].n_map;
+g_supported_collada_core_types[43].map = g_supported_collada_core_types[28].map;
+g_n_supported_collada_core_types++;
+}
+static void support_collada_core_type_node_translate(){
+char str[] = "translate";
+size_t size = sizeof str / sizeof(char);
+g_supported_collada_core_types[44].name = powergl_resize(NULL, size, sizeof(char));
+memcpy(g_supported_collada_core_types[44].name, str, size * sizeof(char));
+char str_parent[] = "node";
+size = sizeof str_parent / sizeof(char);
+g_supported_collada_core_types[44].parent = powergl_resize(NULL, size, sizeof(char));
+memcpy(g_supported_collada_core_types[44].parent, str_parent, size * sizeof(char));
+g_supported_collada_core_types[44].get_instance = new_collada_core_targetable_floats;
+g_supported_collada_core_types[44].n_map = g_supported_collada_core_types[28].n_map;
+g_supported_collada_core_types[44].map = g_supported_collada_core_types[28].map;
 g_n_supported_collada_core_types++;
 }
 static void support_collada_core_type_perspective_xfov(){
 char str[] = "xfov";
-size_t size = sizeof str / sizeof(char);
-g_supported_collada_core_types[43].name = powergl_resize(NULL, size, sizeof(char));
-memcpy(g_supported_collada_core_types[43].name, str, size * sizeof(char));
-char str_parent[] = "perspective";
-size = sizeof str_parent / sizeof(char);
-g_supported_collada_core_types[43].parent = powergl_resize(NULL, size, sizeof(char));
-memcpy(g_supported_collada_core_types[43].parent, str_parent, size * sizeof(char));
-g_supported_collada_core_types[43].get_instance = new_collada_core_targetable_float;
-g_supported_collada_core_types[43].n_map = g_supported_collada_core_types[30].n_map;
-g_supported_collada_core_types[43].map = g_supported_collada_core_types[30].map;
-g_n_supported_collada_core_types++;
-}
-static void support_collada_core_type_perspective_yfov(){
-char str[] = "yfov";
-size_t size = sizeof str / sizeof(char);
-g_supported_collada_core_types[44].name = powergl_resize(NULL, size, sizeof(char));
-memcpy(g_supported_collada_core_types[44].name, str, size * sizeof(char));
-char str_parent[] = "perspective";
-size = sizeof str_parent / sizeof(char);
-g_supported_collada_core_types[44].parent = powergl_resize(NULL, size, sizeof(char));
-memcpy(g_supported_collada_core_types[44].parent, str_parent, size * sizeof(char));
-g_supported_collada_core_types[44].get_instance = new_collada_core_targetable_float;
-g_supported_collada_core_types[44].n_map = g_supported_collada_core_types[30].n_map;
-g_supported_collada_core_types[44].map = g_supported_collada_core_types[30].map;
-g_n_supported_collada_core_types++;
-}
-static void support_collada_core_type_perspective_aspect_ratio(){
-char str[] = "aspect_ratio";
 size_t size = sizeof str / sizeof(char);
 g_supported_collada_core_types[45].name = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[45].name, str, size * sizeof(char));
@@ -2159,12 +2111,12 @@ size = sizeof str_parent / sizeof(char);
 g_supported_collada_core_types[45].parent = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[45].parent, str_parent, size * sizeof(char));
 g_supported_collada_core_types[45].get_instance = new_collada_core_targetable_float;
-g_supported_collada_core_types[45].n_map = g_supported_collada_core_types[30].n_map;
-g_supported_collada_core_types[45].map = g_supported_collada_core_types[30].map;
+g_supported_collada_core_types[45].n_map = g_supported_collada_core_types[29].n_map;
+g_supported_collada_core_types[45].map = g_supported_collada_core_types[29].map;
 g_n_supported_collada_core_types++;
 }
-static void support_collada_core_type_perspective_znear(){
-char str[] = "znear";
+static void support_collada_core_type_perspective_yfov(){
+char str[] = "yfov";
 size_t size = sizeof str / sizeof(char);
 g_supported_collada_core_types[46].name = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[46].name, str, size * sizeof(char));
@@ -2173,12 +2125,12 @@ size = sizeof str_parent / sizeof(char);
 g_supported_collada_core_types[46].parent = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[46].parent, str_parent, size * sizeof(char));
 g_supported_collada_core_types[46].get_instance = new_collada_core_targetable_float;
-g_supported_collada_core_types[46].n_map = g_supported_collada_core_types[30].n_map;
-g_supported_collada_core_types[46].map = g_supported_collada_core_types[30].map;
+g_supported_collada_core_types[46].n_map = g_supported_collada_core_types[29].n_map;
+g_supported_collada_core_types[46].map = g_supported_collada_core_types[29].map;
 g_n_supported_collada_core_types++;
 }
-static void support_collada_core_type_perspective_zfar(){
-char str[] = "zfar";
+static void support_collada_core_type_perspective_aspect_ratio(){
+char str[] = "aspect_ratio";
 size_t size = sizeof str / sizeof(char);
 g_supported_collada_core_types[47].name = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[47].name, str, size * sizeof(char));
@@ -2187,8 +2139,36 @@ size = sizeof str_parent / sizeof(char);
 g_supported_collada_core_types[47].parent = powergl_resize(NULL, size, sizeof(char));
 memcpy(g_supported_collada_core_types[47].parent, str_parent, size * sizeof(char));
 g_supported_collada_core_types[47].get_instance = new_collada_core_targetable_float;
-g_supported_collada_core_types[47].n_map = g_supported_collada_core_types[30].n_map;
-g_supported_collada_core_types[47].map = g_supported_collada_core_types[30].map;
+g_supported_collada_core_types[47].n_map = g_supported_collada_core_types[29].n_map;
+g_supported_collada_core_types[47].map = g_supported_collada_core_types[29].map;
+g_n_supported_collada_core_types++;
+}
+static void support_collada_core_type_perspective_znear(){
+char str[] = "znear";
+size_t size = sizeof str / sizeof(char);
+g_supported_collada_core_types[48].name = powergl_resize(NULL, size, sizeof(char));
+memcpy(g_supported_collada_core_types[48].name, str, size * sizeof(char));
+char str_parent[] = "perspective";
+size = sizeof str_parent / sizeof(char);
+g_supported_collada_core_types[48].parent = powergl_resize(NULL, size, sizeof(char));
+memcpy(g_supported_collada_core_types[48].parent, str_parent, size * sizeof(char));
+g_supported_collada_core_types[48].get_instance = new_collada_core_targetable_float;
+g_supported_collada_core_types[48].n_map = g_supported_collada_core_types[29].n_map;
+g_supported_collada_core_types[48].map = g_supported_collada_core_types[29].map;
+g_n_supported_collada_core_types++;
+}
+static void support_collada_core_type_perspective_zfar(){
+char str[] = "zfar";
+size_t size = sizeof str / sizeof(char);
+g_supported_collada_core_types[49].name = powergl_resize(NULL, size, sizeof(char));
+memcpy(g_supported_collada_core_types[49].name, str, size * sizeof(char));
+char str_parent[] = "perspective";
+size = sizeof str_parent / sizeof(char);
+g_supported_collada_core_types[49].parent = powergl_resize(NULL, size, sizeof(char));
+memcpy(g_supported_collada_core_types[49].parent, str_parent, size * sizeof(char));
+g_supported_collada_core_types[49].get_instance = new_collada_core_targetable_float;
+g_supported_collada_core_types[49].n_map = g_supported_collada_core_types[29].n_map;
+g_supported_collada_core_types[49].map = g_supported_collada_core_types[29].map;
 g_n_supported_collada_core_types++;
 }
 void powergl_collada_core_init(){
@@ -2205,7 +2185,6 @@ support_collada_core_type_mesh_source();
 support_collada_core_type_technique_common_accessor();
 support_collada_core_type_accessor_param();
 support_collada_core_type_source_float_array();
-support_collada_core_type_source_int_array();
 support_collada_core_type_mesh_vertices();
 support_collada_core_type_mesh_triangles();
 support_collada_core_type_library_lights_light();
@@ -2235,6 +2214,9 @@ support_collada_core_type_scene_instance_visual_scene();
 support_collada_core_type_triangles_p();
 support_collada_core_type_directional_color();
 support_collada_core_type_node_matrix();
+support_collada_core_type_node_rotate();
+support_collada_core_type_node_scale();
+support_collada_core_type_node_translate();
 support_collada_core_type_perspective_xfov();
 support_collada_core_type_perspective_yfov();
 support_collada_core_type_perspective_aspect_ratio();

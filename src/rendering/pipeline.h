@@ -10,8 +10,7 @@
 
 typedef struct powergl_pipeline_t powergl_pipeline;
 
-typedef struct
-{
+typedef struct {
     GLuint index;
     GLint size;
     GLenum type;
@@ -21,8 +20,7 @@ typedef struct
 
 } powergl_vsis; // vertex shader input specs
 
-struct powergl_pipeline_t
-{
+struct powergl_pipeline_t {
 
     powergl_vsis vis;
     powergl_vsis nis;
@@ -30,12 +28,12 @@ struct powergl_pipeline_t
     GLuint vs;
     GLuint fs;
     GLuint gp;
-    GLuint uni_matrix;
-    GLuint uni_light_color;
-    GLuint uni_light_dir;
+    GLint uni_matrix;
+    GLint uni_light_color;
+    GLint uni_light_dir;
 };
 
-int powergl_pipeline_create( powergl_pipeline * );
-int powergl_pipeline_render( powergl_pipeline *, powergl_object **, size_t, powergl_object*, powergl_object* );
+int powergl_pipeline_create(powergl_pipeline *);
+int powergl_pipeline_render(powergl_pipeline *, powergl_object **, size_t, powergl_object *, powergl_object *);
 void powergl_pipeline_init(powergl_pipeline *, powergl_object *);
 #endif

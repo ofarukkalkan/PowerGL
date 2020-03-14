@@ -14,7 +14,6 @@ typedef struct powergl_collada_core_source_t powergl_collada_core_source;
 typedef struct powergl_collada_core_accessor_t powergl_collada_core_accessor;
 typedef struct powergl_collada_core_param_t powergl_collada_core_param;
 typedef struct powergl_collada_core_float_array_t powergl_collada_core_float_array;
-typedef struct powergl_collada_core_int_array_t powergl_collada_core_int_array;
 typedef struct powergl_collada_core_vertices_t powergl_collada_core_vertices;
 typedef struct powergl_collada_core_triangles_t powergl_collada_core_triangles;
 typedef struct powergl_collada_core_light_t powergl_collada_core_light;
@@ -93,7 +92,6 @@ dom_connector dom;
 char* c_id; size_t n_id;
 char* c_name; size_t n_name;
 powergl_collada_core_float_array** c_float_array; size_t n_float_array;
-powergl_collada_core_int_array** c_int_array; size_t n_int_array;
 powergl_collada_core_source_technique_common** c_technique_common; size_t n_technique_common;
 };
 struct powergl_collada_core_accessor_t {
@@ -104,7 +102,6 @@ size_t c_offset;
 size_t c_stride;
 powergl_collada_core_param** c_param; size_t n_param;
 powergl_collada_core_float_array* r_float_array;
-powergl_collada_core_int_array* r_int_array;
 };
 struct powergl_collada_core_param_t {
 dom_connector dom;
@@ -116,13 +113,6 @@ char* c_semantic; size_t n_semantic;
 struct powergl_collada_core_float_array_t {
 dom_connector dom;
 double* content; size_t n_content;
-char* c_id; size_t n_id;
-char* c_name; size_t n_name;
-size_t c_count;
-};
-struct powergl_collada_core_int_array_t {
-dom_connector dom;
-int* content; size_t n_content;
 char* c_id; size_t n_id;
 char* c_name; size_t n_name;
 size_t c_count;
@@ -174,6 +164,9 @@ char* c_id; size_t n_id;
 char* c_sid; size_t n_sid;
 char* c_name; size_t n_name;
 powergl_collada_core_targetable_floats** c_matrix; size_t n_matrix;
+powergl_collada_core_targetable_floats** c_rotate; size_t n_rotate;
+powergl_collada_core_targetable_floats** c_scale; size_t n_scale;
+powergl_collada_core_targetable_floats** c_translate; size_t n_translate;
 powergl_collada_core_InstanceWithExtra** c_instance_camera; size_t n_instance_camera;
 powergl_collada_core_InstanceWithExtra** c_instance_light; size_t n_instance_light;
 powergl_collada_core_InstanceWithExtra** c_instance_geometry; size_t n_instance_geometry;

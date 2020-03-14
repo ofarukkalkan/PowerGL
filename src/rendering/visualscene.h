@@ -12,8 +12,7 @@ typedef void (*fpcreate_visualscene)(powergl_visualscene *);
 typedef void (*fprun_visualscene)(powergl_visualscene *, float);
 typedef void (*fphandle_events_visualscene)(powergl_visualscene *, SDL_Event *e);
 
-struct powergl_visualscene_t
-{
+struct powergl_visualscene_t {
 
     // objects
     powergl_object **objects;
@@ -34,7 +33,7 @@ struct powergl_visualscene_t
 
 };
 
-void powergl_scene_build( powergl_visualscene *, const char * );
+void powergl_scene_build(powergl_visualscene *, const char *);
 powergl_object *powergl_scene_find(powergl_visualscene *, const char *);
 
 #endif

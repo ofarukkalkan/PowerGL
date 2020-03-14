@@ -3,289 +3,330 @@
 #include <float.h>
 #include <stdio.h>
 #include <assert.h>
+#include <math.h>
 
-void powergl_print4x4( float m[4][4] )
-{
-  size_t i, j;
-    printf( "\n" );
-    for ( i = 0; i < 4; ++i )
-        {
-            printf( "[ " );
-            for ( j = 0; j < 4; j++ )
-                {
-                    printf( "%lf ", m[i][j] );
-                }
-            printf( " ]\n" );
+#ifndef DEBUG_OUTPUT
+#define DEBUG_OUTPUT 0
+#endif
+
+
+void powergl_mat4_print(const char *msg, powergl_mat4 m) {
+    printf("%s ->\n", msg);
+
+    size_t i, j;
+
+    for(i = 0; i < 4; ++i) {
+        printf("[ ");
+
+        for(j = 0; j < 4; j++) {
+            printf("%f ", m.c[j].r[i]);
         }
-}
 
-void powergl_copy4x4( GLfloat m[4][4], const GLfloat n[4][4])
-{
-  size_t i, j;
-  for ( i = 0; i < 4; ++i )
-    {
-      for ( j = 0; j < 4; j++ )
-	{
-	  m[i][j] = n[i][j];
-	}
+        printf(" ]\n");
     }
 }
 
-void powergl_zero4x4( GLfloat m[4][4] )
-{
-    m[0][0] = 0.0;
-    m[0][1] = 0.0;
-    m[0][2] = 0.0;
-    m[0][3] = 0.0;
-    m[1][0] = 0.0;
-    m[1][1] = 0.0;
-    m[1][2] = 0.0;
-    m[1][3] = 0.0;
-    m[2][0] = 0.0;
-    m[2][1] = 0.0;
-    m[2][2] = 0.0;
-    m[2][3] = 0.0;
-    m[3][0] = 0.0;
-    m[3][1] = 0.0;
-    m[3][2] = 0.0;
-    m[3][3] = 0.0;
+inline powergl_mat4 powergl_mat4_zero() {
+    powergl_mat4 m;
+    m.c[0].r[0] = 0.0f;
+    m.c[0].r[1] = 0.0f;
+    m.c[0].r[2] = 0.0f;
+    m.c[0].r[3] = 0.0f;
+    m.c[1].r[0] = 0.0f;
+    m.c[1].r[1] = 0.0f;
+    m.c[1].r[2] = 0.0f;
+    m.c[1].r[3] = 0.0f;
+    m.c[2].r[0] = 0.0f;
+    m.c[2].r[1] = 0.0f;
+    m.c[2].r[2] = 0.0f;
+    m.c[2].r[3] = 0.0f;
+    m.c[3].r[0] = 0.0f;
+    m.c[3].r[1] = 0.0f;
+    m.c[3].r[2] = 0.0f;
+    m.c[3].r[3] = 0.0f;
+    return m;
 }
 
-void powergl_ident4x4( GLfloat m[4][4] )
-{
-    m[0][0] = 1.0;
-    m[0][1] = 0.0;
-    m[0][2] = 0.0;
-    m[0][3] = 0.0;
-    m[1][0] = 0.0;
-    m[1][1] = 1.0;
-    m[1][2] = 0.0;
-    m[1][3] = 0.0;
-    m[2][0] = 0.0;
-    m[2][1] = 0.0;
-    m[2][2] = 1.0;
-    m[2][3] = 0.0;
-    m[3][0] = 0.0;
-    m[3][1] = 0.0;
-    m[3][2] = 0.0;
-    m[3][3] = 1.0;
+inline powergl_mat4 powergl_mat4_ident() {
+    powergl_mat4 m;
+    m.c[0].r[0] = 1.0f;
+    m.c[0].r[1] = 0.0f;
+    m.c[0].r[2] = 0.0f;
+    m.c[0].r[3] = 0.0f;
+    m.c[1].r[0] = 0.0f;
+    m.c[1].r[1] = 1.0f;
+    m.c[1].r[2] = 0.0f;
+    m.c[1].r[3] = 0.0f;
+    m.c[2].r[0] = 0.0f;
+    m.c[2].r[1] = 0.0f;
+    m.c[2].r[2] = 1.0f;
+    m.c[2].r[3] = 0.0f;
+    m.c[3].r[0] = 0.0f;
+    m.c[3].r[1] = 0.0f;
+    m.c[3].r[2] = 0.0f;
+    m.c[3].r[3] = 1.0f;
+    return m;
 }
 
-//this func. transforms vector v using m transformation matrix and does normalization on result vector to get H = 1
-void powergl_transformvec4( const GLfloat v[4], const GLfloat m[4][4], GLfloat result[4] )
-{
-    result[0] = v[0] * m[0][0] + v[1] * m[1][0] + v[2] * m[2][0] + v[3] * m[3][0];
-    result[1] = v[0] * m[0][1] + v[1] * m[1][1] + v[2] * m[2][1] + v[3] * m[3][1];
-    result[2] = v[0] * m[0][2] + v[1] * m[1][2] + v[2] * m[2][2] + v[3] * m[3][2];
-    result[3] = v[0] * m[0][3] + v[1] * m[1][3] + v[2] * m[2][3] + v[3] * m[3][3];
+inline void powergl_mat4_copy(powergl_mat4 *m, const double * const arr, size_t size, int type){
+  if(size!=16){
+    assert(0);
+  }
+  for(size_t i=0; i < 4; i++){
+    for(size_t j=0; j < 4; j++){
+      if(type==1){//row-major
+	m->c[j].r[i] = (GLfloat)arr[i*4 + j];
+      } else {
+	m->c[i].r[j] = (GLfloat)arr[i*4 + j];
+      }
+    }
+  }
 }
 
-void powergl_mult4x4( GLfloat m[4][4], GLfloat n[4][4])
-{
-    GLfloat r[4][4];
-    r[0][0] = m[0][0] * n[0][0] + m[0][1] * n[1][0] + m[0][2] * n[2][0] + m[0][3] * n[3][0];
-    r[0][1] = m[0][0] * n[0][1] + m[0][1] * n[1][1] + m[0][2] * n[2][1] + m[0][3] * n[3][1];
-    r[0][2] = m[0][0] * n[0][2] + m[0][1] * n[1][2] + m[0][2] * n[2][2] + m[0][3] * n[3][2];
-    r[0][3] = m[0][0] * n[0][3] + m[0][1] * n[1][3] + m[0][2] * n[2][3] + m[0][3] * n[3][3];
-    r[1][0] = m[1][0] * n[0][0] + m[1][1] * n[1][0] + m[1][2] * n[2][0] + m[1][3] * n[3][0];
-    r[1][1] = m[1][0] * n[0][1] + m[1][1] * n[1][1] + m[1][2] * n[2][1] + m[1][3] * n[3][1];
-    r[1][2] = m[1][0] * n[0][2] + m[1][1] * n[1][2] + m[1][2] * n[2][2] + m[1][3] * n[3][2];
-    r[1][3] = m[1][0] * n[0][3] + m[1][1] * n[1][3] + m[1][2] * n[2][3] + m[1][3] * n[3][3];
-    r[2][0] = m[2][0] * n[0][0] + m[2][1] * n[1][0] + m[2][2] * n[2][0] + m[2][3] * n[3][0];
-    r[2][1] = m[2][0] * n[0][1] + m[2][1] * n[1][1] + m[2][2] * n[2][1] + m[2][3] * n[3][1];
-    r[2][2] = m[2][0] * n[0][2] + m[2][1] * n[1][2] + m[2][2] * n[2][2] + m[2][3] * n[3][2];
-    r[2][3] = m[2][0] * n[0][3] + m[2][1] * n[1][3] + m[2][2] * n[2][3] + m[2][3] * n[3][3];
-    r[3][0] = m[3][0] * n[0][0] + m[3][1] * n[1][0] + m[3][2] * n[2][0] + m[3][3] * n[3][0];
-    r[3][1] = m[3][0] * n[0][1] + m[3][1] * n[1][1] + m[3][2] * n[2][1] + m[3][3] * n[3][1];
-    r[3][2] = m[3][0] * n[0][2] + m[3][1] * n[1][2] + m[3][2] * n[2][2] + m[3][3] * n[3][2];
-    r[3][3] = m[3][0] * n[0][3] + m[3][1] * n[1][3] + m[3][2] * n[2][3] + m[3][3] * n[3][3];
-    m[0][0] = r[0][0];
-    m[0][1] = r[0][1];
-    m[0][2] = r[0][2];
-    m[0][3] = r[0][3];
-    m[1][0] = r[1][0];
-    m[1][1] = r[1][1];
-    m[1][2] = r[1][2];
-    m[1][3] = r[1][3];
-    m[2][0] = r[2][0];
-    m[2][1] = r[2][1];
-    m[2][2] = r[2][2];
-    m[2][3] = r[2][3];
-    m[3][0] = r[3][0];
-    m[3][1] = r[3][1];
-    m[3][2] = r[3][2];
-    m[3][3] = r[3][3];
+inline powergl_mat4 powergl_mat4_muls(powergl_mat4 m1, GLfloat s) {
+#if DEBUG_OUTPUT
+    printf("%s\n", __func__);
+    powergl_mat4_print("m1", m1);
+    powergl_float_print("s", s);
+#endif
+    powergl_mat4 r;
+    r.c[0] = powergl_vec4_muls(m1.c[0], s);
+    r.c[1] = powergl_vec4_muls(m1.c[1], s);
+    r.c[2] = powergl_vec4_muls(m1.c[2], s);
+    r.c[3] = powergl_vec4_muls(m1.c[3], s);
+    return r;
 }
 
-void powergl_trans4x4( GLfloat m[4][4] )
-{
-    GLfloat n[4][4];
-    for ( size_t i = 0; i < 4; ++i )
-        {
-            for ( size_t j = 0; j < 4; ++j )
-                {
-                    n[j][i] = m[i][j];
-                }
-        }
-    for ( size_t i = 0; i < 4; ++i )
-        {
-            for ( size_t j = 0; j < 4; ++j )
-                {
-                    m[i][j] = n[i][j];
-                }
-        }
+inline powergl_mat4 powergl_mat4_mul(powergl_mat4 m1, powergl_mat4 m2) {
+#if DEBUG_OUTPUT
+    printf("%s\n", __func__);
+    powergl_mat4_print("in m1", m1);
+    powergl_mat4_print("in m2", m2);
+#endif
+    powergl_vec4 SrcA0 = m1.c[0];
+    powergl_vec4 SrcA1 = m1.c[1];
+    powergl_vec4 SrcA2 = m1.c[2];
+    powergl_vec4 SrcA3 = m1.c[3];
+    powergl_vec4 SrcB0 = m2.c[0];
+    powergl_vec4 SrcB1 = m2.c[1];
+    powergl_vec4 SrcB2 = m2.c[2];
+    powergl_vec4 SrcB3 = m2.c[3];
+    powergl_mat4 Result;
+    Result.c[0] = powergl_vec4_add(powergl_vec4_add(powergl_vec4_muls(SrcA0, SrcB0.r[0]),
+						    powergl_vec4_muls(SrcA1, SrcB0.r[1])),
+                                   powergl_vec4_add(powergl_vec4_muls(SrcA2, SrcB0.r[2]),
+						    powergl_vec4_muls(SrcA1, SrcB0.r[3])));
+    Result.c[1] = powergl_vec4_add(powergl_vec4_add(powergl_vec4_muls(SrcA0, SrcB1.r[0]),
+						    powergl_vec4_muls(SrcA1, SrcB1.r[1])),
+                                   powergl_vec4_add(powergl_vec4_muls(SrcA2, SrcB1.r[2]),
+						    powergl_vec4_muls(SrcA3, SrcB1.r[3])));
+    Result.c[2] = powergl_vec4_add(powergl_vec4_add(powergl_vec4_muls(SrcA0, SrcB2.r[0]),
+						    powergl_vec4_muls(SrcA1, SrcB2.r[1])),
+                                   powergl_vec4_add(powergl_vec4_muls(SrcA2, SrcB2.r[2]),
+						    powergl_vec4_muls(SrcA3, SrcB2.r[3])));
+    Result.c[3] = powergl_vec4_add(powergl_vec4_add(powergl_vec4_muls(SrcA0, SrcB3.r[0]),
+						    powergl_vec4_muls(SrcA1, SrcB3.r[1])),
+                                   powergl_vec4_add(powergl_vec4_muls(SrcA2, SrcB3.r[2]),
+						    powergl_vec4_muls(SrcA3, SrcB3.r[3])));
+    return Result;
 }
 
-int powergl_inv4x4( GLfloat m[16], GLfloat invOut[16] )
-{
-    GLfloat inv[16];
-    GLfloat det = 0.0;
-    inv[ 0] =  m[5] * m[10] * m[15] - m[5] * m[11] * m[14] - m[9] * m[6] * m[15] + m[9] * m[7] * m[14] + m[13] * m[6] * m[11] - m[13] * m[7] * m[10];
-    inv[ 4] = -m[4] * m[10] * m[15] + m[4] * m[11] * m[14] + m[8] * m[6] * m[15] - m[8] * m[7] * m[14] - m[12] * m[6] * m[11] + m[12] * m[7] * m[10];
-    inv[ 8] =  m[4] * m[ 9] * m[15] - m[4] * m[11] * m[13] - m[8] * m[5] * m[15] + m[8] * m[7] * m[13] + m[12] * m[5] * m[11] - m[12] * m[7] * m[ 9];
-    inv[12] = -m[4] * m[ 9] * m[14] + m[4] * m[10] * m[13] + m[8] * m[5] * m[14] - m[8] * m[6] * m[13] - m[12] * m[5] * m[10] + m[12] * m[6] * m[ 9];
-    inv[ 1] = -m[1] * m[10] * m[15] + m[1] * m[11] * m[14] + m[9] * m[2] * m[15] - m[9] * m[3] * m[14] - m[13] * m[2] * m[11] + m[13] * m[3] * m[10];
-    inv[ 5] =  m[0] * m[10] * m[15] - m[0] * m[11] * m[14] - m[8] * m[2] * m[15] + m[8] * m[3] * m[14] + m[12] * m[2] * m[11] - m[12] * m[3] * m[10];
-    inv[ 9] = -m[0] * m[ 9] * m[15] + m[0] * m[11] * m[13] + m[8] * m[1] * m[15] - m[8] * m[3] * m[13] - m[12] * m[1] * m[11] + m[12] * m[3] * m[ 9];
-    inv[13] =  m[0] * m[ 9] * m[14] - m[0] * m[10] * m[13] - m[8] * m[1] * m[14] + m[8] * m[2] * m[13] + m[12] * m[1] * m[10] - m[12] * m[2] * m[ 9];
-    inv[ 2] =  m[1] * m[ 6] * m[15] - m[1] * m[ 7] * m[14] - m[5] * m[2] * m[15] + m[5] * m[3] * m[14] + m[13] * m[2] * m[ 7] - m[13] * m[3] * m[ 6];
-    inv[ 6] = -m[0] * m[ 6] * m[15] + m[0] * m[ 7] * m[14] + m[4] * m[2] * m[15] - m[4] * m[3] * m[14] - m[12] * m[2] * m[ 7] + m[12] * m[3] * m[ 6];
-    inv[10] =  m[0] * m[ 5] * m[15] - m[0] * m[ 7] * m[13] - m[4] * m[1] * m[15] + m[4] * m[3] * m[13] + m[12] * m[1] * m[ 7] - m[12] * m[3] * m[ 5];
-    inv[14] = -m[0] * m[ 5] * m[14] + m[0] * m[ 6] * m[13] + m[4] * m[1] * m[14] - m[4] * m[2] * m[13] - m[12] * m[1] * m[ 6] + m[12] * m[2] * m[ 5];
-    inv[ 3] = -m[1] * m[ 6] * m[11] + m[1] * m[ 7] * m[10] + m[5] * m[2] * m[11] - m[5] * m[3] * m[10] - m[ 9] * m[2] * m[ 7] + m[ 9] * m[3] * m[ 6];
-    inv[ 7] =  m[0] * m[ 6] * m[11] - m[0] * m[ 7] * m[10] - m[4] * m[2] * m[11] + m[4] * m[3] * m[10] + m[ 8] * m[2] * m[ 7] - m[ 8] * m[3] * m[ 6];
-    inv[11] = -m[0] * m[ 5] * m[11] + m[0] * m[ 7] * m[ 9] + m[4] * m[1] * m[11] - m[4] * m[3] * m[ 9] - m[ 8] * m[1] * m[ 7] + m[ 8] * m[3] * m[ 5];
-    inv[15] =  m[0] * m[ 5] * m[10] - m[0] * m[ 6] * m[ 9] - m[4] * m[1] * m[10] + m[4] * m[2] * m[ 9] + m[ 8] * m[1] * m[ 6] - m[ 8] * m[2] * m[ 5];
-    det = m[0] * inv[0] + m[1] * inv[4] + m[2] * inv[8] + m[3] * inv[12];
-    if ( det == 0.0 )
-        {
-            return 0;
-        }
-    det = 1.0 / det;
-    for ( size_t i = 0; i < 16; i++ )
-        {
-            invOut[i] = inv[i] * det;
-        }
-    return 1;
+inline powergl_mat4 powergl_mat4_transpose(powergl_mat4 m) {
+#if DEBUG_OUTPUT
+    printf("%s\n", __func__);
+    powergl_mat4_print("in m", m);
+#endif
+    powergl_mat4 Result;
+    Result.c[0].r[0] = m.c[0].r[0];
+    Result.c[0].r[1] = m.c[1].r[0];
+    Result.c[0].r[2] = m.c[2].r[0];
+    Result.c[0].r[3] = m.c[3].r[0];
+    Result.c[1].r[0] = m.c[0].r[1];
+    Result.c[1].r[1] = m.c[1].r[1];
+    Result.c[1].r[2] = m.c[2].r[1];
+    Result.c[1].r[3] = m.c[3].r[1];
+    Result.c[2].r[0] = m.c[0].r[2];
+    Result.c[2].r[1] = m.c[1].r[2];
+    Result.c[2].r[2] = m.c[2].r[2];
+    Result.c[2].r[3] = m.c[3].r[2];
+    Result.c[3].r[0] = m.c[0].r[3];
+    Result.c[3].r[1] = m.c[1].r[3];
+    Result.c[3].r[2] = m.c[2].r[3];
+    Result.c[3].r[3] = m.c[3].r[3];
+    return Result;
 }
 
-void powergl_translate4x4(GLfloat m[4][4], powergl_vec3 *v )
-{
-    m[3][0] += v->x;
-    m[3][1] += v->y;
-    m[3][2] += v->z;
+inline powergl_mat4 powergl_mat4_inv(powergl_mat4 m) {
+#if DEBUG_OUTPUT
+    printf("%s\n", __func__);
+    powergl_mat4_print("in m", m);
+#endif
+    GLfloat Coef00 = m.c[2].r[2] * m.c[3].r[3] - m.c[3].r[2] * m.c[2].r[3];
+    GLfloat Coef02 = m.c[1].r[2] * m.c[3].r[3] - m.c[3].r[2] * m.c[1].r[3];
+    GLfloat Coef03 = m.c[1].r[2] * m.c[2].r[3] - m.c[2].r[2] * m.c[1].r[3];
+    GLfloat Coef04 = m.c[2].r[1] * m.c[3].r[3] - m.c[3].r[1] * m.c[2].r[3];
+    GLfloat Coef06 = m.c[1].r[1] * m.c[3].r[3] - m.c[3].r[1] * m.c[1].r[3];
+    GLfloat Coef07 = m.c[1].r[1] * m.c[2].r[3] - m.c[2].r[1] * m.c[1].r[3];
+    GLfloat Coef08 = m.c[2].r[1] * m.c[3].r[2] - m.c[3].r[1] * m.c[2].r[2];
+    GLfloat Coef10 = m.c[1].r[1] * m.c[3].r[2] - m.c[3].r[1] * m.c[1].r[2];
+    GLfloat Coef11 = m.c[1].r[1] * m.c[2].r[2] - m.c[2].r[1] * m.c[1].r[2];
+    GLfloat Coef12 = m.c[2].r[0] * m.c[3].r[3] - m.c[3].r[0] * m.c[2].r[3];
+    GLfloat Coef14 = m.c[1].r[0] * m.c[3].r[3] - m.c[3].r[0] * m.c[1].r[3];
+    GLfloat Coef15 = m.c[1].r[0] * m.c[2].r[3] - m.c[2].r[0] * m.c[1].r[3];
+    GLfloat Coef16 = m.c[2].r[0] * m.c[3].r[2] - m.c[3].r[0] * m.c[2].r[2];
+    GLfloat Coef18 = m.c[1].r[0] * m.c[3].r[2] - m.c[3].r[0] * m.c[1].r[2];
+    GLfloat Coef19 = m.c[1].r[0] * m.c[2].r[2] - m.c[2].r[0] * m.c[1].r[2];
+    GLfloat Coef20 = m.c[2].r[0] * m.c[3].r[1] - m.c[3].r[0] * m.c[2].r[1];
+    GLfloat Coef22 = m.c[1].r[0] * m.c[3].r[1] - m.c[3].r[0] * m.c[1].r[1];
+    GLfloat Coef23 = m.c[1].r[0] * m.c[2].r[1] - m.c[2].r[0] * m.c[1].r[1];
+    powergl_vec4 Fac0 = {{Coef00, Coef00, Coef02, Coef03}};
+    powergl_vec4 Fac1 = {{Coef04, Coef04, Coef06, Coef07}};
+    powergl_vec4 Fac2 = {{Coef08, Coef08, Coef10, Coef11}};
+    powergl_vec4 Fac3 = {{Coef12, Coef12, Coef14, Coef15}};
+    powergl_vec4 Fac4 = {{Coef16, Coef16, Coef18, Coef19}};
+    powergl_vec4 Fac5 = {{Coef20, Coef20, Coef22, Coef23}};
+    powergl_vec4 Vec0 = {{m.c[1].r[0], m.c[0].r[0], m.c[0].r[0], m.c[0].r[0]}};
+    powergl_vec4 Vec1 = {{m.c[1].r[1], m.c[0].r[1], m.c[0].r[1], m.c[0].r[1]}};
+    powergl_vec4 Vec2 = {{m.c[1].r[2], m.c[0].r[2], m.c[0].r[2], m.c[0].r[2]}};
+    powergl_vec4 Vec3 = {{m.c[1].r[3], m.c[0].r[3], m.c[0].r[3], m.c[0].r[3]}};
+    
+    powergl_vec4 Inv0 =	powergl_vec4_add(powergl_vec4_mulv(Vec3, Fac2),
+                                         powergl_vec4_sub(powergl_vec4_mulv(Vec1, Fac0),
+							  powergl_vec4_mulv(Vec2, Fac1)));
+    
+    powergl_vec4 Inv1 = powergl_vec4_add(powergl_vec4_mulv(Vec3, Fac4),
+                                         powergl_vec4_sub(powergl_vec4_mulv(Vec0, Fac0),
+							  powergl_vec4_mulv(Vec2, Fac3)));
+    
+    powergl_vec4 Inv2 = powergl_vec4_add(powergl_vec4_mulv(Vec3, Fac5),
+                                         powergl_vec4_sub(powergl_vec4_mulv(Vec0, Fac1),
+							  powergl_vec4_mulv(Vec1, Fac3)));
+    
+    powergl_vec4 Inv3 = powergl_vec4_add(powergl_vec4_mulv(Vec2, Fac5),
+                                         powergl_vec4_sub(powergl_vec4_mulv(Vec0, Fac2),
+							  powergl_vec4_mulv(Vec1, Fac4)));
+    powergl_vec4 SignA = {{+1, -1, +1, -1}};
+    powergl_vec4 SignB = {{-1, +1, -1, +1}};
+    powergl_mat4 Inverse;
+    Inverse.c[0] = powergl_vec4_mulv(Inv0, SignA);
+    Inverse.c[1] = powergl_vec4_mulv(Inv1, SignB);
+    Inverse.c[2] = powergl_vec4_mulv(Inv2, SignA);
+    Inverse.c[3] = powergl_vec4_mulv(Inv3, SignB);
+    powergl_vec4 Row0 = {{Inverse.c[0].r[0], Inverse.c[1].r[0], Inverse.c[2].r[0], Inverse.c[3].r[0]}};
+    powergl_vec4 Dot0 = powergl_vec4_mulv(m.c[0], Row0);
+    GLfloat Dot1 = (Dot0.x + Dot0.y) + (Dot0.z + Dot0.w);
+    GLfloat det = 1.0f / Dot1;
+    powergl_mat4_muls(Inverse, det);
+    return Inverse;
 }
 
-void powergl_rot4x4( GLfloat m[4][4], float angle, powergl_vec3 *axis )
-{
-    float a, c, s, tmp, rot[9];
-    powergl_vec3 temp;
-    GLfloat n[3][3];
-    a = angle;
-    c = cosf( a );
-    s = sinf( a );
-    powergl_normvec3( axis, axis );
-    tmp = 1.0 - c;
-    temp.x = axis->x * tmp;
-    temp.y = axis->y * tmp;
-    temp.z = axis->z * tmp;
-    rot[0] = ( c + temp.x * axis->x );
-    rot[1] = ( temp.x * axis->y + s * axis->z );
-    rot[2] = ( temp.x * axis->z - s * axis->y );
-    rot[3] = ( temp.y * axis->x - s * axis->z );
-    rot[4] = ( c + temp.y * axis->y );
-    rot[5] = ( temp.y * axis->z + s * axis->x );
-    rot[6] = ( temp.z * axis->x + s * axis->y );
-    rot[7] = ( temp.z * axis->y - s * axis->x );
-    rot[8] = ( c + temp.z * axis->z );
-    n[0][0] = m[0][0] * rot[0] + m[1][0] * rot[1] + m[2][0] * rot[2];
-    n[0][1] = m[0][1] * rot[0] + m[1][1] * rot[1] + m[2][1] * rot[2];
-    n[0][2] = m[0][2] * rot[0] + m[1][2] * rot[1] + m[2][2] * rot[2];
-    n[1][0] = m[0][0] * rot[3] + m[1][0] * rot[4] + m[2][0] * rot[5];
-    n[1][1] = m[0][1] * rot[3] + m[1][1] * rot[4] + m[2][1] * rot[5];
-    n[1][2] = m[0][2] * rot[3] + m[1][2] * rot[4] + m[2][2] * rot[5];
-    n[2][0] = m[0][0] * rot[6] + m[1][0] * rot[7] + m[2][0] * rot[8];
-    n[2][1] = m[0][1] * rot[6] + m[1][1] * rot[7] + m[2][1] * rot[8];
-    n[2][2] = m[0][2] * rot[6] + m[1][2] * rot[7] + m[2][2] * rot[8];
-    m[0][0] = n[0][0];
-    m[0][1] = n[0][1];
-    m[0][2] = n[0][2];
-    m[1][0] = n[1][0];
-    m[1][1] = n[1][1];
-    m[1][2] = n[1][2];
-    m[2][0] = n[2][0];
-    m[2][1] = n[2][1];
-    m[2][2] = n[2][2];
+inline powergl_mat4 powergl_mat4_translate(powergl_mat4 m, powergl_vec3 v) {
+#if DEBUG_OUTPUT
+    printf("%s\n", __func__);
+    powergl_mat4_print("in m", m);
+    powergl_vec3_print("translate v", v);
+#endif
+    powergl_mat4 r = m;
+    r.c[3].r[0] = m.c[3].r[0] + v.x;
+    r.c[3].r[1] = m.c[3].r[1] + v.y;
+    r.c[3].r[2] = m.c[3].r[2] + v.z;
+    return r;
 }
 
-
-/* creating rigth handed and 0 to 1 depth ranged perspective projection transformation */
-void powergl_perspectiveRH( GLfloat projection[4][4], float fovy, float aspect, float zNear, float zFar )
-{
-    assert( fabs( aspect - DBL_EPSILON ) > 0.0 );
-    const float tanHalfFovy = tanf( fovy / 2.0 );
-    powergl_zero4x4( projection );
-    projection[0][0] = 1.0 / ( aspect * tanHalfFovy );
-    projection[1][1] = 1.0 / ( tanHalfFovy );
-    projection[2][3] = -1.0;
-    /* depth range 0 to 1
-       projection[2][2] = zFar / (zFar - zNear);
-       projection[3][2] = -(zFar * zNear) / (zFar - zNear);
-    */
-    /* depth range -1 to 1*/
-    projection[2][2] = - ( zFar + zNear ) / ( zFar - zNear );
-    projection[3][2] = - ( 2.0 * zFar * zNear ) / ( zFar - zNear );
+inline powergl_mat4 powergl_mat4_rot(powergl_mat4 m, float angle, powergl_vec3 v) {
+#if DEBUG_OUTPUT
+    printf("%s\n", __func__);
+    powergl_mat4_print("in m", m);
+    powergl_float_print("angle", angle);
+    powergl_vec3_print("axis", v);
+#endif
+    GLfloat a = angle;
+    GLfloat c = cosf(a);
+    GLfloat s = sinf(a);
+    powergl_vec3 axis = powergl_vec3_norm(v);
+    powergl_vec3 temp = powergl_vec3_muls(axis, (1.0f - c));
+    powergl_mat4 Rotate;
+    Rotate.c[0].r[0] = c + temp.r[0] * axis.r[0];
+    Rotate.c[0].r[1] = temp.r[0] * axis.r[1] + s * axis.r[2];
+    Rotate.c[0].r[2] = temp.r[0] * axis.r[2] - s * axis.r[1];
+    Rotate.c[1].r[0] = temp.r[1] * axis.r[0] - s * axis.r[2];
+    Rotate.c[1].r[1] = c + temp.r[1] * axis.r[1];
+    Rotate.c[1].r[2] = temp.r[1] * axis.r[2] + s * axis.r[0];
+    Rotate.c[2].r[0] = temp.r[2] * axis.r[0] + s * axis.r[1];
+    Rotate.c[2].r[1] = temp.r[2] * axis.r[1] - s * axis.r[0];
+    Rotate.c[2].r[2] = c + temp.r[2] * axis.r[2];
+    powergl_mat4 Result;
+    Result.c[0] = powergl_vec4_add(powergl_vec4_muls(m.c[0], Rotate.c[0].r[0]),
+                                   powergl_vec4_add(powergl_vec4_muls(m.c[1], Rotate.c[0].r[1]),
+                                           powergl_vec4_muls(m.c[2], Rotate.c[0].r[2])));
+    Result.c[1] = powergl_vec4_add(powergl_vec4_muls(m.c[0], Rotate.c[1].r[0]),
+                                   powergl_vec4_add(powergl_vec4_muls(m.c[1], Rotate.c[1].r[1]),
+                                           powergl_vec4_muls(m.c[2], Rotate.c[1].r[2])));
+    Result.c[2] = powergl_vec4_add(powergl_vec4_muls(m.c[0], Rotate.c[2].r[0]),
+                                   powergl_vec4_add(powergl_vec4_muls(m.c[1], Rotate.c[2].r[1]),
+                                           powergl_vec4_muls(m.c[2], Rotate.c[2].r[2])));
+    Result.c[3] = m.c[3];
+    return Result;
 }
 
 /* creating view transformation */
-void powergl_lookat( GLfloat view[4][4], powergl_vec3 *eye, powergl_vec3 *target, powergl_vec3 *up )
-{
-    powergl_vec3 f;
-    powergl_vec3 s;
-    powergl_vec3 u;
-    powergl_subvec3( target, eye, &f );
-    powergl_normvec3( &f, &f );
-    powergl_crossvec3( &f, up, &s );
-    powergl_normvec3( &s, &s );
-    powergl_crossvec3( &s, &f, &u );
-    powergl_ident4x4( view );
-    view[0][0] = s.x;
-    view[1][0] = s.y;
-    view[2][0] = s.z;
-    view[0][1] = u.x;
-    view[1][1] = u.y;
-    view[2][1] = u.z;
-    view[0][2] = -f.x;
-    view[1][2] = -f.y;
-    view[2][2] = -f.z;
-    view[3][0] = -powergl_dotvec3( &s, eye );
-    view[3][1] = -powergl_dotvec3( &u, eye );
-    view[3][2] = powergl_dotvec3( &f, eye );
+powergl_mat4 powergl_mat4_lookatRH(powergl_vec3 eye, powergl_vec3 center, powergl_vec3 up) {
+#if DEBUG_OUTPUT
+    printf("%s\n", __func__);
+    powergl_vec3_print("eye", eye);
+    powergl_vec3_print("target", center);
+    powergl_vec3_print("up", up);
+#endif
+    powergl_vec3 f = powergl_vec3_norm(powergl_vec3_sub(center, eye));
+    powergl_vec3 s = powergl_vec3_norm(powergl_vec3_cross(f, up));
+    powergl_vec3 u = powergl_vec3_cross(s, f);
+    powergl_mat4 Result = powergl_mat4_ident();
+    Result.c[0].r[0] = s.x;
+    Result.c[1].r[0] = s.y;
+    Result.c[2].r[0] = s.z;
+    Result.c[0].r[1] = u.x;
+    Result.c[1].r[1] = u.y;
+    Result.c[2].r[1] = u.z;
+    Result.c[0].r[2] = -f.x;
+    Result.c[1].r[2] = -f.y;
+    Result.c[2].r[2] = -f.z;
+    Result.c[3].r[0] = -powergl_vec3_dot(s, eye);
+    Result.c[3].r[1] = -powergl_vec3_dot(u, eye);
+    Result.c[3].r[2] = powergl_vec3_dot(f, eye);
+    return Result;
 }
 
+/* creating right handed and 0 to 1 depth ranged perspective projection transformation */
+inline powergl_mat4 powergl_mat4_perspectiveRH(float fovy, float aspect, float zNear, float zFar) {
+#if DEBUG_OUTPUT
+    printf("%s\n", __func__);
+    powergl_float_print("fovy", fovy);
+    powergl_float_print("aspect", aspect);
+    powergl_float_print("zNear", zNear);
+    powergl_float_print("zFar", zFar);
+#endif
+    assert(fabs(aspect - FLT_EPSILON) > 0.0f);
+    GLfloat tanHalfFovy = tanf(fovy / 2.0f);
+    powergl_mat4 Result = powergl_mat4_zero();
+    Result.c[0].r[0] = 1.0f / (aspect * tanHalfFovy);
+    Result.c[1].r[1] = 1.0f / (tanHalfFovy);
+    Result.c[2].r[2] = - (zFar + zNear) / (zFar - zNear);
+    Result.c[2].r[3] = -1.0f;
+    Result.c[3].r[2] = -(2.0f * zFar * zNear) / (zFar - zNear);
+    return Result;
+}
 
-void powergl_unproject(powergl_vec3 *result, powergl_vec3 *win, GLfloat mvp[4][4], GLfloat viewport[4])
-{
-    GLfloat inv[4][4];
-    powergl_ident4x4(inv);
-    powergl_inv4x4((float*)mvp, (float*)&inv);
-    //powergl_print4x4(mvp);
-    //powergl_print4x4(inv);
-    GLfloat tmp[4];
-    tmp[0] = win->x;
-    tmp[1] = win->y;
-    tmp[2] = win->z;
-    tmp[3] = 1.0;
-    tmp[0] = (tmp[0] - viewport[0]) / viewport[2];
-    tmp[1] = (tmp[1] - viewport[1]) / viewport[3];
-    tmp[0] = tmp[0] * 2.0 - 1.0;
-    tmp[1] = tmp[1] * 2.0 - 1.0;
-    GLfloat res2[4];
-    printf("untransformed pos = %f %f %f %f\n", tmp[0], tmp[1], tmp[2], tmp[3]);
-    powergl_transformvec4( tmp, inv, res2 );
-    printf("transformed pos = %f %f %f %f\n", res2[0], res2[1], res2[2], res2[3]);
-    result->x = res2[0] / res2[3];
-    result->y = res2[1] / res2[3];
-    result->z = res2[2] / res2[3];
-    printf("w division pos = %f %f %f\n", result->x, result->y, result->z);
+// v  = m * v, result is column vec4 not row !
+inline powergl_vec4 powergl_vec4_trans(powergl_vec4 v, powergl_mat4  m) {
+#if DEBUG_OUTPUT
+    printf("%s\n", __func__);
+    powergl_vec4_print("v", v);
+    powergl_mat4_print("transform m", m);
+#endif
+    powergl_vec4 result;
+    result.r[0] = m.c[0].r[0] * v.r[0] + m.c[1].r[0] * v.r[1] + m.c[2].r[0] * v.r[2] + m.c[3].r[0] * v.r[3];   
+    result.r[1] = m.c[0].r[1] * v.r[0] + m.c[1].r[1] * v.r[1] + m.c[2].r[1] * v.r[2] + m.c[3].r[1] * v.r[3];
+    result.r[2] = m.c[0].r[2] * v.r[0] + m.c[1].r[2] * v.r[1] + m.c[2].r[2] * v.r[2] + m.c[3].r[2] * v.r[3];
+    result.r[3] = m.c[0].r[3] * v.r[0] + m.c[1].r[3] * v.r[1] + m.c[2].r[3] * v.r[2] + m.c[3].r[3] * v.r[3];
+    return result;
 }
