@@ -10,7 +10,7 @@ typedef struct powergl_visualscene_t powergl_visualscene;
 
 typedef void (*fpcreate_visualscene)(powergl_visualscene *);
 typedef void (*fprun_visualscene)(powergl_visualscene *, float);
-typedef void (*fphandle_events_visualscene)(powergl_visualscene *, SDL_Event *e);
+typedef void (*fphandle_events_visualscene)(powergl_visualscene *, SDL_Event *e, float);
 
 struct powergl_visualscene_t {
 

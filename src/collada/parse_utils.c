@@ -7,6 +7,39 @@
 #include <inttypes.h>
 #include <assert.h>
 
+char **powergl_collada_parse_names(const char *str, size_t *value_size_ptr){
+  char **arr = NULL;
+  size_t size = 10;
+  size_t index = 0;
+  const char s[2] = " ";
+  char *token;
+   
+  arr = powergl_resize(NULL, size, sizeof(char*));
+  char * copy = powergl_resize(NULL, strlen(str)+1, sizeof(char));
+  strcpy(copy, str);
+
+  token = strtok(copy, s);
+   
+  /* walk through other tokens */
+  while( token != NULL ) {
+    if(index == size){
+      size = size * 2;
+      arr = powergl_resize(arr, size, sizeof(char*));
+    }
+    arr[index++] = powergl_resize(NULL, strlen(token)+1, sizeof(char));
+    strcpy(arr[index-1], token);
+    
+    token = strtok(NULL, s);
+
+  }
+  
+  free(copy);
+  copy = NULL;
+  
+  *value_size_ptr = index;
+  return arr;
+}
+
 size_t *powergl_collada_parse_uints(const char *str, size_t *value_size_ptr) {
     size_t len = strlen(str);
     char *end = NULL;

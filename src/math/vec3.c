@@ -10,6 +10,9 @@ void powergl_float_print(const char *msg, GLfloat m) {
     printf("%s ->\n", msg);
     printf("[ %f ]\n", m);
 }
+float powergl_float_to_radians(float degrees) {
+  return degrees * (3.141592f / 180.0f);
+}
 
 
 void powergl_vec3_print(const char *msg, powergl_vec3  m) {

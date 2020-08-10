@@ -27,6 +27,7 @@ AC_CHECK_LIB([X11], [XFree])
 AC_CHECK_LIB([expat], [XML_Parse])
 AC_CHECK_LIB([SDL2], [SDL_Init])
 AC_CHECK_LIB([GLEW], [glewInit])
+AC_CHECK_LIB([png16], [png_read_image])
 
 # Checks for header files.
 AC_CHECK_HEADERS([stddef.h stdlib.h string.h])
@@ -44,5 +45,6 @@ AC_CONFIG_FILES([Makefile
 		src/math/Makefile
 		src/collada/Makefile
 		src/collada/core/Makefile
-		src/window/Makefile])
+		src/window/Makefile
+		src/png/Makefile])
 AC_OUTPUT

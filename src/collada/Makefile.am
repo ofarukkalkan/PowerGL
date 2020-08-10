@@ -10,7 +10,8 @@ libpowerglcollada_la_HEADERS = \
 	importer.h \
 	exporter.h \
 	dom_connector.h \
-	parse_utils.h
+	parse_utils.h \
+	collada.h
 
 libpowerglcollada_la_SOURCES = \
 	importer.c \

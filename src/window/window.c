@@ -1,5 +1,6 @@
 #include "window.h"
 #include <stdio.h>
+#include <time.h>
 
 enum msgSource {
     SOURCE_API = 0x8246,
@@ -107,20 +108,33 @@ int powergl_window_run(powergl_window *wnd) {
     int quit = 0;
     SDL_Event e;
 
+    struct timespec ts1; // both C11 and POSIX
+    struct timespec ts2;
+    clock_gettime(CLOCK_REALTIME, &ts1); // POSIX
+
+
     while(!quit) {
+      	clock_gettime(CLOCK_REALTIME, &ts2);	
+	delta_time = ts2.tv_sec + 1e-9*ts2.tv_nsec - (ts1.tv_sec + 1e-9*ts1.tv_nsec);
+	
         while(SDL_PollEvent(&e) != 0) {
-            wnd->root_scene->handle_events(wnd->root_scene, &e);
+	  wnd->root_scene->handle_events(wnd->root_scene, &e, delta_time);
 
             if(e.type == SDL_QUIT) {
                 quit = 1;
             }
         }
+	
 
+	
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         wnd->root_scene->run(wnd->root_scene, delta_time);
         //Update screen
         SDL_GL_SwapWindow(wnd->window);
+
+	ts1 = ts2;
     }
+
 
     return 0;
 }

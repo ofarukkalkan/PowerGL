@@ -39,6 +39,7 @@ union vec4_t {
 };
 
 void powergl_float_print(const char *msg, GLfloat m);
+float powergl_float_to_radians(float degrees);
 void powergl_vec3_print(const char *msg, powergl_vec3  m);
 void powergl_vec4_print(const char *msg, powergl_vec4  m);
 void powergl_vec3_copy(powergl_vec3 *v, const double * const arr, size_t size);

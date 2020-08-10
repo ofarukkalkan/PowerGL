@@ -21,41 +21,43 @@ typedef void (*fpparse_content)(void *, size_t, const char *);
 
 
 struct map_dom_connector_t {
-    const char *name;
-    const char *base_type;
-    char node_type;
+  const char *base_type;
+  const char *name;
+  char node_type;
+  const char *ref_src;
 };
 
 struct arr_dom_connector_t {
-    dom_connector  **nodes;
-    size_t n_node;
+  dom_connector  **nodes;
+  size_t n_node;
 };
 
 struct dom_connector_t {
-    ///////////
-    //DOM fields
-    char *name;
-    char *value;//these fields are null-terminated
-    dom_connector *ref;
-    dom_connector *parent;
+  ///////////
+  //DOM fields
+  char *name;
+  char *base_type;
+  char *value;//these fields are null-terminated
+  dom_connector *ref;
+  dom_connector *parent;
 
-    //sub nodes
-    arr_dom_connector *nodes;
-    map_dom_connector *map;
-    size_t n_map;
+  //sub nodes
+  arr_dom_connector *nodes;
+  map_dom_connector *map;
+  size_t n_map;
 
-    fpadd_child add_child;
-    fpset_ref set_ref;
-    fpparse_attrib parse_attrib;
-    fpparse_content parse_content;
+  fpadd_child add_child;
+  fpset_ref set_ref;
+  fpparse_attrib parse_attrib;
+  fpparse_content parse_content;
 };
 
 struct supported_type_t {
-    map_dom_connector *map;
-    size_t n_map;
-    char *name;
-    char *parent;
-    void *(*get_instance)(void);
+  map_dom_connector *map;
+  size_t n_map;
+  char *name;
+  char *parent;
+  void *(*get_instance)(void);
 
 };
 

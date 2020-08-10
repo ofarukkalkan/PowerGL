@@ -11,5 +11,6 @@ libpowerglrendering_la_LDFLAGS = -no-undefined
 libpowerglrendering_la_SOURCES = \
 	object.c \
 	pipeline.c \
+	pipeline2.c \
 	visualscene.c \
 	dae2object.c

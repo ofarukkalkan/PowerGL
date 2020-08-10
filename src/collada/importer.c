@@ -83,8 +83,13 @@ int powergl_collada_init_node(dom_connector *this, dom_connector *parent, const 
         case 3: {
             dom_connector *newref = powergl_resize(NULL, 1, sizeof(dom_connector));
             newref->parent = this;
-            newref->name = powergl_resize(NULL, (strlen(this->map[i].base_type) + 1), sizeof(char));
-            strcpy(newref->name, this->map[i].base_type);
+	    
+            newref->name = powergl_resize(NULL, (strlen(this->map[i].name) + 1), sizeof(char));
+            strcpy(newref->name, this->map[i].name);
+
+	    newref->base_type = powergl_resize(NULL, (strlen(this->map[i].base_type) + 1), sizeof(char));
+            strcpy(newref->base_type, this->map[i].base_type);
+	    
             this->add_child(this, i, newref);
             g_ref_content_flag = 1;
             g_ref_index = i;
@@ -92,7 +97,7 @@ int powergl_collada_init_node(dom_connector *this, dom_connector *parent, const 
             g_pending_references[g_n_pending_reference - 1] = newref;
 
             for(size_t j = 0; j < this->n_map; j++) {
-                if(this->map[j].node_type == 1  &&  strcmp(this->map[j].name, this->map[g_ref_index].name) == 0) {
+                if(this->map[j].node_type == 1  &&  strcmp(this->map[j].name, this->map[g_ref_index].ref_src) == 0) {
                     this->nodes[g_ref_index].nodes[0]->value = powergl_resize(NULL, (strlen(this->nodes[j].nodes[0]->value) + 1), sizeof(char));
                     strcpy(this->nodes[g_ref_index].nodes[0]->value, this->nodes[j].nodes[0]->value);
                     g_ref_content_flag = 0;
@@ -134,7 +139,7 @@ static void elemend(void *userdata, const char *elem) {
 
             if(g_ref_content_flag == 1) {
                 for(size_t j = 0; j < this->n_map; j++) {
-                    if(this->map[j].node_type == 2  &&  strcmp(this->map[j].name, this->map[g_ref_index].name) == 0) {
+                    if(this->map[j].node_type == 2  &&  strcmp(this->map[j].name, this->map[g_ref_index].ref_src) == 0) {
                         this->nodes[g_ref_index].nodes[0]->value = powergl_resize(NULL, (strlen(this->nodes[j].nodes[0]->value) + 1), sizeof(char));
                         strcpy(this->nodes[g_ref_index].nodes[0]->value, this->nodes[j].nodes[0]->value);
                         g_ref_content_flag = 0;
@@ -174,7 +179,7 @@ static void chardata(void *userdata, const XML_Char *string, int len) {
 
 #if DEBUG_OUTPUT
 
-        for(int tab_count = 0; tab_count < g_current_depth; ++tab_count) {
+        for(size_t tab_count = 0; tab_count < g_current_depth; ++tab_count) {
             printf("  ");
         }
 
@@ -243,36 +248,81 @@ static size_t resolve_refs(dom_connector *root, int n_resolved) {
     }
 
     if(n_resolved + resolved == g_n_pending_reference) {
-        return n_resolved + resolved;
+      return n_resolved + resolved;
     } else {
-        for(size_t i = 0; i < g_n_pending_reference; i++) {
-            if(g_pending_references[i]->value[0] == '#') {
-                // URI fragment Addressing
-                for(size_t j = 0; j < root->n_map; j++) {
-                    if(root->map[j].node_type == 1) {
-                        for(size_t k = 0; k  < root->nodes[j].n_node; k++) {
-                            if(strcmp("id", root->nodes[j].nodes[k]->name) == 0) {
-                                if(strcmp((g_pending_references[i]->value + sizeof(char)), root->nodes[j].nodes[k]->value) == 0) {           // + sizeof(char) is used to skip # char
-                                    if(strcmp(g_pending_references[i]->name, root->name) == 0) {
-                                        dom_connector *parent = g_pending_references[i]->parent;
+      
+      for(size_t i = 0; i < g_n_pending_reference; i++) {
+	
+	if(g_pending_references[i]->value[0] == '#') {
+	  // URI fragment Addressing
+	  for(size_t j = 0; j < root->n_map; j++) {
 
-                                        for(size_t l = 0; l < parent->n_map; l++) {
-                                            if(parent->map[l].node_type == 3 && strcmp(parent->map[l].base_type, g_pending_references[i]->name) == 0) {
-                                                parent->set_ref(parent, l, root);
+	    if(root->map[j].node_type == 1) { // if current node is attrib 
+
+	      for(size_t k = 0; k  < root->nodes[j].n_node; k++) {
+		// normally attribs has only 1 child so we use the first child.
+
+		if(strcmp("id", root->nodes[j].nodes[k]->name) == 0) {
+		  
+		  if(strcmp((g_pending_references[i]->value + sizeof(char)), root->nodes[j].nodes[k]->value) == 0) {
+		    // '+ sizeof(char)' is used to skip '#' character
+		    
+		    if(strcmp(g_pending_references[i]->base_type, root->name) == 0) {
+		      // turleri kontrol et. cunku id ler uyusmasina ragmen yanlis referans kullanilmis olabilir
+		      
+		      dom_connector *parent = g_pending_references[i]->parent;
+		      
+		      // burada referansa sahip olan elementin set_ref fonksiyonu cagriliyor. neden direk ref uzerinden yapilmamasi ise implementastondan kaynakli.
+		      // sadece element turlerinin fonksyionlari var
+		      // attribute, content ve ref turlerinin kendine ait fonksyionlari yok
+		      
+		      int resolve_flag = 0;
+		      
+		      for(size_t l = 0; l < parent->n_map; l++) {
+
+			
+
+			if(parent->map[l].node_type == 3 && strcmp(parent->map[l].base_type, g_pending_references[i]->base_type) == 0) {
+
+			  
+			  parent->set_ref(parent, l, root);
+			  
 #if DEBUG_OUTPUT
-                                                printf("\n[ref type ptr][%s\t%s\t%p] == \n[src type ptr][%s\t%s\t%p] -> ref resolved", g_pending_references[i]->value, g_pending_references[i]->name,  g_pending_references[i]->ref, root->nodes[j].nodes[k]->value, root->name, root);
+			  printf("\n[ref type ptr][%s\t%s\t%p] == \n[src type ptr][%s\t%s\t%p] -> ref resolved\n",
+				 g_pending_references[i]->value, g_pending_references[i]->name,  g_pending_references[i]->ref,
+				 root->nodes[j].nodes[k]->value, root->name, root);
 #endif
-                                                return 1 + resolved;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+			  
+			  resolve_flag = 1;
+			  
+			} else {
+#if DEBUG_OUTPUT
+			  printf("\n[ref type ptr][%s\t%s\t%p] == \n[src type ptr][%s\t%s\t%p] -> ref unresolved, parent->map[l].base_type != g_pending_references[i]->name\n",
+				 g_pending_references[i]->value, g_pending_references[i]->name, g_pending_references[i]->ref,
+				 root->nodes[j].nodes[k]->value, root->name, root);
+#endif
+			}
+		      }
+
+		      
+		      if(resolve_flag == 1){
+			return 1 + resolved;
+		      }
+
+		    } else {
+#if DEBUG_OUTPUT
+		      printf("\n[ref type ptr][%s\t%s\t%p] == \n[src type ptr][%s\t%s\t%p] -> ref unresolved, root->name != g_pending_references[i]->name\n",
+			     g_pending_references[i]->value, g_pending_references[i]->name,  g_pending_references[i]->ref,
+			     root->nodes[j].nodes[k]->value, root->name, root);
+#endif
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+      }
     }
 
     return resolved;
@@ -354,3 +404,5 @@ dom_connector *powergl_collada_parse(const char *filename) {
 
     return g_root;
 }
+
+#undef DEBUG_OUTPUT

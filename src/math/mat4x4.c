@@ -233,6 +233,19 @@ inline powergl_mat4 powergl_mat4_translate(powergl_mat4 m, powergl_vec3 v) {
     return r;
 }
 
+inline powergl_mat4 powergl_mat4_scale(powergl_mat4 m, powergl_vec3 v) {
+#if DEBUG_OUTPUT
+    printf("%s\n", __func__);
+    powergl_mat4_print("in m", m);
+    powergl_vec3_print("translate v", v);
+#endif
+    powergl_mat4 r = m;
+    r.c[3].r[0] = m.c[3].r[0] * v.x;
+    r.c[3].r[1] = m.c[3].r[1] * v.y;
+    r.c[3].r[2] = m.c[3].r[2] * v.z;
+    return r;
+}
+
 inline powergl_mat4 powergl_mat4_rot(powergl_mat4 m, float angle, powergl_vec3 v) {
 #if DEBUG_OUTPUT
     printf("%s\n", __func__);
