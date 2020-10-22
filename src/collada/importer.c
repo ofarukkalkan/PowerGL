@@ -5,10 +5,10 @@
 #include "importer.h"
 #include "exporter.h"
 
-#define DEBUG_OUTPUT 0
+#define DEBUG_OUTPUT 1
 
-/* globals */
-static dom_connector *g_root;
+/* static globals */
+dom_connector *g_root;
 static size_t g_current_depth;
 static int g_undefined_element_flag;
 static const char *g_current_elem_tag;

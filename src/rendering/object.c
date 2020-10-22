@@ -1,5 +1,6 @@
 #include "object.h"
 #include "../math/mat4x4.h"
+
 #include <string.h>
 #include <stdio.h>
 
@@ -320,3 +321,22 @@ void powergl_event_handle(powergl_object *obj, SDL_Event *event, float delta_tim
     }    
   }
 }
+
+
+
+
+void powergl_object_geometry_append(powergl_object *dest, powergl_object *src){
+
+  assert(src->geometry.vertex && src->geometry.n_vertex > 0);
+
+  if(dest->geometry.vertex && dest->geometry.n_vertex > 0){
+    
+  } else {
+    // en son burda linked list gibi bir yapi ile degisiklikleri append ettirecektim
+    // hizli bir model olusturulmasi lazim
+    // build text object from scratch
+    
+  }
+  
+}
+

@@ -109,6 +109,7 @@ struct powergl_geometry_t {
   char visible_flag;
   
   float min_x, min_y, min_z, max_x, max_y, max_z;
+  // bounding box vertices
   // min_x, min_y, min_z
   // min_x, min_y, max_z
   // min_x, max_y, min_z
@@ -120,27 +121,27 @@ struct powergl_geometry_t {
   powergl_vec3 bounds[8];
 
   powergl_vec3 *vertex;
-  char vertex_flag;
+  char vertex_flag; // used for detection of vertex data changes
   size_t n_vertex;
 
-  struct {
+  struct { // attributes below are optional
     size_t count;
   
     powergl_vec3 *normal;
-    char normal_flag;
+    char normal_flag;  // used for detection of normal data changes
     size_t n_normal;
 
     powergl_vec3 *color;
-    char color_flag;
+    char color_flag; // used for detection of color data changes
     size_t n_color;
 
     powergl_vec2 *texcoord;
-    char texcoord_flag;
+    char texcoord_flag; // used for detection of texcoord data changes
     size_t n_texcoord;
 
 
     GLuint *index;
-    char index_flag;
+    char index_flag; // used for detection of index data changes
     size_t n_index;
 
   } triangles;
@@ -167,6 +168,7 @@ struct powergl_transform_t {
   powergl_vec3 scale;
 
   //flags
+
   char mvp_flag;
   char matrix_flag;
 
@@ -231,5 +233,9 @@ void powergl_object_update_transform(powergl_object *obj, float delta_time);
 void powergl_object_update_mvp(powergl_object *obj, powergl_object *cam);
 void powergl_object_fps_controller(powergl_object *obj, float delta_time);
 void powergl_event_handle(powergl_object *obj, SDL_Event *e, float delta_time);
+void powergl_object_geometry_append(powergl_object *obj, powergl_object *src); 
+ 
+
+
 
 #endif

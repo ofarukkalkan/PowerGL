@@ -229,13 +229,13 @@ void powergl_build_geometry(powergl_collada_core_node *node, powergl_object *obj
     char vertex_attrib_enabled = 0;
     char normal_attrib_enabled = 0;
     char color_attrib_enabled = 0;
-    char texcoord_attrib_enabled = 0;
+    char texcoord_attrib_enabled = 0; 
     
     size_t vertex_attrib_offset = 0;
     size_t normal_attrib_offset = 0;
     size_t color_attrib_offset = 0;
     size_t texcoord_attrib_offset = 0;
-
+ 
     size_t vertex_attrib_stride = 0;
     size_t normal_attrib_stride = 0;
     size_t color_attrib_stride = 0;
@@ -247,7 +247,8 @@ void powergl_build_geometry(powergl_collada_core_node *node, powergl_object *obj
 	
       if(strcmp(tris->c_input[j]->c_semantic, "VERTEX") == 0){
 	vertex_attrib_offset = j;
-
+	vertex_attrib_enabled = 1;
+       
 	pos_src = tris->c_input[j]->r_vertices->c_input[0]->r_mesh_source;
 	pos_acc = pos_src->c_technique_common[0]->c_accessor[0];
 	pos_arr = pos_acc->r_float_array;
@@ -256,7 +257,8 @@ void powergl_build_geometry(powergl_collada_core_node *node, powergl_object *obj
 	    
       } else if(strcmp(tris->c_input[j]->c_semantic, "NORMAL") == 0){
 	normal_attrib_offset = j;
-
+	normal_attrib_enabled = 1;
+	
 	norm_src = tris->c_input[j]->r_mesh_source;
 	norm_acc = norm_src->c_technique_common[0]->c_accessor[0];
 	norm_arr = norm_acc->r_float_array;
@@ -265,6 +267,7 @@ void powergl_build_geometry(powergl_collada_core_node *node, powergl_object *obj
 	    
       } else if(strcmp(tris->c_input[j]->c_semantic, "COLOR") == 0){
 	color_attrib_offset = j;
+	color_attrib_enabled = 1;
 
 	color_src = tris->c_input[j]->r_mesh_source;
 	color_acc = color_src->c_technique_common[0]->c_accessor[0];
@@ -274,6 +277,7 @@ void powergl_build_geometry(powergl_collada_core_node *node, powergl_object *obj
 
       } else if(strcmp(tris->c_input[j]->c_semantic, "TEXCOORD") == 0){
 	texcoord_attrib_offset = j;
+	texcoord_attrib_enabled = 1; 
 
 	texcoord_src = tris->c_input[j]->r_mesh_source;
 	texcoord_acc = texcoord_src->c_technique_common[0]->c_accessor[0];
@@ -284,24 +288,35 @@ void powergl_build_geometry(powergl_collada_core_node *node, powergl_object *obj
       }
     }
 
-    obj->geometry.visible_flag = 1;
-    obj->geometry.triangles.count = tris->c_count;
 
-    obj->geometry.vertex = powergl_resize(NULL, tris->c_count * 3, sizeof(powergl_vec3));
-    obj->geometry.n_vertex = tris->c_count * 3;
-    obj->geometry.vertex_flag = 1;
-	
-    obj->geometry.triangles.color = powergl_resize(NULL, tris->c_count * 3, sizeof(powergl_vec3));
-    obj->geometry.triangles.n_color = tris->c_count * 3;
-    obj->geometry.triangles.color_flag = 1;
+    if(vertex_attrib_enabled == 1){
+      obj->geometry.visible_flag = 1;
+      obj->geometry.triangles.count = tris->c_count;
 
-    obj->geometry.triangles.normal = powergl_resize(NULL, tris->c_count * 3, sizeof(powergl_vec3));
-    obj->geometry.triangles.n_normal = tris->c_count * 3;
-    obj->geometry.triangles.normal_flag = 1;
+      obj->geometry.vertex = powergl_resize(NULL, tris->c_count * 3, sizeof(powergl_vec3));
+      obj->geometry.n_vertex = tris->c_count * 3;
+      obj->geometry.vertex_flag = 1;
+    } else {
+      assert(0); // if there's no vertex no reason to continue. At this point importer should warn the user and return
+    }
+    
+    if(color_attrib_enabled == 1){ // color is optional
+      obj->geometry.triangles.color = powergl_resize(NULL, tris->c_count * 3, sizeof(powergl_vec3));
+      obj->geometry.triangles.n_color = tris->c_count * 3;
+      obj->geometry.triangles.color_flag = 1;
+    }
 
-    obj->geometry.triangles.texcoord = powergl_resize(NULL, tris->c_count * 3, sizeof(powergl_vec3));
-    obj->geometry.triangles.n_texcoord = tris->c_count * 3;
-    obj->geometry.triangles.texcoord_flag = 1;
+    if(normal_attrib_enabled == 1){ // normal is mandatory for lighting calculations
+      obj->geometry.triangles.normal = powergl_resize(NULL, tris->c_count * 3, sizeof(powergl_vec3));
+      obj->geometry.triangles.n_normal = tris->c_count * 3;
+      obj->geometry.triangles.normal_flag = 1;
+    }
+
+    if(texcoord_attrib_enabled == 1){ //texcoord is optional
+      obj->geometry.triangles.texcoord = powergl_resize(NULL, tris->c_count * 3, sizeof(powergl_vec3));
+      obj->geometry.triangles.n_texcoord = tris->c_count * 3;
+      obj->geometry.triangles.texcoord_flag = 1;
+    }
 
 
     size_t pos_index;
@@ -313,14 +328,31 @@ void powergl_build_geometry(powergl_collada_core_node *node, powergl_object *obj
     for(size_t i = 0; i < tris->c_count * 3; i++){
       
       pos_index = prim->content[i * n_enabled_attrib + vertex_attrib_offset];
-      norm_index = prim->content[i * n_enabled_attrib + normal_attrib_offset];
-      color_index = prim->content[i * n_enabled_attrib + color_attrib_offset];
-      texcoord_index = prim->content[i * n_enabled_attrib + texcoord_attrib_offset];
-
       obj->geometry.vertex[i].x = pos_arr->content[pos_index * vertex_attrib_stride + 0];
       obj->geometry.vertex[i].y = pos_arr->content[pos_index * vertex_attrib_stride + 1];
       obj->geometry.vertex[i].z = pos_arr->content[pos_index * vertex_attrib_stride + 2];
 
+      if(normal_attrib_enabled == 1){
+	norm_index = prim->content[i * n_enabled_attrib + normal_attrib_offset];
+	obj->geometry.triangles.normal[i].x = norm_arr->content[norm_index * normal_attrib_stride + 0];
+	obj->geometry.triangles.normal[i].y = norm_arr->content[norm_index * normal_attrib_stride + 1];
+	obj->geometry.triangles.normal[i].z = norm_arr->content[norm_index * normal_attrib_stride + 2];
+      }
+
+      if(color_attrib_enabled == 1){
+	color_index = prim->content[i * n_enabled_attrib + color_attrib_offset];
+	obj->geometry.triangles.color[i].x = color_arr->content[color_index * color_attrib_stride + 0];
+	obj->geometry.triangles.color[i].y = color_arr->content[color_index * color_attrib_stride + 1];
+	obj->geometry.triangles.color[i].z = color_arr->content[color_index * color_attrib_stride + 2];
+      }
+
+      if(texcoord_attrib_enabled == 1){
+	texcoord_index = prim->content[i * n_enabled_attrib + texcoord_attrib_offset];
+	obj->geometry.triangles.texcoord[i].x = texcoord_arr->content[texcoord_index * texcoord_attrib_stride + 0];
+	obj->geometry.triangles.texcoord[i].y = texcoord_arr->content[texcoord_index * texcoord_attrib_stride + 1];
+      }
+
+      /////////////////////// bounding box
       if(obj->geometry.vertex[i].x < obj->geometry.min_x){
 	obj->geometry.min_x = obj->geometry.vertex[i].x;
       }
@@ -340,17 +372,7 @@ void powergl_build_geometry(powergl_collada_core_node *node, powergl_object *obj
       if(obj->geometry.vertex[i].z > obj->geometry.max_z){
 	obj->geometry.max_z = obj->geometry.vertex[i].z;
       }
-      
-      obj->geometry.triangles.normal[i].x = norm_arr->content[norm_index * normal_attrib_stride + 0];
-      obj->geometry.triangles.normal[i].y = norm_arr->content[norm_index * normal_attrib_stride + 1];
-      obj->geometry.triangles.normal[i].z = norm_arr->content[norm_index * normal_attrib_stride + 2];
-
-      obj->geometry.triangles.color[i].x = color_arr->content[color_index * color_attrib_stride + 0];
-      obj->geometry.triangles.color[i].y = color_arr->content[color_index * color_attrib_stride + 1];
-      obj->geometry.triangles.color[i].z = color_arr->content[color_index * color_attrib_stride + 2];
-
-      obj->geometry.triangles.texcoord[i].x = texcoord_arr->content[texcoord_index * texcoord_attrib_stride + 0];
-      obj->geometry.triangles.texcoord[i].y = texcoord_arr->content[texcoord_index * texcoord_attrib_stride + 1];
+      ///////////////////////////////////////////////////
 
 #if DEBUG_OUTPUT
       /*
@@ -416,7 +438,7 @@ void powergl_build_collider(powergl_object *obj){
 }
 
 
-void powergl_build_camera(powergl_collada_core_node   *node, powergl_object *obj) {
+void powergl_build_camera(powergl_collada_core_node *node, powergl_object *obj) {
 #if DEBUG_OUTPUT
   printf("\n%s\n", __func__);
 #endif

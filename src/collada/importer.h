@@ -8,6 +8,7 @@
 #include "collada.h"
 #include "core/core.h"
 
+extern dom_connector *g_root;
 
 dom_connector *powergl_collada_parse(const char *filename);
 void powergl_collada_export_dae_file(dom_connector *root, const char *file_name);
