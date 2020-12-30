@@ -9,7 +9,56 @@
 #endif
 
 static powergl_pipeline *last_ppl;
+static powergl_pipeline2 *last_ppl2;
 static powergl_object *last_obj;
+
+static void render2(powergl_pipeline2 *ppl, powergl_object **objs, size_t n_object){
+
+  powergl_object *obj = NULL;
+    
+  for(size_t i = 0; i < n_object; ++i) {
+    obj = objs[i];
+
+    if(obj->n_object > 0){
+      render2(ppl, obj->objects, obj->n_object);
+    }
+
+    if(obj->geometry.visible_flag == 0){
+      continue;
+    }
+      
+    if(last_obj != objs[i]){
+      glUniformMatrix4fv(ppl->uni_matrix, 1, GL_FALSE, obj->transform.mvp.data);
+    } else if(obj->transform.mvp_flag == 1){      
+      glUniformMatrix4fv(ppl->uni_matrix, 1, GL_FALSE, obj->transform.mvp.data);
+      obj->transform.mvp_flag = 0;
+    }
+
+    glBindVertexArray(obj->geometry.vao);
+
+    if(obj->geometry.vertex_flag == 1) {
+      glBindBuffer(GL_ARRAY_BUFFER, obj->geometry.vbo);
+      glBufferData(GL_ARRAY_BUFFER, sizeof(powergl_vec3) * obj->geometry.n_vertex,  obj->geometry.vertex, GL_STATIC_DRAW);
+      obj->geometry.vertex_flag = 0;
+    }
+
+
+#if DEBUG_OUTPUT
+    for(size_t j=0; j < obj->geometry.n_vertex; j++){	      
+      powergl_vec4 vec = {.xyz=obj->geometry.vertex[j], .w1 = 1.0f};
+      powergl_vec4_print("transformed", powergl_vec4_trans(vec, obj->transform.mvp));
+    }
+#endif
+
+    glDrawArrays( GL_TRIANGLES, 0, obj->geometry.n_vertex );
+
+    last_obj = obj;
+        
+  }
+
+
+
+}
 
 static void render(powergl_pipeline *ppl, powergl_object **objs, size_t n_object){
 
@@ -81,6 +130,25 @@ static void render(powergl_pipeline *ppl, powergl_object **objs, size_t n_object
 
 }
 
+void powergl_pipeline2_render(powergl_pipeline2 *ppl, powergl_object **objs, size_t n_object) {
+
+    if(ppl!=last_ppl2){
+
+      // restore uniforms
+      glUseProgram(ppl->gp);
+
+      // restore global states
+      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); 
+    }
+      
+    render2(ppl, objs, n_object);
+
+    last_ppl2 = ppl;
+    
+    return;
+}
+
+
 void powergl_pipeline_render(powergl_pipeline *ppl, powergl_object **objs, size_t n_object, powergl_object *main_light) {
 
     if(ppl!=last_ppl){
@@ -108,6 +176,38 @@ void powergl_pipeline_render(powergl_pipeline *ppl, powergl_object **objs, size_
     
     return;
 }
+
+void powergl_pipeline2_create_objects(powergl_pipeline2 *ppl, powergl_object **objs, size_t n_obj){
+
+  for(size_t i=0; i<n_obj; i++){
+
+    if(objs[i]->n_object > 0){
+      powergl_pipeline2_create_objects(ppl, objs[i]->objects, objs[i]->n_object);
+    }
+
+    if(objs[i]->geometry.visible_flag == 1){
+      
+      glGenVertexArrays(1, &objs[i]->geometry.vao);
+
+      glBindVertexArray(objs[i]->geometry.vao);
+      
+      glGenBuffers(1, &objs[i]->geometry.vbo);
+    
+      glEnableVertexAttribArray(ppl->vis.index);
+
+
+      glBindBuffer(GL_ARRAY_BUFFER, objs[i]->geometry.vbo);
+      glVertexAttribPointer( ppl->vis.index, ppl->vis.size, ppl->vis.type, ppl->vis.normalized, ppl->vis.stride, ppl->vis.offset );
+    
+
+    }
+
+
+    
+  }
+
+}
+
 
 void powergl_pipeline_create_objects(powergl_pipeline *ppl, powergl_object **objs, size_t n_obj){
 
@@ -168,6 +268,60 @@ void powergl_pipeline_create_objects(powergl_pipeline *ppl, powergl_object **obj
     
   }
 
+}
+
+void powergl_pipeline2_create(powergl_pipeline2 *ppl, powergl_object **objs, size_t n_obj) {
+  
+  /*vertex shader input attibute specs*/
+  
+  /*vertex input*/
+  ppl->vis.index = 0;
+  ppl->vis.size = 3;
+  ppl->vis.type = GL_FLOAT;
+  ppl->vis.normalized = GL_FALSE;
+  ppl->vis.stride = 0;
+  ppl->vis.offset = 0;
+    
+
+  /*shader compiler input specs*/
+  const GLchar *const vsrc[] = { "#version 330 core\n\
+    layout( location = 0 ) in vec3 vPosition;\n		\
+    out vec3 colorToFs;\n				\
+    uniform mat4 mvp;\n					\
+    void main(){\n							\
+      vec3 ambient = vec3(0.1f, 0.1f, 0.1f);				\
+      colorToFs = ambient;\n						\
+      gl_Position = mvp * vec4( vPosition, 1.0f );\n			\
+    }"
+  };
+  const GLchar *const fsrc[] = {"#version 330 core\n\
+    in vec3 colorToFs;\n				   \
+    out vec4 fColor;\n					   \
+    void main(){\n					   \
+      fColor = vec4(colorToFs,1.0f);\n			   \
+    }"
+  };
+  /*vertex shader*/
+  ppl->vs = glCreateShader(GL_VERTEX_SHADER);
+  glShaderSource(ppl->vs, 1, vsrc, NULL);
+  glCompileShader(ppl->vs);
+  /*fragment shader*/
+  ppl->fs = glCreateShader(GL_FRAGMENT_SHADER);
+  glShaderSource(ppl->fs, 1, fsrc, NULL);
+  glCompileShader(ppl->fs);
+  /*program*/
+  ppl->gp = glCreateProgram();
+  glAttachShader(ppl->gp, ppl->vs);
+  glAttachShader(ppl->gp, ppl->fs);
+  glLinkProgram(ppl->gp);
+  /*uniform*/
+  /* uniform a verilen string ayri tutulacak  bunun icin biseyler dusun*/
+  glUseProgram(ppl->gp);
+  ppl->uni_matrix = glGetUniformLocation(ppl->gp, "mvp");
+ 
+  powergl_pipeline2_create_objects(ppl, objs, n_obj);
+
+  return;
 }
 
 void powergl_pipeline_create(powergl_pipeline *ppl, powergl_object **objs, size_t n_obj) {

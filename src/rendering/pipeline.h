@@ -37,7 +37,6 @@ struct powergl_pipeline_t {
 
 struct powergl_pipeline2_t {
   powergl_vsis vis;
-  powergl_vsis nis;
   GLuint vs;
   GLuint fs;
   GLuint gp;
