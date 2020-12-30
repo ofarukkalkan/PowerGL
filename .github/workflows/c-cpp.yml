@@ -13,6 +13,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: sdl2 setup
+      run: apt install libsdl2-dev   
     - name: autoreconf
       run: autoreconf -iv
     - name: configure
