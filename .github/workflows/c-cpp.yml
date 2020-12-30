@@ -18,7 +18,9 @@ jobs:
     - name: sdl2 setup
       run: sudo apt install libsdl2-dev
     - name: expat setup
-      run: sudo apt install libexpat1-dev   
+      run: sudo apt install libexpat1-dev
+    - name: png16 setup
+      run: sudo apt install libpng16-dev   
     - name: autoreconf
       run: autoreconf -iv
     - name: configure
