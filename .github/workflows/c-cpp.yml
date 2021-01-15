@@ -14,13 +14,13 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: glew setup
-      run: sudo apt install libglew-dev
+      run: sudo apt-get install libglew-dev
     - name: sdl2 setup
-      run: sudo apt install libsdl2-dev
+      run: sudo apt-get install libsdl2-dev
     - name: expat setup
-      run: sudo apt install libexpat1-dev
+      run: sudo apt-get install libexpat1-dev
     - name: png setup
-      run: sudo apt install libpng-dev   
+      run: sudo apt-get install libpng-dev   
     - name: autoreconf
       run: autoreconf -iv
     - name: configure
