@@ -3,7 +3,7 @@
 #include "../collada/importer.h"
 #include "dae2object.h"
 
-void powergl_object_library_build(powergl_object_library *lib, const char *file){
+powergl_object_library * powergl_object_library_build(const char *file){
 
 #if DEBUG_OUTPUT
     printf("%s\n", __func__);
@@ -14,9 +14,9 @@ void powergl_object_library_build(powergl_object_library *lib, const char *file)
     powergl_collada_core_InstanceWithExtra  *instance = scene->c_instance_visual_scene[0];
     powergl_collada_core_visual_scene  *vscene =  instance->r_visual_scene;
 
-    // en son burada kalmistim lib null oldugu icin once kendisinin olusturulmasi lazim
+
     size_t size = vscene->n_node;
-    lib = powergl_resize(NULL, 1, sizeof(powergl_object_library));
+    powergl_object_library *lib = powergl_resize(NULL, 1, sizeof(powergl_object_library));
     lib->objects = powergl_resize(NULL, size, sizeof(powergl_object *));
     lib->n_object = size;
 
@@ -29,4 +29,18 @@ void powergl_object_library_build(powergl_object_library *lib, const char *file)
 
     } // for each node
 
+    return lib;
 }
+
+powergl_object * powergl_object_library_find_object(powergl_object_library *lib, const char *id){
+
+  assert(lib);
+  
+  for(size_t i=0; i < lib->n_object; i++){
+    if(strcmp(lib->objects[i]->id, id) == 0){
+      return lib->objects[i];
+    }
+  }
+
+}
+

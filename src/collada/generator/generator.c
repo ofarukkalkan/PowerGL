@@ -478,7 +478,7 @@ int main() {
   long fsize;
   char *string;
   size_t i;
-  const char *filename = "text";
+  const char *filename = "generator.cfg";
   /* init local */
   string = NULL;
   fsize = 0;

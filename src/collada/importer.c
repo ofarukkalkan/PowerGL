@@ -337,7 +337,7 @@ dom_connector *powergl_collada_parse(const char *filename) {
     string = NULL;
     fsize = 0;
     f = NULL;
-    g_current_elem = NULL;
+
     /* read dae file */
     f = fopen(filename, "rb");
 
@@ -359,11 +359,24 @@ dom_connector *powergl_collada_parse(const char *filename) {
             string[fsize] = 0;
             /* puts(string); */
             /* init globals */
+	    g_current_elem = NULL;
             g_current_depth = 0;
+	    g_parser_status = 0;
             g_pending_references = NULL;
             g_n_pending_reference = 0;
-            powergl_collada_core_init();
-            g_current_elem = g_root;
+	    g_current_elem_tag = NULL;
+	    g_content_index = 0;
+	    g_ref_index = 0;
+
+	    // TODO : we need to be sure here we have enough supported element type to parse file, to do so pre-check all types in dae file
+	    // when powergl_collada_core_init is called it inits all core types and increments supported type counter so we can check it if we did init
+
+	    int type_index = powergl_collada_core_check_type("COLLADA", "COLLADA");
+	    if(type_index < 0){
+	      powergl_collada_core_init();
+	    }
+
+            
             /* printf("\n-------------PARSING DOCUMENT\n"); */
             /* create parser and parse */
             p = XML_ParserCreate(NULL);

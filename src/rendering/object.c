@@ -1,3 +1,5 @@
+#define __STDC_WANT_LIB_EXT1__ 1
+
 #include "object.h"
 #include "../math/mat4x4.h"
 
@@ -322,21 +324,109 @@ void powergl_event_handle(powergl_object *obj, SDL_Event *event, float delta_tim
   }
 }
 
+void powergl_transform_reset(powergl_transform *trans){
+#if DEBUG_OUTPUT
+  printf("\N%s\n", __func__);
+#endif
+  trans->local = powergl_mat4_ident();
+  trans->world = powergl_mat4_ident();
+  trans->mvp = powergl_mat4_ident();
+  trans->location = powergl_vec3_zeros();
+  trans->rotation_x = powergl_vec4_zeros();
+  trans->rotation_y = powergl_vec4_zeros();
+  trans->rotation_z = powergl_vec4_zeros();
+  trans->scale = powergl_vec3_ones();
 
+  trans->mvp_flag = 1;
+  trans->matrix_flag = 1;
 
-
-void powergl_object_geometry_append(powergl_object *dest, powergl_object *src){
-
-  assert(src->geometry.vertex && src->geometry.n_vertex > 0);
-
-  if(dest->geometry.vertex && dest->geometry.n_vertex > 0){
-    
-  } else {
-    // en son burda linked list gibi bir yapi ile degisiklikleri append ettirecektim
-    // hizli bir model olusturulmasi lazim
-    // build text object from scratch
-    
-  }
   
+#if DEBUG_OUTPUT
+  powergl_mat4_print("trasform has reset", trans->local);
+#endif
+
 }
 
+
+
+void powergl_object_geometry_append(powergl_geometry *dest, powergl_geometry *src, powergl_vec3 offset){
+
+
+  if(src->n_vertex > 0){
+
+    assert(src->vertex);
+
+    if(dest->n_vertex > 0 ){
+    
+      assert(dest->vertex);
+
+      dest->vertex = powergl_resize(dest->vertex, src->n_vertex + dest->n_vertex , sizeof(powergl_vec3));
+
+
+      for(size_t i = dest->n_vertex, j = 0; j <  src->n_vertex; i++, j++){
+	dest->vertex[i] = powergl_vec3_add(src->vertex[j], offset);
+      }
+
+      dest->n_vertex += src->n_vertex;
+      dest->vertex_flag = 1;
+      dest->triangles.count += src->triangles.count;
+    
+
+    } else {
+      // TODO : eger daha once allocate edilmis boyut yeterliyse yeniden allocation yapilmayacak
+      dest->vertex = powergl_resize(NULL, src->n_vertex, sizeof(powergl_vec3));
+ 
+
+
+#ifdef __STDC_LIB_EXT1__
+      set_constraint_handler_s(ignore_handler_s);
+      
+      errno_t res = memcpy_s(dest->vertex, sizeof(powergl_vec3) * src->n_vertex, src->vertex, sizeof(powergl_vec3) * src->n_vertex);
+      if(res!=0){
+#if DEBUG_OUTPUT
+	fprintf(stderr, "geometry vertex append failed while memcpy ing");
+	assert(0);
+#endif
+      }
+
+
+#else
+      memcpy(dest->vertex, src->vertex, sizeof(powergl_vec3) * src->n_vertex);
+      
+#endif
+
+      dest->n_vertex = src->n_vertex;
+      dest->vertex_flag = 1;
+      dest->visible_flag = 1;
+      dest->triangles.count = src->triangles.count;
+    
+      
+    }
+    
+  } else {
+
+    
+
+#if DEBUG_OUTPUT
+    fprintf(stderr, "geometry append failed, because source is empty");
+    assert(0);
+#endif
+    
+  }
+
+}
+
+void powergl_object_geometry_reset(powergl_geometry *geo){
+
+  if(geo->vertex != NULL){
+    free(geo->vertex);
+    geo->vertex = NULL;
+    // TODO : vertex_flag = 0 islemi problemli olabilir
+    geo->vertex_flag = 0;
+    geo->n_vertex = 0;
+    geo->triangles.count = 0;
+    // TODO : eger diger attributeler de kullanilmislarsa onlar da silinecek
+    // TODO : bound dizisi ve diger min_? max_? degeleri de resetlenebilir
+  }
+
+}

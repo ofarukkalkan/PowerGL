@@ -1,6 +1,8 @@
 #include "core.h"
 static size_t g_n_supported_collada_core_types;
 static supported_type g_supported_collada_core_types[59];
+static int g_collara_core_is_init;
+
 int powergl_collada_core_check_type(const char *this, const char *parent){
 for(size_t i=0; i<g_n_supported_collada_core_types; i++){
 if(strcmp(g_supported_collada_core_types[i].name, this) == 0 && strcmp(g_supported_collada_core_types[i].parent, parent) == 0 ){

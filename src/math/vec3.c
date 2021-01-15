@@ -42,6 +42,40 @@ inline void powergl_vec4_copy(powergl_vec4 *v, const double * const arr, size_t 
   }
 }
 
+powergl_vec3 powergl_vec3_ones(){
+  powergl_vec3 v;
+  v.x = 1.0f;
+  v.y = 1.0f;
+  v.z = 1.0f;
+  return v;
+}
+
+powergl_vec3 powergl_vec3_zeros(){
+  powergl_vec3 v;
+  v.x = 0.0f;
+  v.y = 0.0f;
+  v.z = 0.0f;
+  return v;
+}
+
+powergl_vec4 powergl_vec4_ones(){
+  powergl_vec4 v;
+  v.x = 1.0f;
+  v.y = 1.0f;
+  v.z = 1.0f;
+  v.w = 1.0f;
+  return v;
+}
+
+powergl_vec4 powergl_vec4_zeros(){
+  powergl_vec4 v;
+  v.x = 0.0f;
+  v.y = 0.0f;
+  v.z = 0.0f;
+  v.w = 0.0f;
+  return v;
+}
+
 
 inline float powergl_vec3_dot(powergl_vec3 m, powergl_vec3 n) {
 #if DEBUG_OUTPUT

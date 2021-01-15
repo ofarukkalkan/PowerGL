@@ -14,22 +14,23 @@ typedef void (*fphandle_events_visualscene)(powergl_visualscene *, SDL_Event *e,
 
 struct powergl_visualscene_t {
 
-    // objects
-    powergl_object **objects;
-    size_t n_object;
+  // objects
+  powergl_object **objects;
+  size_t n_object;
 
-    // default camera object
-    powergl_object *main_camera;
+  // default camera object
+  powergl_object *main_camera;
 
-    // default light object
-    powergl_object *main_light;
+  // default light object
+  powergl_object *main_light;
 
-    // pipeline
-    powergl_pipeline pipeline;
+  // pipeline
+  powergl_pipeline pipeline;
+  powergl_pipeline2 pipeline2;
 
-    fprun_visualscene run;
-    fpcreate_visualscene create;
-    fphandle_events_visualscene handle_events;
+  fprun_visualscene run;
+  fpcreate_visualscene create;
+  fphandle_events_visualscene handle_events;
 
 };
 
