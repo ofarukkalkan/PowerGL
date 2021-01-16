@@ -349,9 +349,9 @@ void powergl_transform_reset(powergl_transform *trans){
 
 
 
-void powergl_object_geometry_append(powergl_geometry *dest, powergl_geometry *src, powergl_vec3 offset){
+void powergl_object_geometry_append(powergl_geometry *dest, powergl_geometry *src, powergl_vec3 offset, powergl_vec3 color){
 
-
+  // merge vertices
   if(src->n_vertex > 0){
 
     assert(src->vertex);
@@ -367,10 +367,10 @@ void powergl_object_geometry_append(powergl_geometry *dest, powergl_geometry *sr
 	dest->vertex[i] = powergl_vec3_add(src->vertex[j], offset);
       }
 
+      
       dest->n_vertex += src->n_vertex;
       dest->vertex_flag = 1;
       dest->triangles.count += src->triangles.count;
-    
 
     } else {
       // TODO : eger daha once allocate edilmis boyut yeterliyse yeniden allocation yapilmayacak
@@ -403,12 +403,57 @@ void powergl_object_geometry_append(powergl_geometry *dest, powergl_geometry *sr
       
     }
     
+    // merge colors
+    if(src->triangles.n_color > 0){
+	
+      assert(src->triangles.color);
+
+      if(dest->triangles.n_color > 0 ){
+    
+	assert(dest->triangles.color);
+
+	dest->triangles.color = powergl_resize(dest->triangles.color, src->triangles.n_color + dest->triangles.n_color , sizeof(powergl_vec3));
+
+
+	for(size_t i = dest->triangles.n_color, j = 0; j <  src->triangles.n_color; i++, j++){
+	  dest->triangles.color[i] = color;
+	}
+
+      
+	dest->triangles.n_color += src->triangles.n_color;
+	dest->triangles.color_flag = 1;
+
+      } else {
+	// TODO : eger daha once allocate edilmis boyut yeterliyse yeniden allocation yapilmayacak
+	dest->triangles.color = powergl_resize(NULL, src->triangles.n_color, sizeof(powergl_vec3));
+
+	for(size_t i=0; i < src->triangles.n_color; i++){
+	  dest->triangles.color[i] = color;
+	}
+      
+	dest->triangles.n_color = src->triangles.n_color;
+	dest->triangles.color_flag = 1;
+      
+      }
+
+    } else {
+
+    
+
+#if DEBUG_OUTPUT
+      fprintf(stderr, "geometry append failed, because color source is empty");
+      assert(0);
+#endif
+    
+    }
+    
+    
   } else {
 
     
 
 #if DEBUG_OUTPUT
-    fprintf(stderr, "geometry append failed, because source is empty");
+    fprintf(stderr, "geometry append failed, because vertex source is empty");
     assert(0);
 #endif
     
@@ -427,6 +472,13 @@ void powergl_object_geometry_reset(powergl_geometry *geo){
     geo->triangles.count = 0;
     // TODO : eger diger attributeler de kullanilmislarsa onlar da silinecek
     // TODO : bound dizisi ve diger min_? max_? degeleri de resetlenebilir
+  }
+
+  if(geo->triangles.color != NULL){
+    free(geo->triangles.color);
+    geo->triangles.color = NULL;
+    geo->triangles.color_flag = 0;
+    geo->triangles.n_color = 0;
   }
 
 }

@@ -10,6 +10,7 @@
 
 typedef struct powergl_pipeline_t powergl_pipeline;
 typedef struct powergl_pipeline2_t powergl_pipeline2;
+typedef struct powergl_pipeline3_t powergl_pipeline3;
 
 typedef struct {
   GLuint index;
@@ -43,10 +44,22 @@ struct powergl_pipeline2_t {
   GLint uni_matrix;
 };
 
+struct powergl_pipeline3_t {
+  powergl_vsis vis;
+  powergl_vsis cis;
+  GLuint vs;
+  GLuint fs;
+  GLuint gp;
+  GLint uni_matrix;
+};
+
 
 void powergl_pipeline_create(powergl_pipeline *, powergl_object **objs, size_t n_obj);
 void powergl_pipeline_render(powergl_pipeline *, powergl_object **, size_t, powergl_object *);
 
 void powergl_pipeline2_create(powergl_pipeline2 *, powergl_object **objs, size_t n_obj);
 void powergl_pipeline2_render(powergl_pipeline2 *, powergl_object **, size_t);
+
+void powergl_pipeline3_create(powergl_pipeline3 *, powergl_object **objs, size_t n_obj);
+void powergl_pipeline3_render(powergl_pipeline3 *, powergl_object **, size_t);
 #endif

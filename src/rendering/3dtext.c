@@ -22,7 +22,7 @@ void powergl_3dtext_bake_geo(powergl_3dtext *text){
     
     // append geo into root object's geometry
     
-    powergl_object_geometry_append(&text->root->geometry, iterator->geo, offset);
+    powergl_object_geometry_append(&text->root->geometry, iterator->geo, offset, text->cfg.color);
 
     hspace_vec.x = text->cfg.hspace + iterator->geo->max_x - iterator->geo->min_x;
     

@@ -27,6 +27,7 @@ struct powergl_visualscene_t {
   // pipeline
   powergl_pipeline pipeline;
   powergl_pipeline2 pipeline2;
+  powergl_pipeline3 pipeline3;
 
   fprun_visualscene run;
   fpcreate_visualscene create;

@@ -233,7 +233,7 @@ void powergl_object_update_transform(powergl_object *obj, float delta_time);
 void powergl_object_update_mvp(powergl_object *obj, powergl_object *cam);
 void powergl_object_fps_controller(powergl_object *obj, float delta_time);
 void powergl_event_handle(powergl_object *obj, SDL_Event *e, float delta_time);
-void powergl_object_geometry_append(powergl_geometry *dest, powergl_geometry *src, powergl_vec3 offset);
+void powergl_object_geometry_append(powergl_geometry *dest, powergl_geometry *src, powergl_vec3 offset, powergl_vec3 color);
 void powergl_object_geometry_reset(powergl_geometry *geo);
 
 void powergl_transform_reset(powergl_transform *trans);

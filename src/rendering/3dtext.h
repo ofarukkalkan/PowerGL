@@ -16,6 +16,7 @@ struct powergl_3dtext_node_t {
 
 typedef struct {
   float hspace, vspace, hlimit, vlimit;
+  powergl_vec3 color;
 } powergl_3dtext_config;
 
 typedef struct {
