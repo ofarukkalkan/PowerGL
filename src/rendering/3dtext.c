@@ -42,12 +42,34 @@ void powergl_3dtext_build(powergl_3dtext *text, powergl_3dtext_config cfg, power
   assert(str_size);
   assert(text->root);
 
+  powergl_3dtext_node *iterator = NULL;
+  powergl_3dtext_node *next = NULL;
+  
+  if(text->str != NULL){
+
+    iterator = text->root_node;
+    
+    while(iterator != NULL){
+      iterator->geo = NULL;
+      iterator->prev = NULL;
+      next = iterator->next;
+      iterator->next = NULL;
+      free(iterator);
+      iterator = next;
+    }
+
+    text->root_node = NULL;
+    free(text->str);
+    text->str = NULL;
+
+  }
+
   text->str = powergl_resize(NULL, str_size, sizeof(char));
   text->n_char = str_size;
   text->cfg = cfg;
 
 
-  powergl_3dtext_node *iterator = NULL;
+  iterator = NULL;
   
   for(size_t i=0; i < str_size; i++){
 
@@ -60,7 +82,8 @@ void powergl_3dtext_build(powergl_3dtext *text, powergl_3dtext_config cfg, power
       const char * tmp_char_ptr = lib->objects[j]->id + 1;
       parsed = powergl_collada_parse_uints(tmp_char_ptr, &n_parsed);
       assert(n_parsed);
-
+      char char_found = 0;
+      
       if( parsed[0] == (size_t)str[i]){
 		  
 	if(i==0){
@@ -81,9 +104,17 @@ void powergl_3dtext_build(powergl_3dtext *text, powergl_3dtext_config cfg, power
 	iterator->letter = str[i];
 	
 	text->str[i] = str[i];
+
+	char_found = 1;
+      }
+
+      free(parsed);
+      parsed = NULL;
+
+      if(char_found == 1){
 	break;
       }
-	 
+      
     }
 
   }
