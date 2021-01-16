@@ -31,3 +31,11 @@ jobs:
       run: make check
     - name: make distcheck
       run: make distcheck
+    - uses: "actions/checkout@master"
+    - name: "TODO to Issue"
+      uses: "alstr/todo-to-issue-action@v2.4.1"
+      id: "todo"
+      with:
+        TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        LABEL: "// TODO"
+        COMMENT_MARKER: "//"
