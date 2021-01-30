@@ -343,3 +343,28 @@ inline powergl_vec4 powergl_vec4_trans(powergl_vec4 v, powergl_mat4  m) {
     result.r[3] = m.c[0].r[3] * v.r[0] + m.c[1].r[3] * v.r[1] + m.c[2].r[3] * v.r[2] + m.c[3].r[3] * v.r[3];
     return result;
 }
+
+inline powergl_vec3 powergl_unproject( powergl_vec3 win, powergl_mat4 mvp, powergl_vec4 viewport)
+{
+  powergl_mat4 inv = powergl_mat4_ident();
+  inv = powergl_mat4_inv(mvp);
+  //powergl_print4x4(mvp);
+  //powergl_print4x4(inv);
+  powergl_vec4 result;
+  result.x = win.x;
+  result.y = win.y;
+  result.z = win.z;
+  result.w = 1.0;
+  result.x = (result.x - viewport.x) / viewport.z;
+  result.y = (result.y - viewport.y) / viewport.w;
+  result.x = result.x * 2.0 - 1.0;
+  result.y = result.y * 2.0 - 1.0;
+  // printf("untransformed pos = %f %f %f %f\n", result.x, result.y, result.z, result.w);
+  result = powergl_vec4_trans( result, inv);
+  // printf("transformed pos = %f %f %f %f\n", res2[0], res2[1], res2[2], res2[3]);
+  result.x /= result.w;
+  result.y /= result.w;
+  result.z /= result.w;
+  return result.xyz;
+  // printf("w division pos = %f %f %f\n", result->x, result->y, result->z);
+}

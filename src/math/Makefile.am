@@ -3,8 +3,10 @@ noinst_LTLIBRARIES = libpowerglmath.la
 libpowerglmath_ladir = $(includedir)/powergl/math/
 libpowerglmath_la_HEADERS = \
 	mat4x4.h \
-	vec3.h
+	vec3.h \
+	intersect.h
 libpowerglmath_la_SOURCES = \
 	mat4x4.c \
-	vec3.c
+	vec3.c \
+	intersect.c
 libpowerglmath_la_LDFLAGS = -no-undefined

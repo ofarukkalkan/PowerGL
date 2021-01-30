@@ -28,4 +28,5 @@ powergl_mat4 powergl_mat4_rot(powergl_mat4 m, float angle, powergl_vec3 v);
 powergl_mat4 powergl_mat4_lookatRH(powergl_vec3 eye, powergl_vec3 center, powergl_vec3 up);
 powergl_mat4 powergl_mat4_perspectiveRH(float fovy, float aspect, float zNear, float zFar);
 powergl_vec4 powergl_vec4_trans(powergl_vec4 v, powergl_mat4  m);
+powergl_vec3 powergl_unproject( powergl_vec3 win, powergl_mat4 mvp, powergl_vec4 viewport);
 #endif
