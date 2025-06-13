@@ -66,7 +66,7 @@ int powergl_window_create(powergl_window *wnd, int width, int height) {
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
         //Create window
-        wnd->window = SDL_CreateWindow("PoweGL Engine", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+        wnd->window = SDL_CreateWindow("PowerGL Engine", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
 
         if(wnd->window == NULL) {
             printf("Window could not be created! SDL Error: %s\n", SDL_GetError());
