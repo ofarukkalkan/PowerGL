@@ -110,14 +110,13 @@ int powergl_window_run(powergl_window *wnd) {
     int quit = 0;
     SDL_Event e;
 
-    struct timespec ts1; // both C11 and POSIX
-    struct timespec ts2;
-    clock_gettime(CLOCK_REALTIME, &ts1); // POSIX
+    Uint64 last_counter = SDL_GetPerformanceCounter();
+    Uint64 frequency = SDL_GetPerformanceFrequency();
 
 
     while(!quit) {
-      	clock_gettime(CLOCK_REALTIME, &ts2);	
-	delta_time = ts2.tv_sec + 1e-9*ts2.tv_nsec - (ts1.tv_sec + 1e-9*ts1.tv_nsec);
+        Uint64 current_counter = SDL_GetPerformanceCounter();
+        delta_time = (float)(current_counter - last_counter) / (float)frequency;
 	
         while(SDL_PollEvent(&e) != 0) {
 	  wnd->root_scene->handle_events(wnd->root_scene, &e, delta_time);
@@ -134,7 +133,7 @@ int powergl_window_run(powergl_window *wnd) {
         //Update screen
         SDL_GL_SwapWindow(wnd->window);
 
-	ts1 = ts2;
+        last_counter = current_counter;
     }
 
 
