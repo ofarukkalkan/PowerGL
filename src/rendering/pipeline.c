@@ -350,7 +350,7 @@ void powergl_pipeline_create_objects(powergl_pipeline *ppl, powergl_object **obj
       glVertexAttribPointer( ppl->nis.index, ppl->nis.size, ppl->nis.type, ppl->nis.normalized, ppl->nis.stride, ppl->nis.offset );
 
       glBindBuffer( GL_ARRAY_BUFFER, objs[i]->geometry.cbo );
-      glVertexAttribPointer( ppl->nis.index, ppl->nis.size, ppl->nis.type, ppl->nis.normalized, ppl->nis.stride, ppl->nis.offset );
+      glVertexAttribPointer( ppl->cis.index, ppl->cis.size, ppl->cis.type, ppl->cis.normalized, ppl->cis.stride, ppl->cis.offset );
 
       glBindBuffer( GL_ARRAY_BUFFER, objs[i]->geometry.tcbo );
       glVertexAttribPointer( ppl->tcis.index, ppl->tcis.size, ppl->tcis.type, ppl->tcis.normalized, ppl->tcis.stride, ppl->tcis.offset );
