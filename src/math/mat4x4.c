@@ -113,9 +113,9 @@ inline powergl_mat4 powergl_mat4_mul(powergl_mat4 m1, powergl_mat4 m2) {
     powergl_vec4 SrcB3 = m2.c[3];
     powergl_mat4 Result;
     Result.c[0] = powergl_vec4_add(powergl_vec4_add(powergl_vec4_muls(SrcA0, SrcB0.r[0]),
-						    powergl_vec4_muls(SrcA1, SrcB0.r[1])),
+                                                    powergl_vec4_muls(SrcA1, SrcB0.r[1])),
                                    powergl_vec4_add(powergl_vec4_muls(SrcA2, SrcB0.r[2]),
-						    powergl_vec4_muls(SrcA1, SrcB0.r[3])));
+                                                    powergl_vec4_muls(SrcA3, SrcB0.r[3])));
     Result.c[1] = powergl_vec4_add(powergl_vec4_add(powergl_vec4_muls(SrcA0, SrcB1.r[0]),
 						    powergl_vec4_muls(SrcA1, SrcB1.r[1])),
                                    powergl_vec4_add(powergl_vec4_muls(SrcA2, SrcB1.r[2]),
@@ -216,7 +216,7 @@ inline powergl_mat4 powergl_mat4_inv(powergl_mat4 m) {
     powergl_vec4 Dot0 = powergl_vec4_mulv(m.c[0], Row0);
     GLfloat Dot1 = (Dot0.x + Dot0.y) + (Dot0.z + Dot0.w);
     GLfloat det = 1.0f / Dot1;
-    powergl_mat4_muls(Inverse, det);
+    Inverse = powergl_mat4_muls(Inverse, det);
     return Inverse;
 }
 
@@ -240,9 +240,9 @@ inline powergl_mat4 powergl_mat4_scale(powergl_mat4 m, powergl_vec3 v) {
     powergl_vec3_print("translate v", v);
 #endif
     powergl_mat4 r = m;
-    r.c[3].r[0] = m.c[3].r[0] * v.x;
-    r.c[3].r[1] = m.c[3].r[1] * v.y;
-    r.c[3].r[2] = m.c[3].r[2] * v.z;
+    r.c[0] = powergl_vec4_muls(m.c[0], v.x);
+    r.c[1] = powergl_vec4_muls(m.c[1], v.y);
+    r.c[2] = powergl_vec4_muls(m.c[2], v.z);
     return r;
 }
 
