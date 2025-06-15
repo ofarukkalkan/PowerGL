@@ -26,10 +26,20 @@ jobs:
     - name: autoreconf
       run: autoreconf -iv
     - name: configure
-      run: ./configure
+      run: CFLAGS="--coverage" CXXFLAGS="--coverage" LDFLAGS="--coverage" ./configure
     - name: make
       run: make
     - name: make check
       run: make check
+    - name: install gcovr
+      run: sudo apt-get install gcovr
+    - name: gcovr
+      run: |
+        mkdir -p coverage
+        gcovr -r . --xml-pretty -o coverage/coverage.xml
+    - uses: actions/upload-artifact@v2
+      with:
+        name: coverage
+        path: coverage
     - name: make distcheck
       run: make distcheck
