@@ -22,15 +22,7 @@ jobs:
     - name: png setup
       run: sudo apt-get install libpng-dev
     - name: Init submodules
-      run: git submodule update --init --recursive
-    - name: Google Test
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libgtest-dev cmake
-        cd /usr/src/gtest
-        sudo cmake .
-        sudo make
-        sudo cp lib/*.a /usr/lib   
+      run: git submodule update --init --recursive    
     - name: autoreconf
       run: autoreconf -iv
     - name: configure
