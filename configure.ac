@@ -47,8 +47,6 @@ AC_CONFIG_FILES([Makefile
 		src/collada/Makefile
 		src/collada/core/Makefile
 		src/window/Makefile
-		src/png/Makefile]
-                src/window/Makefile
-                src/png/Makefile
+		src/png/Makefile
                 tests/Makefile])
 AC_OUTPUT
