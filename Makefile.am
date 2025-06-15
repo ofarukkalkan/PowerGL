@@ -1,6 +1,8 @@
 ACLOCAL_AMFLAGS = -I m4
 SUBDIRS = src tests
 
+CODE_COVERAGE_LCOV_OPTIONS = --ignore-errors mismatch
+
 include $(top_srcdir)/aminclude_static.am
 
 clean-local: code-coverage-clean

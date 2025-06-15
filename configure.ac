@@ -12,6 +12,7 @@ LT_INIT
 AM_PROG_AR
 PKG_PROG_PKG_CONFIG
 AX_CODE_COVERAGE
+AX_ADD_AM_MACRO_STATIC
 
 # Checks for programs.
 AC_PROG_CXX
@@ -53,5 +54,5 @@ AC_CONFIG_FILES([Makefile
 		src/collada/core/Makefile
 		src/window/Makefile
 		src/png/Makefile
-                tests/Makefile])
+		tests/Makefile])
 AC_OUTPUT
