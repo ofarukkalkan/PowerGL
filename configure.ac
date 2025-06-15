@@ -5,12 +5,13 @@ AC_INIT([PowerGL], [0.1.0], [omerfarukkalkan@outlook.com.tr])
 AC_CONFIG_SRCDIR([src/powergl.c])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIRS([m4])
-AM_INIT_AUTOMAKE([-Wall -Werror subdir-objects])
+AM_INIT_AUTOMAKE([-Wall subdir-objects])
 
 LT_PREREQ([2.4.6])
 LT_INIT
 AM_PROG_AR
 PKG_PROG_PKG_CONFIG
+AX_CODE_COVERAGE
 
 # Checks for programs.
 AC_PROG_CXX
