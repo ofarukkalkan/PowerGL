@@ -37,7 +37,7 @@ jobs:
       run: |
         mkdir -p coverage
         gcovr -r . --xml-pretty -o coverage/coverage.xml
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with:
         name: coverage
         path: coverage
