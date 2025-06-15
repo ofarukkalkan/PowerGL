@@ -21,6 +21,8 @@ jobs:
       run: sudo apt-get install libexpat1-dev
     - name: png setup
       run: sudo apt-get install libpng-dev
+    - name: Init submodules
+      run: git submodule update --init --recursive
     - name: Google Test
       run: |
         sudo apt-get update
