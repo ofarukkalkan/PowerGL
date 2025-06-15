@@ -13,6 +13,7 @@ PACKAGES=(
   libsdl2-dev
   libglew-dev
   libpng-dev
+  libgtest-dev
 )
 
 if [ "$EUID" -ne 0 ]; then
