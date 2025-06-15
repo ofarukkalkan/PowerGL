@@ -20,5 +20,5 @@ Install gcovr via apt:
 sudo apt-get install gcovr
 ```
 ```sh
-gcovr -r . --html --html-details -o coverage/index.html
+gcovr -r . --html --html-details -o coverage/index.html --gcov-ignore-errors no_working_dir_found
 ```
