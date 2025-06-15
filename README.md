@@ -5,11 +5,8 @@ PowerGL is a graphics engine implemented with C using OpenGL
 
 
 ## Running Tests
-After cloning, initialize submodules:
-```sh
-git submodule update --init
-```
-Generate build files and run the test suite:
+Install the Google Test development package (for example `libgtest-dev` on
+Debian/Ubuntu) and then generate build files and run the test suite:
 ```sh
 autoreconf -i
 ./configure

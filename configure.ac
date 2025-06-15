@@ -10,6 +10,7 @@ AM_INIT_AUTOMAKE([-Wall -Werror subdir-objects])
 LT_PREREQ([2.4.6])
 LT_INIT
 AM_PROG_AR
+PKG_PROG_PKG_CONFIG
 
 # Checks for programs.
 AC_PROG_CXX
@@ -29,6 +30,9 @@ AC_CHECK_LIB([expat], [XML_Parse])
 AC_CHECK_LIB([SDL2], [SDL_Init])
 AC_CHECK_LIB([GLEW], [glewInit])
 AC_CHECK_LIB([png16], [png_read_image])
+
+# Check for Google Test using pkg-config
+PKG_CHECK_MODULES([GTEST], [gtest_main], [], [AC_MSG_ERROR([Google Test not found])])
 
 # Checks for header files.
 AC_CHECK_HEADERS([stddef.h stdlib.h string.h])
