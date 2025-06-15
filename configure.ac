@@ -4,10 +4,12 @@ AC_PREREQ([2.69])
 AC_INIT([PowerGL], [0.1.0], [omerfarukkalkan@outlook.com.tr])
 AC_CONFIG_SRCDIR([src/powergl.c])
 AC_CONFIG_HEADERS([config.h])
-AM_INIT_AUTOMAKE
+AC_CONFIG_MACRO_DIRS([m4])
+AM_INIT_AUTOMAKE([-Wall -Werror subdir-objects])
 
 LT_PREREQ([2.4.6])
 LT_INIT
+AM_PROG_AR
 
 # Checks for programs.
 AC_PROG_CXX
@@ -45,5 +47,8 @@ AC_CONFIG_FILES([Makefile
 		src/collada/Makefile
 		src/collada/core/Makefile
 		src/window/Makefile
-		src/png/Makefile])
+		src/png/Makefile]
+                src/window/Makefile
+                src/png/Makefile
+                tests/Makefile])
 AC_OUTPUT
