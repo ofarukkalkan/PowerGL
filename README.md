@@ -12,3 +12,13 @@ autoreconf -i
 ./configure
 make check
 ```
+
+## Coverage
+After running the tests you can generate coverage reports using [gcovr](https://gcovr.com/):
+Install gcovr via apt:
+```sh
+sudo apt-get install gcovr
+```
+```sh
+gcovr -r . --html --html-details -o coverage/index.html --gcov-ignore-errors no_working_dir_found
+```
