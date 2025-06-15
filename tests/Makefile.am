@@ -4,11 +4,11 @@ AM_CPPFLAGS = \
     $(GTEST_CFLAGS)
 AM_CXXFLAGS = -std=c++17
 
-check_PROGRAMS = gtest_mat4_inv
+check_PROGRAMS = gtest_math
 TESTS = $(check_PROGRAMS)
 
-gtest_mat4_inv_SOURCES = gtest_mat4_inv.cpp
+gtest_math_SOURCES = gtest_math.cpp
 
-gtest_mat4_inv_LDADD = $(top_builddir)/src/math/libpowerglmath.la $(GTEST_LIBS) -lm
+gtest_math_LDADD = $(top_builddir)/src/math/libpowerglmath.la $(GTEST_LIBS) -lm
 
 # Run tests via make check
