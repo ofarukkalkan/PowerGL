@@ -22,6 +22,14 @@ static size_t g_content_index;
 static char g_ref_content_flag;
 static size_t g_ref_index;
 
+typedef struct {
+    char *id;
+    dom_connector *node;
+} id_entry;
+
+static id_entry *g_id_map;
+static size_t g_n_id_map;
+
 
 int powergl_collada_init_node(dom_connector *this, dom_connector *parent, const char *name, const char **attr, size_t nattr) {
     g_current_elem = this;
@@ -221,110 +229,106 @@ static void elemstart(void *userdata, const char *elem, const char **attr) {
 #endif
     g_current_depth++;
 }
-/*
-static int resolve_refs( dom_connector *root, int n_resolved ) {
-  size_t resolved;
-  for(size_t i=0; i<g_n_pending_reference; i++){
-    printf("pending ref -> name = %s\t value = %s\n", g_pending_references[i]->name, g_pending_references[i]->value );
 
-  }
-
-  return resolvd;
+static const char *get_attrib_value(dom_connector *node, const char *name){
+    for(size_t i = 0; i < node->n_map; ++i){
+        if(node->map[i].node_type == 1 && strcmp(node->map[i].name, name) == 0 && node->nodes[i].n_node > 0){
+            return node->nodes[i].nodes[0]->value;
+        }
+    }
+    return NULL;
 }
-*/
-static size_t resolve_refs(dom_connector *root, int n_resolved) {
-    size_t resolved = 0;
 
-    for(size_t i = 0; i < root->n_map; ++i) {
-        if(n_resolved + resolved == g_n_pending_reference) {
-            return resolved;
-        } else {
-            if(root->map[i].node_type == 0) {
-                for(size_t j = 0; j < root->nodes[i].n_node; j++) {
-                    resolved += resolve_refs(root->nodes[i].nodes[j], n_resolved + resolved);
+static void collect_ids(dom_connector *node){
+    const char *id = get_attrib_value(node, "id");
+    if(id){
+        g_id_map = powergl_resize(g_id_map, ++g_n_id_map, sizeof(id_entry));
+        g_id_map[g_n_id_map-1].id = (char*)id;
+        g_id_map[g_n_id_map-1].node = node;
+    }
+    for(size_t i=0;i<node->n_map;++i){
+        if(node->map[i].node_type == 0){
+            for(size_t j=0;j<node->nodes[i].n_node;++j){
+                collect_ids(node->nodes[i].nodes[j]);
+            }
+        }
+    }
+}
+
+static dom_connector *find_id(const char *id){
+    for(size_t i=0;i<g_n_id_map;++i){
+        if(strcmp(g_id_map[i].id, id) == 0) return g_id_map[i].node;
+    }
+    return NULL;
+}
+
+static dom_connector *find_sid(dom_connector *node, const char *sid){
+    const char *val = get_attrib_value(node, "sid");
+    if(val && strcmp(val, sid) == 0) return node;
+    for(size_t i=0;i<node->n_map;++i){
+        if(node->map[i].node_type == 0){
+            for(size_t j=0;j<node->nodes[i].n_node;++j){
+                dom_connector *tmp = find_sid(node->nodes[i].nodes[j], sid);
+                if(tmp) return tmp;
+            }
+        }
+    }
+    return NULL;
+}
+
+static dom_connector *resolve_sid_path(dom_connector *start, char **tokens, size_t count){
+    dom_connector *cur = start;
+    for(size_t i=0;i<count;++i){
+        cur = find_sid(cur, tokens[i]);
+        if(!cur) return NULL;
+    }
+    return cur;
+}
+
+static dom_connector *resolve_uri(const char *uri){
+    char *copy = powergl_resize(NULL, strlen(uri)+1, sizeof(char));
+    strcpy(copy, uri);
+    char *tokens[32];
+    size_t count=0;
+    char *tok = strtok(copy, "/");
+    while(tok && count < 32){
+        tokens[count++] = tok;
+        tok = strtok(NULL, "/");
+    }
+    dom_connector *node = NULL;
+    size_t index=0;
+    node = find_id(tokens[0]);
+    if(node) index = 1; else { node = find_sid(g_root, tokens[0]); index = 1; }
+    if(node) node = resolve_sid_path(node, &tokens[index], count-index);
+    free(copy);
+    return node;
+}
+
+static size_t resolve_pending_references(dom_connector *root){
+    g_id_map = NULL;
+    g_n_id_map = 0;
+    collect_ids(root);
+    size_t resolved = 0;
+    for(size_t i=0;i<g_n_pending_reference;++i){
+        dom_connector *ref = g_pending_references[i];
+        if(!ref || !ref->value) continue;
+        const char *uri = ref->value;
+        if(uri[0]=='#') uri++;
+        dom_connector *target = resolve_uri(uri);
+        if(target){
+            dom_connector *parent = ref->parent;
+            for(size_t l=0;l<parent->n_map;++l){
+                for(size_t m=0;m<parent->nodes[l].n_node;++m){
+                    if(parent->nodes[l].nodes[m] == ref){
+                        parent->set_ref(parent, l, target);
+                        resolved++;
+                        m=parent->nodes[l].n_node; l=parent->n_map;
+                    }
                 }
             }
         }
     }
-
-    if(n_resolved + resolved == g_n_pending_reference) {
-      return n_resolved + resolved;
-    } else {
-      
-      for(size_t i = 0; i < g_n_pending_reference; i++) {
-	
-	if(g_pending_references[i]->value[0] == '#') {
-	  // URI fragment Addressing
-	  for(size_t j = 0; j < root->n_map; j++) {
-
-	    if(root->map[j].node_type == 1) { // if current node is attrib 
-
-	      for(size_t k = 0; k  < root->nodes[j].n_node; k++) {
-		// normally attribs has only 1 child so we use the first child.
-
-		if(strcmp("id", root->nodes[j].nodes[k]->name) == 0) {
-		  
-		  if(strcmp((g_pending_references[i]->value + sizeof(char)), root->nodes[j].nodes[k]->value) == 0) {
-		    // '+ sizeof(char)' is used to skip '#' character
-		    
-		    if(strcmp(g_pending_references[i]->base_type, root->name) == 0) {
-		      // turleri kontrol et. cunku id ler uyusmasina ragmen yanlis referans kullanilmis olabilir
-		      
-		      dom_connector *parent = g_pending_references[i]->parent;
-		      
-		      // burada referansa sahip olan elementin set_ref fonksiyonu cagriliyor. neden direk ref uzerinden yapilmamasi ise implementastondan kaynakli.
-		      // sadece element turlerinin fonksyionlari var
-		      // attribute, content ve ref turlerinin kendine ait fonksyionlari yok
-		      
-		      int resolve_flag = 0;
-		      
-		      for(size_t l = 0; l < parent->n_map; l++) {
-
-			
-
-			if(parent->map[l].node_type == 3 && strcmp(parent->map[l].base_type, g_pending_references[i]->base_type) == 0) {
-
-			  
-			  parent->set_ref(parent, l, root);
-			  
-#if DEBUG_OUTPUT
-			  printf("\n[ref type ptr][%s\t%s\t%p] == \n[src type ptr][%s\t%s\t%p] -> ref resolved\n",
-				 g_pending_references[i]->value, g_pending_references[i]->name,  g_pending_references[i]->ref,
-				 root->nodes[j].nodes[k]->value, root->name, root);
-#endif
-			  
-			  resolve_flag = 1;
-			  
-			} else {
-#if DEBUG_OUTPUT
-			  printf("\n[ref type ptr][%s\t%s\t%p] == \n[src type ptr][%s\t%s\t%p] -> ref unresolved, parent->map[l].base_type != g_pending_references[i]->name\n",
-				 g_pending_references[i]->value, g_pending_references[i]->name, g_pending_references[i]->ref,
-				 root->nodes[j].nodes[k]->value, root->name, root);
-#endif
-			}
-		      }
-
-		      
-		      if(resolve_flag == 1){
-			return 1 + resolved;
-		      }
-
-		    } else {
-#if DEBUG_OUTPUT
-		      printf("\n[ref type ptr][%s\t%s\t%p] == \n[src type ptr][%s\t%s\t%p] -> ref unresolved, root->name != g_pending_references[i]->name\n",
-			     g_pending_references[i]->value, g_pending_references[i]->name,  g_pending_references[i]->ref,
-			     root->nodes[j].nodes[k]->value, root->name, root);
-#endif
-		    }
-		  }
-		}
-	      }
-	    }
-	  }
-	}
-      }
-    }
-
+    free(g_id_map); g_id_map=NULL; g_n_id_map=0;
     return resolved;
 }
 
@@ -398,7 +402,7 @@ dom_connector *powergl_collada_parse(const char *filename) {
                 printf("\n-----------------RESOLVING REFERENCES\n");
                 printf("pending refs = %lu\n", g_n_pending_reference);
 #endif
-                size_t resolved = resolve_refs(g_root, 0);
+                size_t resolved = resolve_pending_references(g_root);
 #if DEBUG_OUTPUT
                 printf("\nresolved refs = %lu", resolved);
                 printf("\n\n\n\n");
