@@ -20,7 +20,15 @@ jobs:
     - name: expat setup
       run: sudo apt-get install libexpat1-dev
     - name: png setup
-      run: sudo apt-get install libpng-dev   
+      run: sudo apt-get install libpng-dev
+    - name: Google Test
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libgtest-dev cmake
+        cd /usr/src/gtest
+        sudo cmake .
+        sudo make
+        sudo cp lib/*.a /usr/lib   
     - name: autoreconf
       run: autoreconf -iv
     - name: configure
