@@ -663,9 +663,21 @@ void powergl_build_object(powergl_collada_core_node  *node, powergl_collada_core
 
   if(node->n_translate > 0 || node->n_rotate > 0) {
     powergl_build_transform(node, obj);
+  } else if(node->n_matrix > 0) {
+    powergl_mat4_copy(&obj->transform.local, node->c_matrix[0]->content,
+                      node->c_matrix[0]->n_content, 1);
+    if(obj->parent != NULL){
+      obj->transform.world =
+          powergl_mat4_mul(obj->parent->transform.world, obj->transform.local);
+    } else {
+      obj->transform.world = obj->transform.local;
+    }
+    obj->transform.location.x = obj->transform.local.c[3].x;
+    obj->transform.location.y = obj->transform.local.c[3].y;
+    obj->transform.location.z = obj->transform.local.c[3].z;
+    obj->transform.matrix_flag = 0;
   } else {
-    assert(0);
-    // init def transform
+    powergl_transform_reset(&obj->transform);
   }// if node has transform
 
   if(node->n_instance_geometry > 0) {
