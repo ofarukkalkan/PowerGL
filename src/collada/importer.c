@@ -317,12 +317,14 @@ static size_t resolve_pending_references(dom_connector *root){
         dom_connector *target = resolve_uri(uri);
         if(target){
             dom_connector *parent = ref->parent;
-            for(size_t l=0;l<parent->n_map;++l){
-                for(size_t m=0;m<parent->nodes[l].n_node;++m){
+            int done = 0;
+            for(size_t l = 0; l < parent->n_map && !done; ++l){
+                for(size_t m = 0; m < parent->nodes[l].n_node; ++m){
                     if(parent->nodes[l].nodes[m] == ref){
                         parent->set_ref(parent, l, target);
                         resolved++;
-                        m=parent->nodes[l].n_node; l=parent->n_map;
+                        done = 1;
+                        break;
                     }
                 }
             }
