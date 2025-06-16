@@ -27,7 +27,7 @@ clean-local: code-coverage-clean
 distclean-local: code-coverage-dist-clean
 
 # Test data files shipped with the distribution
-EXTRA_DIST = cube.dae cube_exported.dae
+EXTRA_DIST = cube.dae
 
 # Remove generated files produced during tests
 CLEANFILES = cube_exported.dae exported.dae
