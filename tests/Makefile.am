@@ -2,7 +2,8 @@
 AM_CPPFLAGS = \
     -I$(top_srcdir) \
     $(GTEST_CFLAGS) \
-    $(CODE_COVERAGE_CPPFLAGS)
+    $(CODE_COVERAGE_CPPFLAGS) \
+    -DTEST_SRCDIR=\"$(srcdir)\"
 AM_CXXFLAGS = -std=c++17 $(CODE_COVERAGE_CXXFLAGS)
 AM_CFLAGS = $(CODE_COVERAGE_CFLAGS)
 CODE_COVERAGE_LCOV_OPTIONS = --ignore-errors mismatch
@@ -24,5 +25,11 @@ include $(top_srcdir)/aminclude_static.am
 
 clean-local: code-coverage-clean
 distclean-local: code-coverage-dist-clean
+
+# Test data files shipped with the distribution
+EXTRA_DIST = cube.dae
+
+# Remove generated files produced during tests
+CLEANFILES = cube_exported.dae exported.dae
 
 # Run tests via make check

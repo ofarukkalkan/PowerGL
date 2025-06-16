@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <string>
 extern "C" {
 #define this this_ptr
 #include "src/collada/importer.h"
@@ -6,8 +7,9 @@ extern "C" {
 #undef this
 }
 
-static powergl_collada_core_COLLADA* load_dae(const char* path){
-    dom_connector* root = powergl_collada_parse(path);
+static powergl_collada_core_COLLADA* load_dae(const char* file){
+    std::string path = std::string(TEST_SRCDIR) + "/" + file;
+    dom_connector* root = powergl_collada_parse(path.c_str());
     return (powergl_collada_core_COLLADA*)root;
 }
 
