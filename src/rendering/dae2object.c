@@ -442,22 +442,42 @@ void powergl_build_camera(powergl_collada_core_node *node, powergl_object *obj) 
 #if DEBUG_OUTPUT
   printf("\n%s\n", __func__);
 #endif
+  if(node->n_instance_camera == 0 || !node->c_instance_camera[0]->r_camera)
+    return;
+
   powergl_collada_core_camera  *cam_elem = node->c_instance_camera[0]->r_camera;
-  powergl_collada_core_perspective  *pers = cam_elem->c_optics[0]->c_technique_common[0]->c_perspective[0];
+  if(cam_elem->n_optics == 0 ||
+     cam_elem->c_optics[0]->n_technique_common == 0 ||
+     cam_elem->c_optics[0]->c_technique_common[0]->n_perspective == 0)
+    return;
 
-  if(pers != NULL) {
-    obj->camera.type = 'p';
+  powergl_collada_core_perspective  *pers =
+      cam_elem->c_optics[0]->c_technique_common[0]->c_perspective[0];
 
-    if(pers->c_xfov != NULL) {
-      obj->camera.xfov = powergl_float_to_radians(pers->c_xfov[0]->content[0]);
-    }
+  obj->camera.type = 'p';
+  obj->camera.xfov = 0.0f;
+  obj->camera.yfov = 0.0f;
+  obj->camera.znear = 0.1f;
+  obj->camera.zfar = 100.0f;
+  obj->camera.aspect_ratio = 1.0f;
 
-    if(pers->c_yfov != NULL) {
-      obj->camera.yfov = powergl_float_to_radians(pers->c_yfov[0]->content[0]);
-    }
+  if(pers->n_xfov > 0 && pers->c_xfov[0]->n_content > 0) {
+    obj->camera.xfov = powergl_float_to_radians(pers->c_xfov[0]->content[0]);
+  }
 
+  if(pers->n_yfov > 0 && pers->c_yfov[0]->n_content > 0) {
+    obj->camera.yfov = powergl_float_to_radians(pers->c_yfov[0]->content[0]);
+  }
+
+  if(pers->n_znear > 0 && pers->c_znear[0]->n_content > 0) {
     obj->camera.znear = pers->c_znear[0]->content[0];
+  }
+
+  if(pers->n_zfar > 0 && pers->c_zfar[0]->n_content > 0) {
     obj->camera.zfar = pers->c_zfar[0]->content[0];
+  }
+
+  if(pers->n_aspect_ratio > 0 && pers->c_aspect_ratio[0]->n_content > 0) {
     obj->camera.aspect_ratio = pers->c_aspect_ratio[0]->content[0];
   }
 
