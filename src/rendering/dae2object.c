@@ -481,8 +481,15 @@ void powergl_build_camera(powergl_collada_core_node *node, powergl_object *obj) 
     obj->camera.aspect_ratio = pers->c_aspect_ratio[0]->content[0];
   }
 
-  obj->camera.view = powergl_mat4_ident();
-  obj->camera.view_flag = 0;
+  /*
+    Build the initial view matrix from the camera's transform.  Blender does
+    not export a dedicated view matrix, but the world matrix of the camera can
+    be used for this after inversion.  Without this step the view remains the
+    identity matrix which causes objects to appear inverted or misplaced when
+    the scene is loaded.
+  */
+  obj->camera.view = powergl_mat4_inv(obj->transform.world);
+  obj->camera.view_flag = 1;
   
   obj->camera.projection = powergl_mat4_ident();
   obj->camera.projection_flag = 0;
@@ -490,15 +497,8 @@ void powergl_build_camera(powergl_collada_core_node *node, powergl_object *obj) 
   obj->camera.vp = powergl_mat4_ident();
   obj->camera.vp_flag = 0;
     
-  // if obj's transform is not inverted. (blender does not export a matrix called view transform.
-  // but we can use inverse of obj's transform  as view transform)
-
-  // if node has only matrix element use this
-  // obj->camera.view = powergl_mat4_inv(obj->transform.world);
- 
-  // if obj's transform is ready to use as view transform.
-  // obj->transform.world[3][2] should has negative sign.
-  // obj->camera.view = obj->transform.world;
+  // If the transform is already inverted (for example exported in a different
+  // coordinate system) adjust the view matrix here instead.
     
   /*
     powergl_vec3 eye = {{0.0f, 0.0f, 4.0f}};
