@@ -238,6 +238,13 @@ void powergl_object_geometry_reset(powergl_geometry *geo);
 
 void powergl_transform_reset(powergl_transform *trans);
 
+/* Creates and returns a camera object with default parameters.
+   - field of view: 60 degrees
+   - near plane: 0.1
+   - far plane: 1000
+   - positioned at (0,0,10) looking at the origin */
+powergl_object *powergl_camera_default();
+
  
 
 
