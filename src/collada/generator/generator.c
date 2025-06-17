@@ -148,8 +148,8 @@ void generate_imp_header(char *headerfile, char *deffile, char *def_name) {
   fprintf(file, "#include \"../collada.h\"\n");
   ///////////////////////////////////////////////
   // get instance & check
-  fprintf(file, "int powergl_%s_check_type(const char *this, const char *parent);\n", def_name);
-  fprintf(file, "void* powergl_%s_get_instance(const char *this, const char *parent);\n", def_name);
+  fprintf(file, "int powergl_%s_check_type(const char *ptr, const char *parent);\n", def_name);
+  fprintf(file, "void* powergl_%s_get_instance(const char *ptr, const char *parent);\n", def_name);
   fprintf(file, "void powergl_%s_init();\n", def_name);
   fclose(file);
 }
@@ -173,12 +173,12 @@ void generate_imp_source(char *sourcefile, char *headerfile, char *def_name) {
   //////////////////////////////////////////get instance & check
   fprintf(file, "static size_t %s;\n", g_n_field_str);
   fprintf(file, "static supported_type %s[%u];\n", g_field_str, g_n_type);
-  fprintf(file, "int powergl_%s_check_type(const char *this, const char *parent){\n"\
+  fprintf(file, "int powergl_%s_check_type(const char *ptr, const char *parent){\n"\
 	  "for(size_t i=0; i<%s; i++){\n"			\
-	  "if(strcmp(%s[i].name, this) == 0 && strcmp(%s[i].parent, parent) == 0 ){\n" \
+	  "if(strcmp(%s[i].name, ptr) == 0 && strcmp(%s[i].parent, parent) == 0 ){\n" \
 	  "return i;\n}\n}\nreturn -1;\n}\n", def_name, g_n_field_str, g_field_str, g_field_str);
-  fprintf(file, "void* powergl_%s_get_instance(const char *this, const char *parent){\n"\
-	  "int index = powergl_%s_check_type(this, parent);\n"\
+  fprintf(file, "void* powergl_%s_get_instance(const char *ptr, const char *parent){\n"\
+	  "int index = powergl_%s_check_type(ptr, parent);\n"\
 	  "if( index > -1 ) return %s[index].get_instance();\n" \
 	  "else return NULL;\n}\n", def_name, def_name,  g_field_str);
 
@@ -205,14 +205,14 @@ void generate_imp_source(char *sourcefile, char *headerfile, char *def_name) {
     }
 
     if(flag == 1) {
-      fprintf(file, "powergl_%s_%s *this = (powergl_%s_%s*)obj;\n", def_name, tmp_ptr, def_name, tmp_ptr);
+      fprintf(file, "powergl_%s_%s *ptr = (powergl_%s_%s*)obj;\n", def_name, tmp_ptr, def_name, tmp_ptr);
       fprintf(file, "switch(index){\n");
 
       for(size_t j = 0; j < g_types[i].n_node; j++) {
 	switch(*g_types[i].nodes[j].fields[2]) {
 	case '3':
-	  fprintf(file, "case %u: powergl_collada_set_ref(this->dom.nodes, index, ptr);\n", j);
-	  fprintf(file, "this->r_%s = (powergl_%s_%s*)ptr;\nbreak;\n", g_types[i].nodes[j].fields[1], def_name, g_types[i].nodes[j].fields[0]);
+	  fprintf(file, "case %u: powergl_collada_set_ref(ptr->dom.nodes, index, ptr);\n", j);
+	  fprintf(file, "ptr->r_%s = (powergl_%s_%s*)ptr;\nbreak;\n", g_types[i].nodes[j].fields[1], def_name, g_types[i].nodes[j].fields[0]);
 	  break;
 	}
       }
@@ -233,26 +233,26 @@ void generate_imp_source(char *sourcefile, char *headerfile, char *def_name) {
     }
 
     if(flag == 1) {
-      fprintf(file, "powergl_%s_%s *this = (powergl_%s_%s*)obj;\n", def_name, tmp_ptr, def_name, tmp_ptr);
+      fprintf(file, "powergl_%s_%s *ptr = (powergl_%s_%s*)obj;\n", def_name, tmp_ptr, def_name, tmp_ptr);
       fprintf(file, "switch(index){\n");
 
       for(size_t j = 0; j < g_types[i].n_node; j++) {
 	switch(*g_types[i].nodes[j].fields[2]) {
 	case '2':
 	  if(strcmp(g_types[i].nodes[j].fields[0], "char*") == 0) {
-	    fprintf(file, "case %u: powergl_collada_parse_content(this->dom.nodes, index, value);\n", j);
-	    fprintf(file, "this->n_content = strlen(value) + 1;\n");
-	    fprintf(file, "this->content = powergl_resize(NULL, this->n_content, sizeof(char));\n");
-	    fprintf(file, "strcpy(this->content, value);\nbreak;\n");
+	    fprintf(file, "case %u: powergl_collada_parse_content(ptr->dom.nodes, index, value);\n", j);
+	    fprintf(file, "ptr->n_content = strlen(value) + 1;\n");
+	    fprintf(file, "ptr->content = powergl_resize(NULL, ptr->n_content, sizeof(char));\n");
+	    fprintf(file, "strcpy(ptr->content, value);\nbreak;\n");
 	  } else if(strcmp(g_types[i].nodes[j].fields[0], "char**") == 0) {
-	    fprintf(file, "case %u: powergl_collada_parse_content(this->dom.nodes, index, value);\n", j);
-	    fprintf(file, "this->content  = powergl_collada_parse_names(value, &this->n_content);\nbreak;\n");
+	    fprintf(file, "case %u: powergl_collada_parse_content(ptr->dom.nodes, index, value);\n", j);
+	    fprintf(file, "ptr->content  = powergl_collada_parse_names(value, &ptr->n_content);\nbreak;\n");
 	  } else if(strcmp(g_types[i].nodes[j].fields[0], "size_t*") == 0) {
-	    fprintf(file, "case %u: powergl_collada_parse_content(this->dom.nodes, index, value);\n", j);
-	    fprintf(file, "this->content  = powergl_collada_parse_uints(value, &this->n_content);\nbreak;\n");
+	    fprintf(file, "case %u: powergl_collada_parse_content(ptr->dom.nodes, index, value);\n", j);
+	    fprintf(file, "ptr->content  = powergl_collada_parse_uints(value, &ptr->n_content);\nbreak;\n");
 	  } else if(strcmp(g_types[i].nodes[j].fields[0], "double*") == 0) {
-	    fprintf(file, "case %u: powergl_collada_parse_content(this->dom.nodes, index, value);\n", j);
-	    fprintf(file, "this->content  = powergl_collada_parse_floats(value, &this->n_content);\nbreak;\n");
+	    fprintf(file, "case %u: powergl_collada_parse_content(ptr->dom.nodes, index, value);\n", j);
+	    fprintf(file, "ptr->content  = powergl_collada_parse_floats(value, &ptr->n_content);\nbreak;\n");
 	  }
 
 	  break;
@@ -275,20 +275,20 @@ void generate_imp_source(char *sourcefile, char *headerfile, char *def_name) {
     }
 
     if(flag == 1) {
-      fprintf(file, "powergl_%s_%s *this = (powergl_%s_%s*)obj;\n", def_name, tmp_ptr, def_name, tmp_ptr);
+      fprintf(file, "powergl_%s_%s *ptr = (powergl_%s_%s*)obj;\n", def_name, tmp_ptr, def_name, tmp_ptr);
       fprintf(file, "switch(index){\n");
 
       for(size_t j = 0; j < g_types[i].n_node; j++) {
 	switch(*g_types[i].nodes[j].fields[2]) {
 	case '1':
 	  if(strcmp(g_types[i].nodes[j].fields[0], "char*") == 0) {
-	    fprintf(file, "case %u: powergl_collada_parse_attrib(this->dom.nodes, index, value);\n", j);
-	    fprintf(file, "this->n_%s = strlen(value) + 1;\n", g_types[i].nodes[j].fields[1]);
-	    fprintf(file, "this->c_%s = powergl_resize(NULL, this->n_%s, sizeof(char));\n", g_types[i].nodes[j].fields[1], g_types[i].nodes[j].fields[1]);
-	    fprintf(file, "strcpy(this->c_%s, value);\nbreak;\n", g_types[i].nodes[j].fields[1]);
+	    fprintf(file, "case %u: powergl_collada_parse_attrib(ptr->dom.nodes, index, value);\n", j);
+	    fprintf(file, "ptr->n_%s = strlen(value) + 1;\n", g_types[i].nodes[j].fields[1]);
+	    fprintf(file, "ptr->c_%s = powergl_resize(NULL, ptr->n_%s, sizeof(char));\n", g_types[i].nodes[j].fields[1], g_types[i].nodes[j].fields[1]);
+	    fprintf(file, "strcpy(ptr->c_%s, value);\nbreak;\n", g_types[i].nodes[j].fields[1]);
 	  } else if(strcmp(g_types[i].nodes[j].fields[0], "size_t") == 0) {
-	    fprintf(file, "case %u: powergl_collada_parse_attrib(this->dom.nodes, index, value);\n", j);
-	    fprintf(file, "this->c_%s = strtoul( value, NULL, 10 );\nbreak;\n", g_types[i].nodes[j].fields[1]);
+	    fprintf(file, "case %u: powergl_collada_parse_attrib(ptr->dom.nodes, index, value);\n", j);
+	    fprintf(file, "ptr->c_%s = strtoul( value, NULL, 10 );\nbreak;\n", g_types[i].nodes[j].fields[1]);
 	  }
 
 	  break;
@@ -302,7 +302,7 @@ void generate_imp_source(char *sourcefile, char *headerfile, char *def_name) {
     flag = 0;
     //////////////////////////////////////add child
     fprintf(file, "void add_child_%s_%s(void *obj, size_t index, dom_connector *child){\n", def_name, tmp_ptr);
-    fprintf(file, "powergl_%s_%s *this = (powergl_%s_%s*)obj;\n", def_name, tmp_ptr, def_name, tmp_ptr);
+    fprintf(file, "powergl_%s_%s *ptr = (powergl_%s_%s*)obj;\n", def_name, tmp_ptr, def_name, tmp_ptr);
     fprintf(file, "switch(index){\n");
 
     for(size_t j = 0; j < g_types[i].n_node; j++) {
@@ -314,15 +314,15 @@ void generate_imp_source(char *sourcefile, char *headerfile, char *def_name) {
 
       switch(*g_types[i].nodes[j].fields[2]) {
       case '0':
-	fprintf(file, "case %u: powergl_collada_add_child(this->dom.nodes, index, child);\n", j);
-	fprintf(file, "this->c_%s = powergl_resize(this->c_%s, ++this->n_%s, sizeof(powergl_%s_%s*));\n", g_types[i].nodes[j].fields[1], g_types[i].nodes[j].fields[1], g_types[i].nodes[j].fields[1], def_name, tmp_ptr2);
-	fprintf(file, "this->c_%s[this->n_%s-1] = (powergl_%s_%s*)child;\nbreak;\n", g_types[i].nodes[j].fields[1], g_types[i].nodes[j].fields[1], def_name, tmp_ptr2);
+	fprintf(file, "case %u: powergl_collada_add_child(ptr->dom.nodes, index, child);\n", j);
+	fprintf(file, "ptr->c_%s = powergl_resize(ptr->c_%s, ++ptr->n_%s, sizeof(powergl_%s_%s*));\n", g_types[i].nodes[j].fields[1], g_types[i].nodes[j].fields[1], g_types[i].nodes[j].fields[1], def_name, tmp_ptr2);
+	fprintf(file, "ptr->c_%s[ptr->n_%s-1] = (powergl_%s_%s*)child;\nbreak;\n", g_types[i].nodes[j].fields[1], g_types[i].nodes[j].fields[1], def_name, tmp_ptr2);
 	break;
 
       case '1':
       case '2':
       case '3':
-	fprintf(file, "case %u: powergl_collada_add_child(this->dom.nodes, index, child);\nbreak;\n", j);
+	fprintf(file, "case %u: powergl_collada_add_child(ptr->dom.nodes, index, child);\nbreak;\n", j);
 	break;
 
       default:
@@ -333,26 +333,26 @@ void generate_imp_source(char *sourcefile, char *headerfile, char *def_name) {
     fprintf(file, "}\n}\n");
     ///////////////////////////////new
     fprintf(file, "void* new_%s_%s(void){\n", def_name, tmp_ptr);
-    fprintf(file, "powergl_%s_%s *this = powergl_resize(NULL, 1, sizeof(powergl_%s_%s));\n", def_name, tmp_ptr, def_name, tmp_ptr);
+    fprintf(file, "powergl_%s_%s *ptr = powergl_resize(NULL, 1, sizeof(powergl_%s_%s));\n", def_name, tmp_ptr, def_name, tmp_ptr);
 
     for(size_t j = 0; j < g_types[i].n_node; j++) {
       switch(*g_types[i].nodes[j].fields[2]) {
       case '0':
       case '1':
 	if(strcmp(g_types[i].nodes[j].fields[0], "size_t") != 0) {
-	  fprintf(file, "this->c_%s = NULL; this->n_%s = 0;\n", g_types[i].nodes[j].fields[1], g_types[i].nodes[j].fields[1]);
+	  fprintf(file, "ptr->c_%s = NULL; ptr->n_%s = 0;\n", g_types[i].nodes[j].fields[1], g_types[i].nodes[j].fields[1]);
 	} else {
-	  fprintf(file, "this->c_%s = 0;\n", g_types[i].nodes[j].fields[1]);
+	  fprintf(file, "ptr->c_%s = 0;\n", g_types[i].nodes[j].fields[1]);
 	}
 
 	break;
 
       case '2':
-	fprintf(file, "this->content = NULL; this->n_content = 0;\n");
+	fprintf(file, "ptr->content = NULL; ptr->n_content = 0;\n");
 	break;
 
       case '3':
-	fprintf(file, "this->r_%s = NULL;\n", g_types[i].nodes[j].fields[1]);
+	fprintf(file, "ptr->r_%s = NULL;\n", g_types[i].nodes[j].fields[1]);
 	break;
 
       default:
@@ -360,14 +360,14 @@ void generate_imp_source(char *sourcefile, char *headerfile, char *def_name) {
       }
     }
 
-    fprintf(file, "this->dom.nodes = NULL;\n");
-    fprintf(file, "this->dom.map = %s[%u].map;\n", g_field_str, i);
-    fprintf(file, "this->dom.n_map = %s[%u].n_map;\n", g_field_str, i);
-    fprintf(file, "this->dom.add_child = add_child_%s_%s;\n", def_name, tmp_ptr);
-    fprintf(file, "this->dom.set_ref = set_ref_%s_%s;\n", def_name, tmp_ptr);
-    fprintf(file, "this->dom.parse_attrib = parse_attrib_%s_%s;\n", def_name, tmp_ptr);
-    fprintf(file, "this->dom.parse_content = parse_content_%s_%s;\n", def_name, tmp_ptr);
-    fprintf(file, "return this;\n}\n");
+    fprintf(file, "ptr->dom.nodes = NULL;\n");
+    fprintf(file, "ptr->dom.map = %s[%u].map;\n", g_field_str, i);
+    fprintf(file, "ptr->dom.n_map = %s[%u].n_map;\n", g_field_str, i);
+    fprintf(file, "ptr->dom.add_child = add_child_%s_%s;\n", def_name, tmp_ptr);
+    fprintf(file, "ptr->dom.set_ref = set_ref_%s_%s;\n", def_name, tmp_ptr);
+    fprintf(file, "ptr->dom.parse_attrib = parse_attrib_%s_%s;\n", def_name, tmp_ptr);
+    fprintf(file, "ptr->dom.parse_content = parse_content_%s_%s;\n", def_name, tmp_ptr);
+    fprintf(file, "return ptr;\n}\n");
   }
 
   ///////////////////////////////////////////////////init types

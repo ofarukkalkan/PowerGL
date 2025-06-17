@@ -297,7 +297,7 @@ void powergl_build_geometry(powergl_collada_core_node *node, powergl_object *obj
       obj->geometry.n_vertex = tris->c_count * 3;
       obj->geometry.vertex_flag = 1;
     } else {
-      assert(0); // if there's no vertex no reason to continue. At this point importer should warn the user and return
+      assert(0); // if there's no vertex no reason to continue. At ptr point importer should warn the user and return
     }
     
     if(color_attrib_enabled == 1){ // color is optional
@@ -473,7 +473,7 @@ void powergl_build_camera(powergl_collada_core_node *node, powergl_object *obj) 
   // if obj's transform is not inverted. (blender does not export a matrix called view transform.
   // but we can use inverse of obj's transform  as view transform)
 
-  // if node has only matrix element use this
+  // if node has only matrix element use ptr
   // obj->camera.view = powergl_mat4_inv(obj->transform.world);
  
   // if obj's transform is ready to use as view transform.
@@ -491,7 +491,7 @@ void powergl_build_camera(powergl_collada_core_node *node, powergl_object *obj) 
   powergl_mat4_print("view transform", obj->camera.view);
 #endif
 
-  // blender does not export any projection matrix. we can get it from its console by calling this func ->
+  // blender does not export any projection matrix. we can get it from its console by calling ptr func ->
   // bpy.data.objects['Camera'].calc_matrix_camera(1280,720)
   // or we can construct a proj. matrix from params under camera element
   // but there is a problem inside blender dae exporter, it only exports xfov param. so we should convert it to yfov

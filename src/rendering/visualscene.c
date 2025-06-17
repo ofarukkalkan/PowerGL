@@ -9,7 +9,7 @@
 #include <string.h>
 
 
-void powergl_scene_build(powergl_visualscene *this, const char *file) {
+void powergl_scene_build(powergl_visualscene *ptr, const char *file) {
 #if DEBUG_OUTPUT
     printf("%s\n", __func__);
     printf("the dae file will be parsed = %s \n", file);
@@ -21,17 +21,17 @@ void powergl_scene_build(powergl_visualscene *this, const char *file) {
 
     
     size_t size = vscene->n_node;
-    this->objects = powergl_resize(NULL, size, sizeof(powergl_object *));
-    this->n_object = size;
-    this->main_camera = NULL;
-    this->main_light = NULL;
+    ptr->objects = powergl_resize(NULL, size, sizeof(powergl_object *));
+    ptr->n_object = size;
+    ptr->main_camera = NULL;
+    ptr->main_light = NULL;
 
     for(size_t i = 0; i < size; i++) {
         powergl_collada_core_node  *node = vscene->c_node[i];
-        this->objects[i] = powergl_resize(NULL, 1, sizeof(powergl_object));
-	this->objects[i]->parent = NULL;
+        ptr->objects[i] = powergl_resize(NULL, 1, sizeof(powergl_object));
+	ptr->objects[i]->parent = NULL;
 	
-        powergl_build_object(node, root, this->objects[i]);
+        powergl_build_object(node, root, ptr->objects[i]);
 
     } // for each node
 }

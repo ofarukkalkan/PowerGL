@@ -31,10 +31,10 @@ static id_entry *g_id_map;
 static size_t g_n_id_map;
 
 
-int powergl_collada_init_node(dom_connector *this, dom_connector *parent, const char *name, const char **attr, size_t nattr) {
-    g_current_elem = this;
-    this->name = powergl_resize(NULL, (strlen(name) + 1), sizeof(char));
-    strcpy(this->name, name);
+int powergl_collada_init_node(dom_connector *ptr, dom_connector *parent, const char *name, const char **attr, size_t nattr) {
+    g_current_elem = ptr;
+    ptr->name = powergl_resize(NULL, (strlen(name) + 1), sizeof(char));
+    strcpy(ptr->name, name);
     /////////////
     //init parent's field
     /////
@@ -45,8 +45,8 @@ int powergl_collada_init_node(dom_connector *this, dom_connector *parent, const 
             if(parent->map[i].node_type == 0 && strcmp(parent->map[i].name, name) == 0) {
                 flag = 1;
                 assert(parent->nodes);
-                parent->add_child(parent, i, this);
-                this->parent = parent;
+                parent->add_child(parent, i, ptr);
+                ptr->parent = parent;
             }
         }
 
@@ -56,22 +56,22 @@ int powergl_collada_init_node(dom_connector *this, dom_connector *parent, const 
     /////////////
     //init sub nodes
     /////
-    this->nodes = powergl_resize(NULL, this->n_map, sizeof(arr_dom_connector));
+    ptr->nodes = powergl_resize(NULL, ptr->n_map, sizeof(arr_dom_connector));
 
-    for(size_t i = 0; i < this->n_map; i++) {
-        this->nodes[i].n_node = 0;
-        this->nodes[i].nodes = NULL;
+    for(size_t i = 0; i < ptr->n_map; i++) {
+        ptr->nodes[i].n_node = 0;
+        ptr->nodes[i].nodes = NULL;
 
-        switch(this->map[i].node_type) {
+        switch(ptr->map[i].node_type) {
         case 1: {
             for(size_t j = 0; j < nattr / 2; j++) {
-                if(strcmp(this->map[i].name, attr[j * 2]) == 0) {
+                if(strcmp(ptr->map[i].name, attr[j * 2]) == 0) {
                     dom_connector *newattr = powergl_resize(NULL, 1, sizeof(dom_connector));
-                    newattr->parent = this;
+                    newattr->parent = ptr;
                     newattr->name = powergl_resize(NULL, (strlen(attr[j * 2]) + 1), sizeof(char));
                     strcpy(newattr->name, attr[j * 2]);
-                    this->add_child(this, i, newattr);
-                    this->parse_attrib(this, i, attr[j * 2 + 1]);
+                    ptr->add_child(ptr, i, newattr);
+                    ptr->parse_attrib(ptr, i, attr[j * 2 + 1]);
                 }
             }
         }
@@ -79,10 +79,10 @@ int powergl_collada_init_node(dom_connector *this, dom_connector *parent, const 
 
         case 2: {
             dom_connector *newcontent = powergl_resize(NULL, 1, sizeof(dom_connector));
-            newcontent->parent = this;
+            newcontent->parent = ptr;
             newcontent->name = powergl_resize(NULL, (strlen("content") + 1), sizeof(char));
             strcpy(newcontent->name, "content");
-            this->add_child(this, i, newcontent);
+            ptr->add_child(ptr, i, newcontent);
             g_content_flag = 1;
             g_content_index = i;
             break;
@@ -90,24 +90,24 @@ int powergl_collada_init_node(dom_connector *this, dom_connector *parent, const 
 
         case 3: {
             dom_connector *newref = powergl_resize(NULL, 1, sizeof(dom_connector));
-            newref->parent = this;
+            newref->parent = ptr;
 	    
-            newref->name = powergl_resize(NULL, (strlen(this->map[i].name) + 1), sizeof(char));
-            strcpy(newref->name, this->map[i].name);
+            newref->name = powergl_resize(NULL, (strlen(ptr->map[i].name) + 1), sizeof(char));
+            strcpy(newref->name, ptr->map[i].name);
 
-	    newref->base_type = powergl_resize(NULL, (strlen(this->map[i].base_type) + 1), sizeof(char));
-            strcpy(newref->base_type, this->map[i].base_type);
+	    newref->base_type = powergl_resize(NULL, (strlen(ptr->map[i].base_type) + 1), sizeof(char));
+            strcpy(newref->base_type, ptr->map[i].base_type);
 	    
-            this->add_child(this, i, newref);
+            ptr->add_child(ptr, i, newref);
             g_ref_content_flag = 1;
             g_ref_index = i;
             g_pending_references = powergl_resize(g_pending_references, ++g_n_pending_reference,  sizeof(dom_connector *));
             g_pending_references[g_n_pending_reference - 1] = newref;
 
-            for(size_t j = 0; j < this->n_map; j++) {
-                if(this->map[j].node_type == 1  &&  strcmp(this->map[j].name, this->map[g_ref_index].ref_src) == 0) {
-                    this->nodes[g_ref_index].nodes[0]->value = powergl_resize(NULL, (strlen(this->nodes[j].nodes[0]->value) + 1), sizeof(char));
-                    strcpy(this->nodes[g_ref_index].nodes[0]->value, this->nodes[j].nodes[0]->value);
+            for(size_t j = 0; j < ptr->n_map; j++) {
+                if(ptr->map[j].node_type == 1  &&  strcmp(ptr->map[j].name, ptr->map[g_ref_index].ref_src) == 0) {
+                    ptr->nodes[g_ref_index].nodes[0]->value = powergl_resize(NULL, (strlen(ptr->nodes[j].nodes[0]->value) + 1), sizeof(char));
+                    strcpy(ptr->nodes[g_ref_index].nodes[0]->value, ptr->nodes[j].nodes[0]->value);
                     g_ref_content_flag = 0;
                 }
             }
@@ -120,7 +120,7 @@ int powergl_collada_init_node(dom_connector *this, dom_connector *parent, const 
 
 static void elemend(void *userdata, const char *elem) {
     g_parser_status = 2;
-    dom_connector *this = g_current_elem;
+    dom_connector *ptr = g_current_elem;
     dom_connector *parent = g_current_elem->parent;
 
     if(parent == NULL && strcmp(elem, "COLLADA") == 0) {
@@ -136,9 +136,9 @@ static void elemend(void *userdata, const char *elem) {
 
     if(g_undefined_element_flag > -1) {
         if(g_content_flag == 1) {
-            for(size_t i = 0; i < this->n_map; i++) {
-                if(this->map[i].node_type == 2  &&  strcmp(this->map[i].name, this->map[g_content_index].name) == 0) {
-                    this->parse_content(this, g_content_index, g_content_buffer);
+            for(size_t i = 0; i < ptr->n_map; i++) {
+                if(ptr->map[i].node_type == 2  &&  strcmp(ptr->map[i].name, ptr->map[g_content_index].name) == 0) {
+                    ptr->parse_content(ptr, g_content_index, g_content_buffer);
                     free(g_content_buffer);
                     g_content_buffer = NULL;
                     g_content_flag = 0;
@@ -146,10 +146,10 @@ static void elemend(void *userdata, const char *elem) {
             }
 
             if(g_ref_content_flag == 1) {
-                for(size_t j = 0; j < this->n_map; j++) {
-                    if(this->map[j].node_type == 2  &&  strcmp(this->map[j].name, this->map[g_ref_index].ref_src) == 0) {
-                        this->nodes[g_ref_index].nodes[0]->value = powergl_resize(NULL, (strlen(this->nodes[j].nodes[0]->value) + 1), sizeof(char));
-                        strcpy(this->nodes[g_ref_index].nodes[0]->value, this->nodes[j].nodes[0]->value);
+                for(size_t j = 0; j < ptr->n_map; j++) {
+                    if(ptr->map[j].node_type == 2  &&  strcmp(ptr->map[j].name, ptr->map[g_ref_index].ref_src) == 0) {
+                        ptr->nodes[g_ref_index].nodes[0]->value = powergl_resize(NULL, (strlen(ptr->nodes[j].nodes[0]->value) + 1), sizeof(char));
+                        strcpy(ptr->nodes[g_ref_index].nodes[0]->value, ptr->nodes[j].nodes[0]->value);
                         g_ref_content_flag = 0;
                     }
                 }
