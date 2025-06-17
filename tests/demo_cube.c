@@ -11,6 +11,8 @@ static void scene_create(powergl_visualscene *scene){
     const char *dae = TEST_SRCDIR "/cube.dae";
     powergl_scene_build(scene, dae);
     scene->main_camera = powergl_scene_find(scene, "Camera");
+    if(!scene->main_camera)
+        scene->main_camera = powergl_camera_default();
     scene->main_light = powergl_scene_find(scene, "Light");
     cube = powergl_scene_find(scene, "Cube");
     cube_list[0] = cube;
