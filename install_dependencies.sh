@@ -8,6 +8,7 @@ PACKAGES=(
   pkg-config
   build-essential
   libgl1-mesa-dev
+  libegl1-mesa-dev
   libx11-dev
   libexpat1-dev
   libsdl2-dev
