@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "src/window/window.h"
+#include "src/window/headless.h"
 #include "src/rendering/visualscene.h"
 #include "src/rendering/object.h"
 #include "src/rendering/pipeline.h"
@@ -155,8 +156,16 @@ int main(){
     scene.run = scene_run;
     scene.handle_events = scene_events;
 
-    powergl_window *wnd = powergl_window_new(&scene);
-    if(!powergl_window_create(wnd, 640, 480))
-        return 1;
-    return powergl_window_run(wnd);
+    const char *headless = getenv("POWERGL_HEADLESS");
+    if(headless && strcmp(headless, "1") == 0){
+        powergl_headless *h = powergl_headless_new(&scene);
+        if(!powergl_headless_create(h, 640, 480))
+            return 1;
+        return powergl_headless_run(h);
+    } else {
+        powergl_window *wnd = powergl_window_new(&scene);
+        if(!powergl_window_create(wnd, 640, 480))
+            return 1;
+        return powergl_window_run(wnd);
+    }
 }

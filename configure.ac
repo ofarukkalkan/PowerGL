@@ -31,6 +31,7 @@ AC_CHECK_LIB([X11], [XFree])
 AC_CHECK_LIB([expat], [XML_Parse])
 AC_CHECK_LIB([SDL2], [SDL_Init])
 AC_CHECK_LIB([GLEW], [glewInit])
+AC_CHECK_LIB([EGL], [eglGetDisplay])
 AC_CHECK_LIB([png16], [png_read_image])
 
 # Check for Google Test using pkg-config
