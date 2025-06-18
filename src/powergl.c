@@ -1,17 +1,35 @@
 #include "powergl.h"
 #include <string.h>
+#include <limits.h>
+#include <stdint.h>
 
+/*
+ * Resize an allocation. If realloc fails the original pointer is returned.
+ * This prevents losing the pointer to the existing allocation on failure.
+ */
 void *powergl_resize(void *ptr, size_t count, size_t size) {
     assert(count);
     assert(size);
+
+    /* check for overflow before multiplication */
+    if (size && count > SIZE_MAX / size) {
+        assert(0 && "powergl_resize overflow");
+        return ptr;
+    }
+
+    size_t total = count * size;
 
     if(ptr == NULL) {
         ptr = calloc(count, size);
         assert(ptr);
     } else {
-        void *tmp_ptr = realloc(ptr, count * size);
-        assert(tmp_ptr);
-        ptr = tmp_ptr;
+        void *tmp_ptr = realloc(ptr, total);
+        if(tmp_ptr) {
+            ptr = tmp_ptr;
+        } else {
+            /* tmp_ptr is NULL: preserve original pointer */
+            assert(tmp_ptr);
+        }
     }
 
     return ptr;
