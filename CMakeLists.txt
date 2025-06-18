@@ -9,12 +9,14 @@ find_package(PNG REQUIRED)
 find_package(SDL2 REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(EXPAT REQUIRED)
+find_package(EGL REQUIRED)
 
 include_directories(${SDL2_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS} ${PNG_INCLUDE_DIRS})
 
 add_library(powergl
     src/powergl.c
     src/window/window.c
+    src/window/headless.c
     src/rendering/object.c
     src/rendering/pipeline.c
     src/rendering/visualscene.c
@@ -36,6 +38,7 @@ target_link_libraries(powergl PUBLIC
     ${SDL2_LIBRARIES}
     ${OPENGL_gl_LIBRARY}
     ${GLEW_LIBRARIES}
+    ${EGL_LIBRARIES}
     ${PNG_LIBRARIES}
     ${EXPAT_LIBRARIES}
 )
