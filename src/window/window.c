@@ -98,10 +98,17 @@ int powergl_window_create(powergl_window *wnd, int width, int height) {
     return success;
 }
 
+static int gl_debug_enabled(void){
+    const char *env = getenv("POWERGL_GL_DEBUG");
+    return env && strcmp(env, "1") == 0;
+}
+
 int powergl_window_run(powergl_window *wnd) {
-    glDebugMessageCallback(errorCallback, NULL);
-    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
-    glEnable(GL_DEBUG_OUTPUT);
+    if(gl_debug_enabled()) {
+        glDebugMessageCallback(errorCallback, NULL);
+        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
+        glEnable(GL_DEBUG_OUTPUT);
+    }
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_MULTISAMPLE);
     glClearColor(0.3f, 0.6f, 0.9f, 1.0f);
