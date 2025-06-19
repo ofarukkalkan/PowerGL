@@ -152,6 +152,7 @@ static void scene_run(powergl_visualscene *scene, float dt){
 
 int main(){
     powergl_visualscene scene = {0};
+    setenv("POWERGL_GL_DEBUG", "1", 0);
     scene.create = scene_create;
     scene.run = scene_run;
     scene.handle_events = scene_events;

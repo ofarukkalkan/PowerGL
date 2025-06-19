@@ -45,3 +45,11 @@ POWERGL_HEADLESS=1 ./tests/demo_cube
 The headless backend creates an off-screen EGL context and renders frames to a
 pbuffer surface. The example saves these frames as PNG images so they can be
 inspected later without requiring a display.
+
+## OpenGL Debug Output
+PowerGL can register an OpenGL debug callback to print driver messages. Set
+the environment variable `POWERGL_GL_DEBUG` to `1` to enable it:
+
+```sh
+POWERGL_GL_DEBUG=1 ./tests/demo_cube
+```
