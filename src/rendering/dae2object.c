@@ -495,15 +495,10 @@ void powergl_build_camera(powergl_collada_core_node *node, powergl_object *obj) 
     identity matrix which causes objects to appear inverted or misplaced when
     the scene is loaded.
   */
-  obj->camera.view = powergl_mat4_inv(obj->transform.world);
+
+  powergl_mat4_inv_simd(obj->transform.world.data, obj->camera.view.data);
   obj->camera.view_flag = 1;
   
-  obj->camera.projection = powergl_mat4_ident();
-  obj->camera.projection_flag = 0;
-  
-  obj->camera.vp = powergl_mat4_ident();
-  obj->camera.vp_flag = 0;
-    
   // If the transform is already inverted (for example exported in a different
   // coordinate system) adjust the view matrix here instead.
     
@@ -537,7 +532,7 @@ void powergl_build_camera(powergl_collada_core_node *node, powergl_object *obj) 
       obj->camera.projection = powergl_mat4_perspectiveRH(2.16f, 1.33f, 0.1f, 100.0f);
     }
     obj->camera.projection_flag = 1;
-
+    obj->camera.vp_flag = 1;
     obj->camera_flag = 1;
     
 #if DEBUG_OUTPUT

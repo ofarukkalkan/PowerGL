@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 #ifndef DEBUG_OUTPUT
-#define DEBUG_OUTPUT 0
+#define DEBUG_OUTPUT 1
 #endif
 
 float lerp(float x0, float x1, float t0, float t1, float t) {
@@ -257,6 +257,7 @@ void powergl_object_fps_controller(powergl_object *obj, float delta_time){
   
   if(mov.x !=0.0f || mov.y !=0.0f || mov.z !=0.0f){
     obj->transform.location = powergl_vec3_add(obj->transform.location, mov);
+    powergl_vec3_print("object moved", obj->transform.location);
     obj->transform.matrix_flag = 1;
   }
   
@@ -326,7 +327,7 @@ void powergl_event_handle(powergl_object *obj, SDL_Event *event, float delta_tim
 
 void powergl_transform_reset(powergl_transform *trans){
 #if DEBUG_OUTPUT
-  printf("\N%s\n", __func__);
+  printf("\n%s\n", __func__);
 #endif
   trans->local = powergl_mat4_ident();
   trans->world = powergl_mat4_ident();

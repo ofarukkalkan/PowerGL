@@ -21,6 +21,7 @@ void powergl_mat4_copy(powergl_mat4 *m, const double * const arr, size_t size, i
 powergl_mat4 powergl_mat4_muls(powergl_mat4 m1, GLfloat s);
 powergl_mat4 powergl_mat4_mul(powergl_mat4 m1, powergl_mat4 m2);
 powergl_mat4 powergl_mat4_transpose(powergl_mat4 m);
+void powergl_mat4_inv_simd(const float * src, float * dst);
 powergl_mat4 powergl_mat4_inv(powergl_mat4 m);
 powergl_mat4 powergl_mat4_translate(powergl_mat4 m, powergl_vec3 v);
 powergl_mat4 powergl_mat4_scale(powergl_mat4 m, powergl_vec3 v);
