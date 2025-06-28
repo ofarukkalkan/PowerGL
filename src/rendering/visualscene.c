@@ -14,6 +14,7 @@ void powergl_scene_build(powergl_visualscene *this, const char *file) {
     printf("%s\n", __func__);
     printf("the dae file will be parsed = %s \n", file);
 #endif
+    int zup = powergl_collada_is_z_up(file);
     powergl_collada_core_COLLADA  *root = (powergl_collada_core_COLLADA *)powergl_collada_parse(file);
     powergl_collada_core_scene  *scene = root->c_scene[0];
     powergl_collada_core_InstanceWithExtra  *instance = scene->c_instance_visual_scene[0];
@@ -31,7 +32,7 @@ void powergl_scene_build(powergl_visualscene *this, const char *file) {
         this->objects[i] = powergl_resize(NULL, 1, sizeof(powergl_object));
 	this->objects[i]->parent = NULL;
 	
-        powergl_build_object(node, root, this->objects[i]);
+        powergl_build_object(node, root, this->objects[i], zup);
 
     } // for each node
 }

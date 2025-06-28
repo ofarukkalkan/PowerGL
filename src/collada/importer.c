@@ -424,4 +424,25 @@ dom_connector *powergl_collada_parse(const char *filename) {
     return g_root;
 }
 
+int powergl_collada_is_z_up(const char *filename){
+    FILE *f = fopen(filename, "r");
+    if(!f)
+        return 0;
+    char line[256];
+    int res = 0;
+    while(fgets(line, sizeof(line), f)){
+        char *p = strstr(line, "<up_axis>");
+        if(p){
+            char axis[16] = {0};
+            if(sscanf(p, "<up_axis>%15[^<]", axis) == 1){
+                if(strcmp(axis, "Z_UP") == 0)
+                    res = 1;
+            }
+            break;
+        }
+    }
+    fclose(f);
+    return res;
+}
+
 #undef DEBUG_OUTPUT
