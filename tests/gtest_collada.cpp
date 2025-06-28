@@ -4,6 +4,8 @@ extern "C" {
 #define this this_ptr
 #include "src/collada/importer.h"
 #include "src/collada/collada.h"
+#include "src/rendering/objectlibrary.h"
+#include "src/math/mat4x4.h"
 #undef this
 }
 
@@ -36,6 +38,24 @@ TEST(ColladaImporter, ExportRoundTrip){
                  root->c_library_cameras[0]->c_camera[0]->c_id);
     EXPECT_STREQ(exp->c_library_visual_scenes[0]->c_visual_scene[0]->c_node[2]->c_name,
                  root->c_library_visual_scenes[0]->c_visual_scene[0]->c_node[2]->c_name);
+}
+
+TEST(ObjectImport, AxisConversion){
+    std::string path = std::string(TEST_SRCDIR) + "/cube.dae";
+    powergl_object_library *lib = powergl_object_library_build(path.c_str());
+    ASSERT_NE(lib, nullptr);
+    powergl_object *cube = powergl_object_library_find_object(lib, "Cube");
+    ASSERT_NE(cube, nullptr);
+    powergl_vec4 v = {cube->geometry.vertex[0].x,
+                      cube->geometry.vertex[0].y,
+                      cube->geometry.vertex[0].z,
+                      1.0f};
+    powergl_mat4 w = cube->transform.world;
+    EXPECT_NEAR(w.c[0].x, 1.0f, 1e-5f);
+    EXPECT_NEAR(w.c[1].y, 0.0f, 1e-5f);
+    EXPECT_NEAR(w.c[1].z, -1.0f, 1e-5f);
+    EXPECT_NEAR(w.c[2].y, 1.0f, 1e-5f);
+    EXPECT_NEAR(w.c[2].z, 0.0f, 1e-5f);
 }
 
 int main(int argc, char **argv){

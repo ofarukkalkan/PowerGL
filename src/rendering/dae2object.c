@@ -4,6 +4,13 @@
 #define DEBUG_OUTPUT 1
 #endif
 
+static const powergl_mat4 POWERGL_ZUP_TO_YUP = { .c = {
+    {1.0f, 0.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, -1.0f, 0.0f},
+    {0.0f, 1.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 0.0f, 1.0f}
+}};
+
 typedef struct tokens_t {
   char **arr;
   size_t n;
@@ -595,7 +602,7 @@ void powergl_build_light(powergl_collada_core_node *node, powergl_object *obj) {
   }
 }
 
-void powergl_build_transform(powergl_collada_core_node *node, powergl_object *obj) {
+void powergl_build_transform(powergl_collada_core_node *node, powergl_object *obj, int axis_convert) {
 #if DEBUG_OUTPUT
   printf("\n%s\n", __func__);
 #endif
@@ -635,13 +642,14 @@ void powergl_build_transform(powergl_collada_core_node *node, powergl_object *ob
   }
 
   if(obj->parent != NULL){
-
     obj->transform.world = powergl_mat4_mul(obj->parent->transform.world, obj->transform.local);
-    
   } else {
-    
     obj->transform.world = powergl_mat4_ident();
-    
+  }
+
+  if(axis_convert && obj->parent == NULL){
+    obj->transform.local = powergl_mat4_mul(POWERGL_ZUP_TO_YUP, obj->transform.local);
+    obj->transform.world = powergl_mat4_mul(POWERGL_ZUP_TO_YUP, obj->transform.world);
   }
 
   obj->transform.matrix_flag = 1;
@@ -651,7 +659,7 @@ void powergl_build_transform(powergl_collada_core_node *node, powergl_object *ob
 #endif
 }
 
-void powergl_build_object(powergl_collada_core_node  *node, powergl_collada_core_COLLADA *root, powergl_object *obj) {
+void powergl_build_object(powergl_collada_core_node  *node, powergl_collada_core_COLLADA *root, powergl_object *obj, int axis_convert) {
 #if DEBUG_OUTPUT
   printf("\n%s -> %s\n", __func__, node->c_id);
 #endif
@@ -662,7 +670,7 @@ void powergl_build_object(powergl_collada_core_node  *node, powergl_collada_core
   }
 
   if(node->n_translate > 0 || node->n_rotate > 0) {
-    powergl_build_transform(node, obj);
+    powergl_build_transform(node, obj, axis_convert);
   } else if(node->n_matrix > 0) {
     powergl_mat4_copy(&obj->transform.local, node->c_matrix[0]->content,
                       node->c_matrix[0]->n_content, 1);
@@ -671,6 +679,10 @@ void powergl_build_object(powergl_collada_core_node  *node, powergl_collada_core
           powergl_mat4_mul(obj->parent->transform.world, obj->transform.local);
     } else {
       obj->transform.world = obj->transform.local;
+    }
+    if(axis_convert && obj->parent == NULL){
+      obj->transform.local = powergl_mat4_mul(POWERGL_ZUP_TO_YUP, obj->transform.local);
+      obj->transform.world = powergl_mat4_mul(POWERGL_ZUP_TO_YUP, obj->transform.world);
     }
     obj->transform.location.x = obj->transform.local.c[3].x;
     obj->transform.location.y = obj->transform.local.c[3].y;
@@ -709,8 +721,8 @@ void powergl_build_object(powergl_collada_core_node  *node, powergl_collada_core
       powergl_object *newobj = powergl_resize(NULL, 1, sizeof(powergl_object));
       newobj->parent = obj;
       obj->objects[i] = newobj;
-      
-      powergl_build_object(node->c_node[i], root, newobj);
+
+      powergl_build_object(node->c_node[i], root, newobj, 0);
     }
     
   }
