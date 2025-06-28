@@ -16,7 +16,7 @@ static powergl_collada_core_COLLADA* load_dae(const char* file){
 }
 
 TEST(ColladaImporter, BasicAttributes){
-    auto* root = load_dae("cube.dae");
+    auto* root = load_dae("vertexcolored_cube.dae");
     ASSERT_NE(root, nullptr);
     ASSERT_EQ(root->n_library_cameras, 1u);
     auto* camlib = root->c_library_cameras[0];
@@ -30,7 +30,7 @@ TEST(ColladaImporter, BasicAttributes){
 }
 
 TEST(ColladaImporter, ExportRoundTrip){
-    auto* root = load_dae("cube.dae");
+    auto* root = load_dae("vertexcolored_cube.dae");
     powergl_collada_export_dae_file(&root->dom, "cube_exported.dae");
     auto* exp = load_dae("cube_exported.dae");
     ASSERT_EQ(exp->n_library_cameras, root->n_library_cameras);
@@ -41,7 +41,7 @@ TEST(ColladaImporter, ExportRoundTrip){
 }
 
 TEST(ObjectImport, AxisConversion){
-    std::string path = std::string(TEST_SRCDIR) + "/cube.dae";
+    std::string path = std::string(TEST_SRCDIR) + "/vertexcolored_cube.dae";
     powergl_object_library *lib = powergl_object_library_build(path.c_str());
     ASSERT_NE(lib, nullptr);
     powergl_object *cube = powergl_object_library_find_object(lib, "Cube");
