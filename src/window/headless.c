@@ -10,8 +10,6 @@ static const EGLint configAttribs[] = {
     EGL_RED_SIZE, 8,
     EGL_ALPHA_SIZE, 8,
     EGL_DEPTH_SIZE, 8,
-    EGL_SAMPLE_BUFFERS, 1,
-    EGL_SAMPLES, 4,
     EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
     EGL_NONE
 };
@@ -80,7 +78,6 @@ int powergl_headless_create(powergl_headless *h, int width, int height){
 
     glViewport(0, 0, width, height);
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_MULTISAMPLE);
     glClearColor(76.0f/255.0f, 153.0f/255.0f, 229.0f/255.0f, 1.0f);
 
     return 1;
