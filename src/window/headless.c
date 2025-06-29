@@ -1,12 +1,14 @@
 #include "headless.h"
 #include <string.h>
 #include <stdio.h>
+#include <SDL2/SDL_opengl.h>
 
 static const EGLint configAttribs[] = {
     EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
     EGL_BLUE_SIZE, 8,
     EGL_GREEN_SIZE, 8,
     EGL_RED_SIZE, 8,
+    EGL_ALPHA_SIZE, 8,
     EGL_DEPTH_SIZE, 8,
     EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
     EGL_NONE
@@ -68,12 +70,18 @@ int powergl_headless_create(powergl_headless *h, int width, int height){
         return 0;
     }
 
+    glViewport(0, 0, width, height);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_MULTISAMPLE);
+    glClearColor(76.0f/255.0f, 153.0f/255.0f, 229.0f/255.0f, 1.0f);
+
     return 1;
 }
 
 int powergl_headless_run(powergl_headless *h){
     if(h->root_scene){
         h->root_scene->create(h->root_scene);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         h->root_scene->run(h->root_scene, 0.0f);
     }
     eglSwapBuffers(h->display, h->surface);
