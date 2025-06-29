@@ -32,7 +32,7 @@ clean-local: code-coverage-clean
 distclean-local: code-coverage-dist-clean
 
 # Test data files shipped with the distribution
-EXTRA_DIST = cube.dae
+EXTRA_DIST = vertexcolored_cube.dae vertexcoloredcube_demo.png
 
 # Remove generated files produced during tests
 CLEANFILES = cube_exported.dae exported.dae
