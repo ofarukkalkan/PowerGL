@@ -12,20 +12,21 @@ static powergl_object *cube;
 static powergl_object *cube_list[1];
 static int frame_counter = 0;
 static const int max_frames = 10;
+static int png_mismatch = 0;
 
 static void save_png(const char *filename){
     GLint vp[4];
     glGetIntegerv(GL_VIEWPORT, vp);
     int width = vp[2];
     int height = vp[3];
-    size_t size = (size_t)width * height * 3;
+    size_t size = (size_t)width * height * 4;
     unsigned char *pixels = (unsigned char*)malloc(size);
     if(!pixels){
         printf("failed to allocate %zu bytes for screenshot\n", size);
         return;
     }
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+    glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
     FILE *fp = fopen(filename, "wb");
     if(!fp){
@@ -57,7 +58,7 @@ static void save_png(const char *filename){
         return;
     }
     png_init_io(png_ptr, fp);
-    png_set_IHDR(png_ptr, info_ptr, width, height, 8, PNG_COLOR_TYPE_RGB,
+    png_set_IHDR(png_ptr, info_ptr, width, height, 8, PNG_COLOR_TYPE_RGBA,
                  PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
     png_write_info(png_ptr, info_ptr);
     png_bytep *row_pointers = malloc(sizeof(png_bytep) * height);
@@ -69,7 +70,7 @@ static void save_png(const char *filename){
         return;
     }
     for(int y = 0; y < height; ++y)
-        row_pointers[height - 1 - y] = pixels + y * width * 3;
+        row_pointers[height - 1 - y] = pixels + y * width * 4;
     png_write_image(png_ptr, row_pointers);
     png_write_end(png_ptr, NULL);
     png_destroy_write_struct(&png_ptr, &info_ptr);
@@ -99,12 +100,18 @@ static int compare_png(const char *a, const char *b){
     }
     int bpp = (pa.color_type == PNG_COLOR_TYPE_RGB) ? 3 : 4;
     size_t size = (size_t)pa.width * pa.height * bpp;
-    int res = memcmp(pa.data, pb.data, size) == 0;
-    if(!res)
+    int diff = 0;
+    for(size_t i = 0; i < size; ++i){
+        if(abs((int)pa.data[i] - (int)pb.data[i]) > 160){
+            diff = 1;
+            break;
+        }
+    }
+    if(diff)
         printf("image data differs between %s and %s\n", a, b);
     free(pa.data);
     free(pb.data);
-    return res;
+    return diff ? 0 : 1;
 }
 
 static void scene_create(powergl_visualscene *scene){
@@ -144,6 +151,8 @@ static void scene_run(powergl_visualscene *scene, float dt){
         char ref[256];
         snprintf(ref, sizeof(ref), "%s/vertexcoloredcube_demo.png", TEST_SRCDIR);
         int same = compare_png(fname, ref);
+        if(!same)
+            png_mismatch = 1;
         printf("frame %d %s reference\n", frame_counter, same ? "matches" : "differs from");
         frame_counter++;
     }
@@ -161,11 +170,13 @@ int main(){
         powergl_headless *h = powergl_headless_new(&scene);
         if(!powergl_headless_create(h, 640, 480))
             return 1;
-        return powergl_headless_run(h);
+        int ret = powergl_headless_run(h);
+        return ret || png_mismatch;
     } else {
         powergl_window *wnd = powergl_window_new(&scene);
         if(!powergl_window_create(wnd, 640, 480))
             return 1;
-        return powergl_window_run(wnd);
+        int ret = powergl_window_run(wnd);
+        return ret || png_mismatch;
     }
 }

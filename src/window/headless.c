@@ -1,13 +1,17 @@
 #include "headless.h"
 #include <string.h>
 #include <stdio.h>
+#include <SDL2/SDL_opengl.h>
 
 static const EGLint configAttribs[] = {
     EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
     EGL_BLUE_SIZE, 8,
     EGL_GREEN_SIZE, 8,
     EGL_RED_SIZE, 8,
+    EGL_ALPHA_SIZE, 8,
     EGL_DEPTH_SIZE, 8,
+    EGL_SAMPLE_BUFFERS, 1,
+    EGL_SAMPLES, 4,
     EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
     EGL_NONE
 };
@@ -57,7 +61,13 @@ int powergl_headless_create(powergl_headless *h, int width, int height){
         return 0;
     }
 
-    h->context = eglCreateContext(h->display, eglCfg, EGL_NO_CONTEXT, NULL);
+    const EGLint ctxAttribs[] = {
+        EGL_CONTEXT_MAJOR_VERSION, 3,
+        EGL_CONTEXT_MINOR_VERSION, 3,
+        EGL_CONTEXT_OPENGL_PROFILE_MASK, EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT,
+        EGL_NONE
+    };
+    h->context = eglCreateContext(h->display, eglCfg, EGL_NO_CONTEXT, ctxAttribs);
     if(h->context == EGL_NO_CONTEXT){
         fprintf(stderr, "Failed to create EGL context\n");
         return 0;
@@ -68,13 +78,21 @@ int powergl_headless_create(powergl_headless *h, int width, int height){
         return 0;
     }
 
+    glViewport(0, 0, width, height);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_MULTISAMPLE);
+    glClearColor(76.0f/255.0f, 153.0f/255.0f, 229.0f/255.0f, 1.0f);
+
     return 1;
 }
 
 int powergl_headless_run(powergl_headless *h){
     if(h->root_scene){
         h->root_scene->create(h->root_scene);
-        h->root_scene->run(h->root_scene, 0.0f);
+        for(int i = 0; i < 10; ++i){
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            h->root_scene->run(h->root_scene, 1.0f/60.0f);
+        }
     }
     eglSwapBuffers(h->display, h->surface);
     eglMakeCurrent(h->display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
