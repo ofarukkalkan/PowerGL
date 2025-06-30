@@ -162,6 +162,34 @@ TEST(Mat4, UnprojectRoundTrip) {
     EXPECT_NEAR(res.z, orig.z, 1e-4f);
 }
 
+TEST(Mat4, Decompose) {
+    powergl_vec3 loc = {1.0f, 2.0f, 3.0f};
+    powergl_vec3 sca = {2.0f, 3.0f, 4.0f};
+    powergl_vec3 rot = {(float)M_PI/6.0f, (float)M_PI/4.0f, (float)M_PI/3.0f};
+
+    powergl_mat4 m = powergl_mat4_ident();
+    m = powergl_mat4_scale(m, sca);
+    m = powergl_mat4_rot(m, rot.z, (powergl_vec3){0.0f,0.0f,1.0f});
+    m = powergl_mat4_rot(m, rot.y, (powergl_vec3){0.0f,1.0f,0.0f});
+    m = powergl_mat4_rot(m, rot.x, (powergl_vec3){1.0f,0.0f,0.0f});
+    m = powergl_mat4_translate(m, loc);
+
+    powergl_vec3 dloc, drot, dsca;
+    powergl_decompose_matrix(m, &dloc, &drot, &dsca);
+
+    EXPECT_NEAR(dloc.x, loc.x, 1e-4f);
+    EXPECT_NEAR(dloc.y, loc.y, 1e-4f);
+    EXPECT_NEAR(dloc.z, loc.z, 1e-4f);
+
+    EXPECT_NEAR(dsca.x, sca.x, 1e-4f);
+    EXPECT_NEAR(dsca.y, sca.y, 1e-4f);
+    EXPECT_NEAR(dsca.z, sca.z, 1e-4f);
+
+    EXPECT_NEAR(drot.x, rot.x, 1e-4f);
+    EXPECT_NEAR(drot.y, rot.y, 1e-4f);
+    EXPECT_NEAR(drot.z, rot.z, 1e-4f);
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
