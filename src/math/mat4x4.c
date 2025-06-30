@@ -483,3 +483,38 @@ inline powergl_vec3 powergl_unproject( powergl_vec3 win, powergl_mat4 mvp, power
   return result.xyz;
   // printf("w division pos = %f %f %f\n", result->x, result->y, result->z);
 }
+
+inline void powergl_decompose_matrix(powergl_mat4 m,
+                                     powergl_vec3 *loc,
+                                     powergl_vec3 *rot,
+                                     powergl_vec3 *sca) {
+  if(loc){
+    loc->x = m.c[3].x;
+    loc->y = m.c[3].y;
+    loc->z = m.c[3].z;
+  }
+
+  powergl_vec3 scale;
+  scale.x = sqrtf(m.c[0].x * m.c[0].x + m.c[1].x * m.c[1].x + m.c[2].x * m.c[2].x);
+  scale.y = sqrtf(m.c[0].y * m.c[0].y + m.c[1].y * m.c[1].y + m.c[2].y * m.c[2].y);
+  scale.z = sqrtf(m.c[0].z * m.c[0].z + m.c[1].z * m.c[1].z + m.c[2].z * m.c[2].z);
+
+  if(sca){
+    *sca = scale;
+  }
+
+  powergl_mat4 r = m;
+  r.c[0].x /= scale.x; r.c[1].x /= scale.x; r.c[2].x /= scale.x;
+  r.c[0].y /= scale.y; r.c[1].y /= scale.y; r.c[2].y /= scale.y;
+  r.c[0].z /= scale.z; r.c[1].z /= scale.z; r.c[2].z /= scale.z;
+
+  float ry = asinf(-r.c[0].z);
+  float rx = atan2f(r.c[1].z, r.c[2].z);
+  float rz = atan2f(r.c[0].y, r.c[0].x);
+
+  if(rot){
+    rot->x = rx;
+    rot->y = ry;
+    rot->z = rz;
+  }
+}
