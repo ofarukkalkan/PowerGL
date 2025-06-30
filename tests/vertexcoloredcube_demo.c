@@ -1,12 +1,29 @@
 #include <SDL2/SDL.h>
+#include <GL/glew.h>
+#include <SDL2/SDL_opengl.h>
 #include <png.h>
 #include <string.h>
 #include <stdlib.h>
+#define NK_INCLUDE_FIXED_TYPES
+#define NK_INCLUDE_DEFAULT_ALLOCATOR
+#define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
+#define NK_INCLUDE_FONT_BAKING
+#define NK_INCLUDE_DEFAULT_FONT
+#define NK_IMPLEMENTATION
+#define NK_SDL_GL3_IMPLEMENTATION
+#include "third_party/nuklear/nuklear.h"
+#include "third_party/nuklear/nuklear_sdl_gl3.h"
 #include "src/window/window.h"
 #include "src/window/headless.h"
 #include "src/rendering/visualscene.h"
 #include "src/rendering/object.h"
 #include "src/rendering/pipeline.h"
+
+#define MAX_VERTEX_MEMORY (512 * 1024)
+#define MAX_ELEMENT_MEMORY (128 * 1024)
+
+static struct nk_context *nkctx;
+static struct nk_colorf bg;
 
 static powergl_object *cube;
 static powergl_object *cube_list[1];
@@ -176,7 +193,63 @@ int main(){
         powergl_window *wnd = powergl_window_new(&scene);
         if(!powergl_window_create(wnd, 640, 480))
             return 1;
-        int ret = powergl_window_run(wnd);
-        return ret || png_mismatch;
+
+        nkctx = nk_sdl_init(wnd->window);
+        struct nk_font_atlas *atlas;
+        nk_sdl_font_stash_begin(&atlas);
+        nk_sdl_font_stash_end();
+        bg.r = 0.10f; bg.g = 0.18f; bg.b = 0.24f; bg.a = 1.0f;
+
+        wnd->root_scene->create(wnd->root_scene);
+
+        glEnable(GL_DEPTH_TEST);
+        glClearColor(bg.r, bg.g, bg.b, bg.a);
+        SDL_Event e;
+        int quit = 0;
+        Uint64 last_counter = SDL_GetPerformanceCounter();
+        Uint64 freq = SDL_GetPerformanceFrequency();
+
+        while(!quit){
+            Uint64 current_counter = SDL_GetPerformanceCounter();
+            float dt = (float)(current_counter - last_counter) / (float)freq;
+
+            nk_input_begin(nkctx);
+            while(SDL_PollEvent(&e)){
+                nk_sdl_handle_event(&e);
+                scene.handle_events(&scene, &e, dt);
+                if(e.type == SDL_QUIT)
+                    quit = 1;
+            }
+            nk_input_end(nkctx);
+
+            glClearColor(bg.r, bg.g, bg.b, bg.a);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            scene.run(&scene, dt);
+
+            if(nk_begin(nkctx, "Demo", nk_rect(10,10,230,250),
+                NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|
+                NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE)){
+                enum {EASY,HARD};
+                static int op = EASY;
+                static int property = 20;
+
+                nk_layout_row_static(nkctx, 30, 80, 1);
+                if(nk_button_label(nkctx, "button"))
+                    printf("button pressed!\n");
+                nk_layout_row_dynamic(nkctx, 30, 2);
+                if(nk_option_label(nkctx, "easy", op==EASY)) op = EASY;
+                if(nk_option_label(nkctx, "hard", op==HARD)) op = HARD;
+                nk_layout_row_dynamic(nkctx, 22, 1);
+                nk_property_int(nkctx, "Compression:", 0, &property, 100, 10, 1);
+            }
+            nk_end(nkctx);
+
+            nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
+            SDL_GL_SwapWindow(wnd->window);
+            last_counter = current_counter;
+        }
+
+        nk_sdl_shutdown();
+        return png_mismatch;
     }
 }
