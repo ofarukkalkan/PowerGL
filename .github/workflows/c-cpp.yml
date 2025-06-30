@@ -38,7 +38,8 @@ jobs:
     - name: gcovr
       run: |
         mkdir -p coverage
-        gcovr -r . --html-details -o coverage/coverage.html --gcov-ignore-errors no_working_dir_found
+        gcovr -r . --html-details -o coverage/coverage.html --gcov-ignore-errors no_working_dir_found \
+          --exclude 'third_party/.*'
     - uses: actions/upload-artifact@v4
       with:
         name: coverage
