@@ -9,6 +9,8 @@
 #define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
 #define NK_INCLUDE_FONT_BAKING
 #define NK_INCLUDE_DEFAULT_FONT
+#define NK_INCLUDE_STANDARD_IO
+#define NK_INCLUDE_STANDARD_VARARGS
 #define NK_IMPLEMENTATION
 #define NK_SDL_GL3_IMPLEMENTATION
 #include "third_party/nuklear/nuklear.h"
@@ -29,6 +31,30 @@ static powergl_object *cube_list[1];
 static int frame_counter = 0;
 static const int max_frames = 10;
 static int png_mismatch = 0;
+
+static void draw_object_tree(powergl_object *obj){
+    const char *label = obj->id ? obj->id : "object";
+    if(nk_tree_push_id(nkctx, NK_TREE_NODE, label, NK_MINIMIZED, (int)(intptr_t)obj)){
+        nk_labelf(nkctx, NK_TEXT_LEFT, "Name: %s", label);
+        nk_labelf(nkctx, NK_TEXT_LEFT, "Translate: %.2f %.2f %.2f",
+                  obj->transform.location.x,
+                  obj->transform.location.y,
+                  obj->transform.location.z);
+        nk_labelf(nkctx, NK_TEXT_LEFT, "Rotation: %.2f %.2f %.2f",
+                  obj->transform.rotation_x.w,
+                  obj->transform.rotation_y.w,
+                  obj->transform.rotation_z.w);
+        nk_labelf(nkctx, NK_TEXT_LEFT, "Scale: %.2f %.2f %.2f",
+                  obj->transform.scale.x,
+                  obj->transform.scale.y,
+                  obj->transform.scale.z);
+
+        for(size_t i = 0; i < obj->n_object; ++i){
+            draw_object_tree(obj->objects[i]);
+        }
+        nk_tree_pop(nkctx);
+    }
+}
 
 static void save_png(const char *filename){
     GLint vp[4];
@@ -236,6 +262,18 @@ int main(){
                 if(nk_option_label(nkctx, "hard", op==HARD)) op = HARD;
                 nk_layout_row_dynamic(nkctx, 22, 1);
                 nk_property_int(nkctx, "Compression:", 0, &property, 100, 10, 1);
+            }
+            nk_end(nkctx);
+
+            if(nk_begin(nkctx, "Scene Hierarchy", nk_rect(250,10,250,400),
+                NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|
+                NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE)){
+                if(nk_tree_push(nkctx, NK_TREE_NODE, "visual_scene", NK_MINIMIZED)){
+                    for(size_t i = 0; i < scene.n_object; ++i){
+                        draw_object_tree(scene.objects[i]);
+                    }
+                    nk_tree_pop(nkctx);
+                }
             }
             nk_end(nkctx);
 
