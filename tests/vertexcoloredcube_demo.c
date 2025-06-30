@@ -23,7 +23,6 @@
 #define MAX_ELEMENT_MEMORY (128 * 1024)
 
 static struct nk_context *nkctx;
-static struct nk_colorf bg;
 
 static powergl_object *cube;
 static powergl_object *cube_list[1];
@@ -198,12 +197,10 @@ int main(){
         struct nk_font_atlas *atlas;
         nk_sdl_font_stash_begin(&atlas);
         nk_sdl_font_stash_end();
-        bg.r = 0.10f; bg.g = 0.18f; bg.b = 0.24f; bg.a = 1.0f;
 
         wnd->root_scene->create(wnd->root_scene);
+        wnd->root_scene->pipeline3.forceUpdate = 1;
 
-        glEnable(GL_DEPTH_TEST);
-        glClearColor(bg.r, bg.g, bg.b, bg.a);
         SDL_Event e;
         int quit = 0;
         Uint64 last_counter = SDL_GetPerformanceCounter();
@@ -222,8 +219,6 @@ int main(){
             }
             nk_input_end(nkctx);
 
-            glClearColor(bg.r, bg.g, bg.b, bg.a);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             scene.run(&scene, dt);
 
             if(nk_begin(nkctx, "Demo", nk_rect(10,10,230,250),
@@ -244,7 +239,9 @@ int main(){
             }
             nk_end(nkctx);
 
-            nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
+            nk_sdl_render(NK_ANTI_ALIASING_OFF, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
+
+
             SDL_GL_SwapWindow(wnd->window);
             last_counter = current_counter;
         }
