@@ -53,3 +53,15 @@ the environment variable `POWERGL_GL_DEBUG` to `1` to enable it:
 ```sh
 POWERGL_GL_DEBUG=1 ./tests/demo_cube
 ```
+
+## Nuklear Demo
+The repository bundles the [Nuklear](https://github.com/Immediate-Mode-UI/Nuklear)
+GUI library under `third_party/nuklear`. A small sample program demonstrating
+overlay widgets is provided in `examples/nuklear_demo.c`.
+
+Compile the demo manually with SDL2 and OpenGL:
+
+```sh
+gcc examples/nuklear_demo.c -Ithird_party/nuklear \
+    -lSDL2 -lGLEW -lGL -ldl -lm -o nuklear_demo
+```
