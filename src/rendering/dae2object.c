@@ -43,6 +43,7 @@ tokens parse_sid(const char *str){
 }
 
 
+
 void powergl_build_animation(powergl_collada_core_library_animations *anim_lib, powergl_object *obj) {
 #if DEBUG_OUTPUT
   printf("\n%s\n", __func__);
@@ -667,22 +668,36 @@ void powergl_build_object(powergl_collada_core_node  *node, powergl_collada_core
   if(node->n_translate > 0 || node->n_rotate > 0) {
     powergl_build_transform(node, obj, axis_convert);
   } else if(node->n_matrix > 0) {
-    powergl_mat4_copy(&obj->transform.local, node->c_matrix[0]->content,
+    powergl_mat4 m;
+    powergl_mat4_copy(&m, node->c_matrix[0]->content,
                       node->c_matrix[0]->n_content, 1);
+
+    powergl_vec3 r;
+    powergl_decompose_matrix(m, &obj->transform.location, &r, &obj->transform.scale);
+
+    obj->transform.rotation_x = (powergl_vec4){{1.0f,0.0f,0.0f,r.x}};
+    obj->transform.rotation_y = (powergl_vec4){{0.0f,1.0f,0.0f,r.y}};
+    obj->transform.rotation_z = (powergl_vec4){{0.0f,0.0f,1.0f,r.z}};
+
+    obj->transform.local = powergl_mat4_ident();
+    obj->transform.local = powergl_mat4_scale(obj->transform.local, obj->transform.scale);
+    obj->transform.local = powergl_mat4_rot(obj->transform.local, obj->transform.rotation_z.w, obj->transform.rotation_z.xyz);
+    obj->transform.local = powergl_mat4_rot(obj->transform.local, obj->transform.rotation_y.w, obj->transform.rotation_y.xyz);
+    obj->transform.local = powergl_mat4_rot(obj->transform.local, obj->transform.rotation_x.w, obj->transform.rotation_x.xyz);
+    obj->transform.local = powergl_mat4_translate(obj->transform.local, obj->transform.location);
+
     if(obj->parent != NULL){
-      obj->transform.world =
-          powergl_mat4_mul(obj->parent->transform.world, obj->transform.local);
+      obj->transform.world = powergl_mat4_mul(obj->parent->transform.world, obj->transform.local);
     } else {
       obj->transform.world = obj->transform.local;
     }
+
     if(axis_convert && obj->parent == NULL){
       obj->transform.local = powergl_mat4_mul(POWERGL_ZUP_TO_YUP, obj->transform.local);
       obj->transform.world = powergl_mat4_mul(POWERGL_ZUP_TO_YUP, obj->transform.world);
     }
-    obj->transform.location.x = obj->transform.local.c[3].x;
-    obj->transform.location.y = obj->transform.local.c[3].y;
-    obj->transform.location.z = obj->transform.local.c[3].z;
-    obj->transform.matrix_flag = 0;
+
+    obj->transform.matrix_flag = 1;
   } else {
     powergl_transform_reset(&obj->transform);
   }// if node has transform
