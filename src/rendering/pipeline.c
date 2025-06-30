@@ -28,9 +28,7 @@ static void render3(powergl_pipeline3 *ppl, powergl_object **objs, size_t n_obje
       continue;
     }
       
-    if(last_obj != objs[i]){
-      glUniformMatrix4fv(ppl->uni_matrix, 1, GL_FALSE, obj->transform.mvp.data);
-    } else if(obj->transform.mvp_flag == 1){      
+    if(last_obj != objs[i] || obj->transform.mvp_flag == 1 || ppl->forceUpdate){
       glUniformMatrix4fv(ppl->uni_matrix, 1, GL_FALSE, obj->transform.mvp.data);
       obj->transform.mvp_flag = 0;
     }
@@ -43,7 +41,7 @@ static void render3(powergl_pipeline3 *ppl, powergl_object **objs, size_t n_obje
       obj->geometry.vertex_flag = 0;
     }
 
-    if ( obj->geometry.triangles.color_flag == 1 ) {
+    if ( obj->geometry.triangles.color_flag == 1) {
       glBindBuffer( GL_ARRAY_BUFFER, obj->geometry.cbo );
       glBufferData( GL_ARRAY_BUFFER, sizeof( powergl_vec3 ) * obj->geometry.triangles.n_color, obj->geometry.triangles.color, GL_STATIC_DRAW );
       obj->geometry.triangles.color_flag = 0;
@@ -188,7 +186,13 @@ static void render(powergl_pipeline *ppl, powergl_object **objs, size_t n_object
 
 void powergl_pipeline3_render(powergl_pipeline3 *ppl, powergl_object **objs, size_t n_object) {
 
-    if(ppl!=last_ppl3){
+    if(ppl!=last_ppl3 || ppl->forceUpdate){
+      
+      glClearColor(0.3f, 0.6f, 0.9f, 1.0f);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      glEnable(GL_DEPTH_TEST);
+      glEnable (GL_CULL_FACE); 
+      glCullFace (GL_BACK);
 
       // restore uniforms
       glUseProgram(ppl->gp);
@@ -383,6 +387,7 @@ void powergl_pipeline_create_objects(powergl_pipeline *ppl, powergl_object **obj
 
 void powergl_pipeline3_create(powergl_pipeline3 *ppl, powergl_object **objs, size_t n_obj) {
   
+  ppl->forceUpdate = 0;
   /*vertex shader input attibute specs*/
   
   /*vertex input*/

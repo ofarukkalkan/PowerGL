@@ -51,6 +51,7 @@ struct powergl_pipeline3_t {
   GLuint fs;
   GLuint gp;
   GLint uni_matrix;
+  int forceUpdate;
 };
 
 

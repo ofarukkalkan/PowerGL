@@ -8,9 +8,8 @@ AM_CXXFLAGS = -std=c++17 $(CODE_COVERAGE_CXXFLAGS)
 AM_CFLAGS = $(CODE_COVERAGE_CFLAGS)
 CODE_COVERAGE_LCOV_OPTIONS = --ignore-errors mismatch
 
-check_PROGRAMS = gtest_math gtest_collada
-noinst_PROGRAMS = vertexcoloredcube_demo
-TESTS = $(check_PROGRAMS)
+check_PROGRAMS = gtest_math gtest_collada vertexcoloredcube_demo
+TESTS = gtest_math gtest_collada run_vertexcoloredcube_headless.sh
 
 gtest_math_SOURCES = gtest_math.cpp
 
@@ -32,9 +31,10 @@ clean-local: code-coverage-clean
 distclean-local: code-coverage-dist-clean
 
 # Test data files shipped with the distribution
-EXTRA_DIST = cube.dae
+EXTRA_DIST = vertexcolored_cube.dae vertexcoloredcube_demo.png \
+    run_vertexcoloredcube_headless.sh
 
 # Remove generated files produced during tests
-CLEANFILES = cube_exported.dae exported.dae
+CLEANFILES = cube_exported.dae exported.dae frame_*.png
 
 # Run tests via make check
