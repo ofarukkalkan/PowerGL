@@ -4,15 +4,6 @@
 #include <png.h>
 #include <string.h>
 #include <stdlib.h>
-#define NK_INCLUDE_FIXED_TYPES
-#define NK_INCLUDE_DEFAULT_ALLOCATOR
-#define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
-#define NK_INCLUDE_FONT_BAKING
-#define NK_INCLUDE_DEFAULT_FONT
-#define NK_INCLUDE_STANDARD_IO
-#define NK_INCLUDE_STANDARD_VARARGS
-#define NK_IMPLEMENTATION
-#define NK_SDL_GL3_IMPLEMENTATION
 #include "third_party/nuklear/nuklear.h"
 #include "third_party/nuklear/nuklear_sdl_gl3.h"
 #include "src/window/window.h"
@@ -20,6 +11,7 @@
 #include "src/rendering/visualscene.h"
 #include "src/rendering/object.h"
 #include "src/rendering/pipeline.h"
+#include "src/ui/scene_hierarchy.h"
 
 #define MAX_VERTEX_MEMORY (512 * 1024)
 #define MAX_ELEMENT_MEMORY (128 * 1024)
@@ -32,29 +24,6 @@ static int frame_counter = 0;
 static const int max_frames = 10;
 static int png_mismatch = 0;
 
-static void draw_object_tree(powergl_object *obj){
-    const char *label = obj->id ? obj->id : "object";
-    if(nk_tree_push_id(nkctx, NK_TREE_NODE, label, NK_MINIMIZED, (int)(intptr_t)obj)){
-        nk_labelf(nkctx, NK_TEXT_LEFT, "Name: %s", label);
-        nk_labelf(nkctx, NK_TEXT_LEFT, "Translate: %.2f %.2f %.2f",
-                  obj->transform.location.x,
-                  obj->transform.location.y,
-                  obj->transform.location.z);
-        nk_labelf(nkctx, NK_TEXT_LEFT, "Rotation: %.2f %.2f %.2f",
-                  obj->transform.rotation_x.w,
-                  obj->transform.rotation_y.w,
-                  obj->transform.rotation_z.w);
-        nk_labelf(nkctx, NK_TEXT_LEFT, "Scale: %.2f %.2f %.2f",
-                  obj->transform.scale.x,
-                  obj->transform.scale.y,
-                  obj->transform.scale.z);
-
-        for(size_t i = 0; i < obj->n_object; ++i){
-            draw_object_tree(obj->objects[i]);
-        }
-        nk_tree_pop(nkctx);
-    }
-}
 
 static void save_png(const char *filename){
     GLint vp[4];
@@ -265,17 +234,8 @@ int main(){
             }
             nk_end(nkctx);
 
-            if(nk_begin(nkctx, "Scene Hierarchy", nk_rect(250,10,250,400),
-                NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|
-                NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE)){
-                if(nk_tree_push(nkctx, NK_TREE_NODE, "visual_scene", NK_MINIMIZED)){
-                    for(size_t i = 0; i < scene.n_object; ++i){
-                        draw_object_tree(scene.objects[i]);
-                    }
-                    nk_tree_pop(nkctx);
-                }
-            }
-            nk_end(nkctx);
+            powergl_ui_draw_scene_hierarchy(nkctx, &scene,
+                                           nk_rect(250,10,250,400));
 
             nk_sdl_render(NK_ANTI_ALIASING_OFF, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
 

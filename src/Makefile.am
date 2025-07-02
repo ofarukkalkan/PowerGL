@@ -3,6 +3,7 @@ AM_CFLAGS = $(CODE_COVERAGE_CFLAGS)
 SUBDIRS = \
         window \
         rendering \
+        ui \
         math \
         collada \
         png
@@ -17,6 +18,7 @@ libpowergl_la_SOURCES = \
 libpowergl_la_LIBADD = \
         window/libpowerglwindow.la \
         rendering/libpowerglrendering.la \
+        ui/libpowerglui.la \
         math/libpowerglmath.la \
         collada/libpowerglcollada.la \
         png/libpowerglpng.la \
