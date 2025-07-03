@@ -4,6 +4,7 @@
 #include <png.h>
 #include <string.h>
 #include <stdlib.h>
+#include "src/event.h"
 #include "third_party/nuklear/nuklear.h"
 #include "third_party/nuklear/nuklear_sdl_gl3.h"
 #include "src/window/window.h"

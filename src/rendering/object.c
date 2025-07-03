@@ -266,7 +266,7 @@ void powergl_object_fps_controller(powergl_object *obj, float delta_time){
 void powergl_event_handle(powergl_object *obj, const powergl_event *event, float delta_time){
 	
   if(obj->event_flag == 1){
-    
+
     switch (event->type) {
     case POWERGL_EVENT_KEY_DOWN:
         switch (event->key) {
