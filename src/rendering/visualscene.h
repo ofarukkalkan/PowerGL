@@ -2,15 +2,15 @@
 #define _powergl_visualscene_h
 
 #include <stddef.h>
-#include <SDL2/SDL.h>
 #include "object.h"
 #include "pipeline.h"
+#include "../window/event.h"
 
 typedef struct powergl_visualscene_t powergl_visualscene;
 
 typedef void (*fpcreate_visualscene)(powergl_visualscene *);
 typedef void (*fprun_visualscene)(powergl_visualscene *, float);
-typedef void (*fphandle_events_visualscene)(powergl_visualscene *, SDL_Event *e, float);
+typedef void (*fphandle_events_visualscene)(powergl_visualscene *, powergl_event *e, float);
 
 struct powergl_visualscene_t {
 

@@ -4,7 +4,8 @@ noinst_LTLIBRARIES = libpowerglwindow.la
 libpowerglwindow_ladir = $(includedir)/powergl/window
 libpowerglwindow_la_HEADERS = \
         window.h \
-        headless.h
+        headless.h \
+        event.h
 libpowerglwindow_la_LDFLAGS = -no-undefined
 libpowerglwindow_la_SOURCES = \
         window.c \

@@ -59,10 +59,45 @@ static void sdl_destroy(powergl_window *wnd)
     wnd->backend_handle = NULL;
 }
 
-static int sdl_poll_event(powergl_window *wnd, SDL_Event *e)
+static int sdl_poll_event(powergl_window *wnd, powergl_event *evt)
 {
     (void)wnd;
-    return SDL_PollEvent(e);
+    SDL_Event e;
+    if(!SDL_PollEvent(&e))
+        return 0;
+    switch(e.type) {
+    case SDL_QUIT:
+        evt->type = POWERGL_EVENT_QUIT;
+        break;
+    case SDL_KEYDOWN:
+        evt->type = POWERGL_EVENT_KEY_DOWN;
+        switch(e.key.keysym.sym) {
+        case SDLK_a: evt->key = POWERGL_KEY_A; break;
+        case SDLK_d: evt->key = POWERGL_KEY_D; break;
+        case SDLK_w: evt->key = POWERGL_KEY_W; break;
+        case SDLK_s: evt->key = POWERGL_KEY_S; break;
+        case SDLK_SPACE: evt->key = POWERGL_KEY_SPACE; break;
+        case SDLK_LCTRL: evt->key = POWERGL_KEY_LEFT_CTRL; break;
+        default: evt->key = POWERGL_KEY_UNKNOWN; break;
+        }
+        break;
+    case SDL_KEYUP:
+        evt->type = POWERGL_EVENT_KEY_UP;
+        switch(e.key.keysym.sym) {
+        case SDLK_a: evt->key = POWERGL_KEY_A; break;
+        case SDLK_d: evt->key = POWERGL_KEY_D; break;
+        case SDLK_w: evt->key = POWERGL_KEY_W; break;
+        case SDLK_s: evt->key = POWERGL_KEY_S; break;
+        case SDLK_SPACE: evt->key = POWERGL_KEY_SPACE; break;
+        case SDLK_LCTRL: evt->key = POWERGL_KEY_LEFT_CTRL; break;
+        default: evt->key = POWERGL_KEY_UNKNOWN; break;
+        }
+        break;
+    default:
+        evt->type = POWERGL_EVENT_NONE;
+        break;
+    }
+    return 1;
 }
 
 static void sdl_swap(powergl_window *wnd)

@@ -41,6 +41,7 @@ include_directories(
 set(POWERGL_WINDOW_SOURCES
     src/window/window.c
     src/window/headless.c
+    src/window/event.h
     ${BACKEND_SOURCES}
 )
 

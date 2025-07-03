@@ -12,6 +12,7 @@
 #include "src/rendering/object.h"
 #include "src/rendering/pipeline.h"
 #include "src/ui/scene_hierarchy.h"
+#include "src/window/event.h"
 
 #define MAX_VERTEX_MEMORY (512 * 1024)
 #define MAX_ELEMENT_MEMORY (128 * 1024)
@@ -138,7 +139,7 @@ static void scene_create(powergl_visualscene *scene){
     powergl_pipeline3_create(&scene->pipeline3, cube_list, 1);
 }
 
-static void scene_events(powergl_visualscene *scene, SDL_Event *e, float dt){
+static void scene_events(powergl_visualscene *scene, powergl_event *e, float dt){
     if(cube)
         powergl_event_handle(cube, e, dt);
 }
@@ -196,7 +197,8 @@ int main(){
         wnd->root_scene->create(wnd->root_scene);
         wnd->root_scene->pipeline3.forceUpdate = 1;
 
-        SDL_Event e;
+        SDL_Event sdl_e;
+        powergl_event e;
         int quit = 0;
         Uint64 last_counter = SDL_GetPerformanceCounter();
         Uint64 freq = SDL_GetPerformanceFrequency();
@@ -206,11 +208,43 @@ int main(){
             float dt = (float)(current_counter - last_counter) / (float)freq;
 
             nk_input_begin(nkctx);
-            while(SDL_PollEvent(&e)){
-                nk_sdl_handle_event(&e);
-                scene.handle_events(&scene, &e, dt);
-                if(e.type == SDL_QUIT)
+            while(SDL_PollEvent(&sdl_e)){
+                nk_sdl_handle_event(&sdl_e);
+                switch(sdl_e.type){
+                case SDL_QUIT:
+                    e.type = POWERGL_EVENT_QUIT;
+                    scene.handle_events(&scene, &e, dt);
                     quit = 1;
+                    break;
+                case SDL_KEYDOWN:
+                    e.type = POWERGL_EVENT_KEY_DOWN;
+                    switch(sdl_e.key.keysym.sym){
+                    case SDLK_a: e.key = POWERGL_KEY_A; break;
+                    case SDLK_d: e.key = POWERGL_KEY_D; break;
+                    case SDLK_w: e.key = POWERGL_KEY_W; break;
+                    case SDLK_s: e.key = POWERGL_KEY_S; break;
+                    case SDLK_SPACE: e.key = POWERGL_KEY_SPACE; break;
+                    case SDLK_LCTRL: e.key = POWERGL_KEY_LEFT_CTRL; break;
+                    default: e.key = POWERGL_KEY_UNKNOWN; break;
+                    }
+                    scene.handle_events(&scene, &e, dt);
+                    break;
+                case SDL_KEYUP:
+                    e.type = POWERGL_EVENT_KEY_UP;
+                    switch(sdl_e.key.keysym.sym){
+                    case SDLK_a: e.key = POWERGL_KEY_A; break;
+                    case SDLK_d: e.key = POWERGL_KEY_D; break;
+                    case SDLK_w: e.key = POWERGL_KEY_W; break;
+                    case SDLK_s: e.key = POWERGL_KEY_S; break;
+                    case SDLK_SPACE: e.key = POWERGL_KEY_SPACE; break;
+                    case SDLK_LCTRL: e.key = POWERGL_KEY_LEFT_CTRL; break;
+                    default: e.key = POWERGL_KEY_UNKNOWN; break;
+                    }
+                    scene.handle_events(&scene, &e, dt);
+                    break;
+                default:
+                    break;
+                }
             }
             nk_input_end(nkctx);
 

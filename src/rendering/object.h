@@ -10,7 +10,7 @@
 #include "../math/mat4x4.h"
 #include "../png/png_loader.h"
 
-#include <SDL2/SDL_events.h>
+#include "../window/event.h"
 
 typedef struct powergl_object_t powergl_object;
 typedef struct powergl_transform_t powergl_transform;
@@ -19,7 +19,7 @@ typedef struct powergl_camera_t powergl_camera;
 typedef struct powergl_light_t powergl_light;
 typedef struct powergl_animation_t powergl_animation;
 typedef struct powergl_animation_channel_t powergl_animation_channel;
-typedef struct powergl_event_t powergl_event;
+typedef struct powergl_input_state_t powergl_input_state;
 typedef struct powergl_collider_t powergl_collider;
 typedef struct powergl_texture_t powergl_texture;
 
@@ -34,7 +34,7 @@ struct powergl_collider_t {
   powergl_collider *nodes[8];
 };
 
-struct powergl_event_t {
+struct powergl_input_state_t {
   char key_w_pressed;
   char key_s_pressed;
   char key_a_pressed;
@@ -189,8 +189,8 @@ struct powergl_object_t {
   // collider object
   powergl_collider *collider;
 
-  // event
-  powergl_event event;
+  // input state
+  powergl_input_state input;
 
   // geometry
   powergl_geometry geometry;
@@ -232,7 +232,7 @@ void powergl_camera_update(powergl_object *obj);
 void powergl_object_update_transform(powergl_object *obj, float delta_time);
 void powergl_object_update_mvp(powergl_object *obj, powergl_object *cam);
 void powergl_object_fps_controller(powergl_object *obj, float delta_time);
-void powergl_event_handle(powergl_object *obj, SDL_Event *e, float delta_time);
+void powergl_event_handle(powergl_object *obj, const powergl_event *e, float delta_time);
 void powergl_object_geometry_append(powergl_geometry *dest, powergl_geometry *src, powergl_vec3 offset, powergl_vec3 color);
 void powergl_object_geometry_reset(powergl_geometry *geo);
 

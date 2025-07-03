@@ -227,7 +227,7 @@ void powergl_object_update_mvp(powergl_object *obj, powergl_object *cam){
 }
 
 void powergl_object_fps_controller(powergl_object *obj, float delta_time){
-  powergl_event e = obj->event;
+  powergl_input_state e = obj->input;
   powergl_vec3 mov;
   mov.x = 0;
   mov.y = 0;
@@ -263,65 +263,62 @@ void powergl_object_fps_controller(powergl_object *obj, float delta_time){
   
 }
 
-void powergl_event_handle(powergl_object *obj, SDL_Event *event, float delta_time){
+void powergl_event_handle(powergl_object *obj, const powergl_event *event, float delta_time){
 	
   if(obj->event_flag == 1){
     
     switch (event->type) {
-     
-    case SDL_KEYDOWN:
-      
-      switch (event->key.keysym.sym) {
-
-      case SDLK_a:
-	obj->event.key_a_pressed = 1;
-	break;
-      case SDLK_d:
-	obj->event.key_d_pressed = 1;
-	break;
-      case SDLK_w:
-	obj->event.key_w_pressed = 1;
-	break;
-      case SDLK_s:
-	obj->event.key_s_pressed = 1;
-	break;
-      case SDLK_SPACE:
-	obj->event.key_space_pressed = 1;
-	break;
-      case SDLK_LCTRL:
-	obj->event.key_lctrl_pressed = 1;
-	break;	
-      }
-      
-      break;
-
-    case SDL_KEYUP:
-
-      switch (event->key.keysym.sym) {
-
-      case SDLK_a:
-	obj->event.key_a_pressed = 0;
-	break;
-      case SDLK_d:
-	obj->event.key_d_pressed = 0;
-	break;
-      case SDLK_w:
-	obj->event.key_w_pressed = 0;
-	break;
-      case SDLK_s:
-	obj->event.key_s_pressed = 0;
-	break;
-      case SDLK_SPACE:
-	obj->event.key_space_pressed = 0;
-	break;
-      case SDLK_LCTRL:
-	obj->event.key_lctrl_pressed = 0;
-	break;	
-      }
-
-      break;
-      
-    }    
+    case POWERGL_EVENT_KEY_DOWN:
+        switch (event->key) {
+        case POWERGL_KEY_A:
+            obj->input.key_a_pressed = 1;
+            break;
+        case POWERGL_KEY_D:
+            obj->input.key_d_pressed = 1;
+            break;
+        case POWERGL_KEY_W:
+            obj->input.key_w_pressed = 1;
+            break;
+        case POWERGL_KEY_S:
+            obj->input.key_s_pressed = 1;
+            break;
+        case POWERGL_KEY_SPACE:
+            obj->input.key_space_pressed = 1;
+            break;
+        case POWERGL_KEY_LEFT_CTRL:
+            obj->input.key_lctrl_pressed = 1;
+            break;
+        default:
+            break;
+        }
+        break;
+    case POWERGL_EVENT_KEY_UP:
+        switch (event->key) {
+        case POWERGL_KEY_A:
+            obj->input.key_a_pressed = 0;
+            break;
+        case POWERGL_KEY_D:
+            obj->input.key_d_pressed = 0;
+            break;
+        case POWERGL_KEY_W:
+            obj->input.key_w_pressed = 0;
+            break;
+        case POWERGL_KEY_S:
+            obj->input.key_s_pressed = 0;
+            break;
+        case POWERGL_KEY_SPACE:
+            obj->input.key_space_pressed = 0;
+            break;
+        case POWERGL_KEY_LEFT_CTRL:
+            obj->input.key_lctrl_pressed = 0;
+            break;
+        default:
+            break;
+        }
+        break;
+    default:
+        break;
+    }
   }
 }
 

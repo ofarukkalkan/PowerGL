@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
+#include <SDL2/SDL.h>
 
 enum msgSource {
     SOURCE_API = 0x8246,
@@ -90,7 +91,7 @@ int powergl_window_run(powergl_window *wnd)
 
     float delta_time = 0.0f;
     int quit = 0;
-    SDL_Event e;
+    powergl_event e;
 
     Uint64 last_counter = SDL_GetPerformanceCounter();
     Uint64 frequency = SDL_GetPerformanceFrequency();
@@ -101,7 +102,7 @@ int powergl_window_run(powergl_window *wnd)
 
         while(wnd->backend->backend_poll_event(wnd, &e)) {
             wnd->root_scene->handle_events(wnd->root_scene, &e, delta_time);
-            if(e.type == SDL_QUIT)
+            if(e.type == POWERGL_EVENT_QUIT)
                 quit = 1;
         }
 
