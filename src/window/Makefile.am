@@ -4,11 +4,15 @@ noinst_LTLIBRARIES = libpowerglwindow.la
 libpowerglwindow_ladir = $(includedir)/powergl/window
 libpowerglwindow_la_HEADERS = \
         window.h \
-        headless.h
+        headless.h \
+        window_sdl.h \
+        window_glfw.h
 libpowerglwindow_la_LDFLAGS = -no-undefined
 libpowerglwindow_la_SOURCES = \
         window.c \
-        headless.c
+        headless.c \
+        window_sdl.c \
+        window_glfw.c
 libpowerglwindow_la_LIBADD = $(CODE_COVERAGE_LIBS) -lEGL
 
 include $(top_srcdir)/aminclude_static.am

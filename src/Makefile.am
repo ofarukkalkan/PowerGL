@@ -11,7 +11,8 @@ SUBDIRS = \
 lib_LTLIBRARIES = libpowergl.la
 libpowergl_ladir = $(includedir)/powergl
 libpowergl_la_HEADERS = \
-	powergl.h
+        powergl.h \
+        event.h
 libpowergl_la_LDFLAGS = -no-undefined
 libpowergl_la_SOURCES = \
 	powergl.c

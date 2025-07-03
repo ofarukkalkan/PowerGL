@@ -1,6 +1,7 @@
 #include "3dtext.h"
 #include "../collada/parse_utils.h"
 #include "object.h"
+#include <string.h>
 
 void powergl_3dtext_bake_geo(powergl_3dtext *text){
 

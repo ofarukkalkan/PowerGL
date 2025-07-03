@@ -9,14 +9,17 @@ find_package(PNG REQUIRED)
 find_package(SDL2 REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(EXPAT REQUIRED)
-find_package(EGL REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(EGL REQUIRED egl)
 
-include_directories(${SDL2_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS} ${PNG_INCLUDE_DIRS})
+include_directories(${SDL2_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS} ${PNG_INCLUDE_DIRS} ${EGL_INCLUDE_DIRS})
 
 add_library(powergl
     src/powergl.c
     src/window/window.c
     src/window/headless.c
+    src/window/window_sdl.c
+    src/window/window_glfw.c
     src/rendering/object.c
     src/rendering/pipeline.c
     src/rendering/visualscene.c
