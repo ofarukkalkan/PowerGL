@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
-project(PowerGL C)
+project(PowerGL C CXX)
 
 set(CMAKE_C_STANDARD 99)
+set(CMAKE_CXX_STANDARD 17)
 
 # Dependencies
 find_package(OpenGL REQUIRED)
@@ -26,6 +27,8 @@ add_library(powergl
     src/rendering/dae2object.c
     src/rendering/objectlibrary.c
     src/rendering/3dtext.c
+    src/ui/scene_hierarchy.c
+    src/ui/nuklear_impl.c
     src/math/mat4x4.c
     src/math/vec3.c
     src/math/intersect.c
@@ -41,13 +44,17 @@ target_link_libraries(powergl PUBLIC
     ${SDL2_LIBRARIES}
     ${OPENGL_gl_LIBRARY}
     ${GLEW_LIBRARIES}
-    ${EGL_LIBRARIES}
+    ${OPENGL_egl_LIBRARY}
     ${PNG_LIBRARIES}
     ${EXPAT_LIBRARIES}
+    m
 )
 
 target_include_directories(powergl PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<INSTALL_INTERFACE:include>
 )
+
+enable_testing()
+add_subdirectory(tests)
 
