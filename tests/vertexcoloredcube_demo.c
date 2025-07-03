@@ -4,6 +4,7 @@
 #include <png.h>
 #include <string.h>
 #include <stdlib.h>
+#include "src/event.h"
 #include "third_party/nuklear/nuklear.h"
 #include "third_party/nuklear/nuklear_sdl_gl3.h"
 #include "src/window/window.h"
@@ -138,7 +139,7 @@ static void scene_create(powergl_visualscene *scene){
     powergl_pipeline3_create(&scene->pipeline3, cube_list, 1);
 }
 
-static void scene_events(powergl_visualscene *scene, SDL_Event *e, float dt){
+static void scene_events(powergl_visualscene *scene, powergl_event *e, float dt){
     if(cube)
         powergl_event_handle(cube, e, dt);
 }
@@ -197,6 +198,7 @@ int main(){
         wnd->root_scene->pipeline3.forceUpdate = 1;
 
         SDL_Event e;
+        powergl_event pe;
         int quit = 0;
         Uint64 last_counter = SDL_GetPerformanceCounter();
         Uint64 freq = SDL_GetPerformanceFrequency();
@@ -208,8 +210,9 @@ int main(){
             nk_input_begin(nkctx);
             while(SDL_PollEvent(&e)){
                 nk_sdl_handle_event(&e);
-                scene.handle_events(&scene, &e, dt);
-                if(e.type == SDL_QUIT)
+                powergl_sdl_translate_event(&e, &pe);
+                scene.handle_events(&scene, &pe, dt);
+                if(pe.type == POWERGL_EVENT_WINDOW_CLOSE)
                     quit = 1;
             }
             nk_input_end(nkctx);

@@ -1,4 +1,5 @@
 #include "window.h"
+#include "window_sdl.h"
 #include <stdio.h>
 #include <time.h>
 
@@ -115,7 +116,7 @@ int powergl_window_run(powergl_window *wnd) {
     wnd->root_scene->create(wnd->root_scene);
     float delta_time = 0.0f;
     int quit = 0;
-    SDL_Event e;
+    powergl_event ev;
 
     Uint64 last_counter = SDL_GetPerformanceCounter();
     Uint64 frequency = SDL_GetPerformanceFrequency();
@@ -125,10 +126,9 @@ int powergl_window_run(powergl_window *wnd) {
         Uint64 current_counter = SDL_GetPerformanceCounter();
         delta_time = (float)(current_counter - last_counter) / (float)frequency;
 	
-        while(SDL_PollEvent(&e) != 0) {
-	  wnd->root_scene->handle_events(wnd->root_scene, &e, delta_time);
-
-            if(e.type == SDL_QUIT) {
+        while(powergl_sdl_poll_event(&ev)) {
+            wnd->root_scene->handle_events(wnd->root_scene, &ev, delta_time);
+            if(ev.type == POWERGL_EVENT_WINDOW_CLOSE) {
                 quit = 1;
             }
         }
