@@ -34,6 +34,23 @@ AC_CHECK_LIB([GLEW], [glewInit])
 AC_CHECK_LIB([EGL], [eglGetDisplay])
 AC_CHECK_LIB([png16], [png_read_image])
 
+AC_ARG_WITH([window-backend],
+    AS_HELP_STRING([--with-window-backend=@<:@sdl|glfw@:>@],
+                   [Choose window backend]),
+    [window_backend=$withval], [window_backend=sdl])
+AS_CASE([$window_backend],
+    [glfw], [
+        PKG_CHECK_MODULES([GLFW], [glfw3],
+            [AC_DEFINE([POWERGL_BACKEND_GLFW], [1], [Use GLFW backend])],
+            [AC_MSG_ERROR([glfw3 not found])])
+        AM_CONDITIONAL([GLFW_BACKEND], [true])
+    ],
+    [sdl], [
+        AC_DEFINE([POWERGL_BACKEND_SDL], [1], [Use SDL backend])
+        AM_CONDITIONAL([GLFW_BACKEND], [false])
+    ],
+    [AC_MSG_ERROR([Unknown backend: $window_backend])])
+
 # Check for Google Test using pkg-config
 PKG_CHECK_MODULES([GTEST], [gtest_main], [], [AC_MSG_ERROR([Google Test not found])])
 

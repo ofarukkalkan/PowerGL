@@ -1,6 +1,7 @@
 #include "window.h"
 #include <stdio.h>
 #include <time.h>
+#include <string.h>
 
 enum msgSource {
     SOURCE_API = 0x8246,
@@ -30,89 +31,63 @@ enum msgSeverity {
     SEVERITY_NOTIFICATION = 0x826B,
 };
 
-void errorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const GLvoid *userParam) {
-    fprintf(stderr, "\nSource = [ %d ] \n", (int) source);
-    fprintf(stderr, "Type = [ %d ]\n", (int) type);
-    fprintf(stderr, "Severity = [ %d ]\n", (int) severity);
-    fprintf(stderr, "ID = [ %d ]\n", (int) id);
+static void errorCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
+                          GLsizei length, const GLchar *message, const GLvoid *userParam)
+{
+    fprintf(stderr, "\nSource = [ %d ] \n", (int)source);
+    fprintf(stderr, "Type = [ %d ]\n", (int)type);
+    fprintf(stderr, "Severity = [ %d ]\n", (int)severity);
+    fprintf(stderr, "ID = [ %d ]\n", (int)id);
     fprintf(stderr, "Msg = [ %u %s ]\n", length, (const char *)message);
-
-    if(userParam) {}
+    (void)userParam;
 }
 
-
-powergl_window *powergl_window_new(powergl_visualscene *scene) {
-    powergl_window *wnd =  powergl_resize(NULL, 1, sizeof(powergl_window));
-    wnd->root_scene = scene;
-    return wnd;
-}
-
-int powergl_window_create(powergl_window *wnd, int width, int height) {
-    //Initialization flag
-    int success = 1;
-    wnd->window = NULL;
-    wnd->width = width;
-    wnd->height = height;
-
-    //Initialize SDL
-    if(SDL_Init(SDL_INIT_VIDEO) < 0) {
-        printf("SDL could not initialize! SDL Error: %s\n", SDL_GetError());
-        success = 0;
-    } else {
-        //Use OpenGL 3.1 core
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-/* 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4); */
-        //Create window
-        wnd->window = SDL_CreateWindow("PowerGL Engine", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
-
-        if(wnd->window == NULL) {
-            printf("Window could not be created! SDL Error: %s\n", SDL_GetError());
-            success = 0;
-        } else {
-            //Create context
-            wnd->context = SDL_GL_CreateContext(wnd->window);
-
-            if(wnd->context == NULL) {
-                printf("OpenGL context could not be created! SDL Error: %s\n", SDL_GetError());
-                success = 0;
-            } else {
-                //Initialize GLEW
-                glewExperimental = GL_TRUE;
-                GLenum glewError = glewInit();
-
-                if(glewError != GLEW_OK) {
-                    printf("Error initializing GLEW! %s\n", glewGetErrorString(glewError));
-                }
-
-                //Use Vsync
-                if(SDL_GL_SetSwapInterval(1) < 0) {
-                    printf("Warning: Unable to set VSync! SDL Error: %s\n", SDL_GetError());
-                }
-            }
-        }
-    }
-
-    return success;
-}
-
-static int gl_debug_enabled(void){
+static int gl_debug_enabled(void)
+{
     const char *env = getenv("POWERGL_GL_DEBUG");
     return env && strcmp(env, "1") == 0;
 }
 
-int powergl_window_run(powergl_window *wnd) {
+powergl_window *powergl_window_new(powergl_visualscene *scene)
+{
+    powergl_window *wnd = powergl_resize(NULL, 1, sizeof(*wnd));
+    wnd->root_scene = scene;
+#ifdef POWERGL_BACKEND_GLFW
+    wnd->backend = &powergl_glfw_backend;
+#else
+    wnd->backend = &powergl_sdl_backend;
+#endif
+    wnd->backend_handle = NULL;
+    wnd->width = 0;
+    wnd->height = 0;
+    return wnd;
+}
+
+int powergl_window_create(powergl_window *wnd, int width, int height)
+{
+    wnd->width = width;
+    wnd->height = height;
+    return wnd->backend->backend_create(wnd, width, height);
+}
+
+void powergl_window_destroy(powergl_window *wnd)
+{
+    if(wnd && wnd->backend && wnd->backend->backend_destroy)
+        wnd->backend->backend_destroy(wnd);
+}
+
+int powergl_window_run(powergl_window *wnd)
+{
     if(gl_debug_enabled()) {
         glDebugMessageCallback(errorCallback, NULL);
         glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
         glEnable(GL_DEBUG_OUTPUT);
     }
+
     glEnable(GL_DEPTH_TEST);
-    //glEnable(GL_MULTISAMPLE);
     glClearColor(0.3f, 0.6f, 0.9f, 1.0f);
     wnd->root_scene->create(wnd->root_scene);
+
     float delta_time = 0.0f;
     int quit = 0;
     SDL_Event e;
@@ -120,29 +95,21 @@ int powergl_window_run(powergl_window *wnd) {
     Uint64 last_counter = SDL_GetPerformanceCounter();
     Uint64 frequency = SDL_GetPerformanceFrequency();
 
-
     while(!quit) {
         Uint64 current_counter = SDL_GetPerformanceCounter();
         delta_time = (float)(current_counter - last_counter) / (float)frequency;
-	
-        while(SDL_PollEvent(&e) != 0) {
-	  wnd->root_scene->handle_events(wnd->root_scene, &e, delta_time);
 
-            if(e.type == SDL_QUIT) {
+        while(wnd->backend->backend_poll_event(wnd, &e)) {
+            wnd->root_scene->handle_events(wnd->root_scene, &e, delta_time);
+            if(e.type == SDL_QUIT)
                 quit = 1;
-            }
         }
-	
 
-	
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         wnd->root_scene->run(wnd->root_scene, delta_time);
-        //Update screen
-        SDL_GL_SwapWindow(wnd->window);
-
+        wnd->backend->backend_swap(wnd);
         last_counter = current_counter;
     }
-
 
     return 0;
 }

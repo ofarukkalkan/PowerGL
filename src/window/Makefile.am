@@ -9,7 +9,15 @@ libpowerglwindow_la_LDFLAGS = -no-undefined
 libpowerglwindow_la_SOURCES = \
         window.c \
         headless.c
+if GLFW_BACKEND
+libpowerglwindow_la_SOURCES += window_glfw.c
+libpowerglwindow_la_LIBADD = $(CODE_COVERAGE_LIBS) -lEGL $(GLFW_LIBS)
+AM_CPPFLAGS += $(GLFW_CFLAGS) -DPOWERGL_BACKEND_GLFW
+else
+libpowerglwindow_la_SOURCES += window_sdl.c
 libpowerglwindow_la_LIBADD = $(CODE_COVERAGE_LIBS) -lEGL
+AM_CPPFLAGS += -DPOWERGL_BACKEND_SDL
+endif
 
 include $(top_srcdir)/aminclude_static.am
 

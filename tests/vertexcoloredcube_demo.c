@@ -188,7 +188,7 @@ int main(){
         if(!powergl_window_create(wnd, 640, 480))
             return 1;
 
-        nkctx = nk_sdl_init(wnd->window);
+        nkctx = nk_sdl_init(powergl_window_get_sdl_window(wnd));
         struct nk_font_atlas *atlas;
         nk_sdl_font_stash_begin(&atlas);
         nk_sdl_font_stash_end();
@@ -240,7 +240,7 @@ int main(){
             nk_sdl_render(NK_ANTI_ALIASING_OFF, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
 
 
-            SDL_GL_SwapWindow(wnd->window);
+            SDL_GL_SwapWindow(powergl_window_get_sdl_window(wnd));
             last_counter = current_counter;
         }
 

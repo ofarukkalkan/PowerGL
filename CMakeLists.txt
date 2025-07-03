@@ -10,6 +10,20 @@ find_package(PNG REQUIRED)
 find_package(SDL2 REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(EXPAT REQUIRED)
+set(POWERGL_WINDOW_BACKEND "SDL" CACHE STRING "Window backend implementation (SDL or GLFW)")
+set_property(CACHE POWERGL_WINDOW_BACKEND PROPERTY STRINGS SDL GLFW)
+
+if(POWERGL_WINDOW_BACKEND STREQUAL "GLFW")
+    find_package(PkgConfig REQUIRED)
+    pkg_search_module(GLFW REQUIRED glfw3)
+    set(BACKEND_SOURCES src/window/window_glfw.c)
+    add_definitions(-DPOWERGL_BACKEND_GLFW)
+    list(APPEND BACKEND_LIBS ${GLFW_LIBRARIES})
+    include_directories(${GLFW_INCLUDE_DIRS})
+else()
+    set(BACKEND_SOURCES src/window/window_sdl.c)
+    add_definitions(-DPOWERGL_BACKEND_SDL)
+endif()
 
 # EGL support is provided by FindOpenGL in modern CMake versions.  Using
 # a separate find_package(EGL) call fails on systems without a dedicated
@@ -21,12 +35,18 @@ include_directories(
     ${GLEW_INCLUDE_DIRS}
     ${PNG_INCLUDE_DIRS}
     ${OPENGL_EGL_INCLUDE_DIR}
+    
+)
+
+set(POWERGL_WINDOW_SOURCES
+    src/window/window.c
+    src/window/headless.c
+    ${BACKEND_SOURCES}
 )
 
 add_library(powergl
     src/powergl.c
-    src/window/window.c
-    src/window/headless.c
+    ${POWERGL_WINDOW_SOURCES}
     src/rendering/object.c
     src/rendering/pipeline.c
     src/rendering/visualscene.c
@@ -54,6 +74,8 @@ target_link_libraries(powergl PUBLIC
     ${PNG_LIBRARIES}
     ${EXPAT_LIBRARIES}
     m
+    ${BACKEND_LIBS}
+    
 )
 
 target_include_directories(powergl PUBLIC
