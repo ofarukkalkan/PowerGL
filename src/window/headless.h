@@ -4,6 +4,7 @@
 #include <EGL/egl.h>
 #include "../powergl.h"
 #include "../rendering/visualscene.h"
+#include "backend.h"
 
 typedef struct powergl_headless_t powergl_headless;
 
@@ -19,5 +20,7 @@ struct powergl_headless_t {
 powergl_headless *powergl_headless_new(powergl_visualscene *scene);
 int powergl_headless_create(powergl_headless *h, int width, int height);
 int powergl_headless_run(powergl_headless *h);
+
+extern const powergl_window_backend powergl_window_backend_headless;
 
 #endif
