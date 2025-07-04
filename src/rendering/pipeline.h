@@ -82,4 +82,7 @@ void powergl_pipeline3_render(powergl_pipeline3 *, powergl_object **, size_t);
 
 void powergl_pipeline4_create(powergl_pipeline4 *, powergl_object **objs, size_t n_obj);
 void powergl_pipeline4_render(powergl_pipeline4 *, powergl_object **, size_t, powergl_object *);
+
+/* Set to 0 to disable drawing selection outlines */
+extern int powergl_enable_outline;
 #endif
