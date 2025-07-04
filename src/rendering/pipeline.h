@@ -49,9 +49,13 @@ struct powergl_pipeline3_t {
   powergl_vsis vis;
   powergl_vsis cis;
   GLuint vs;
+  GLuint vsOutline;
   GLuint fs;
+  GLuint fsOutline;
   GLuint gp;
+  GLuint gpOutline;
   GLint uni_matrix;
+  GLint uni_matrixOutline;
   int forceUpdate;
 };
 

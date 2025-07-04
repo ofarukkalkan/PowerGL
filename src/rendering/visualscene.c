@@ -106,8 +106,8 @@ powergl_object *powergl_scene_pick(powergl_visualscene *scene, powergl_object *c
   powergl_object *best = NULL;
 
   /* ensure MVP matrices are up to date */
-  for(size_t i=0;i<scene->n_object;i++)
-    powergl_object_update_mvp(scene->objects[i], cam);
+  /*for(size_t i=0;i<scene->n_object;i++)
+    powergl_object_update_mvp(scene->objects[i], cam);*/
 
   pick_recursive(scene->objects, scene->n_object, mouse, viewport, &best, &dist);
 

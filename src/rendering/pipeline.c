@@ -18,23 +18,34 @@ static powergl_object *last_obj;
 int powergl_enable_outline = 1;
 
 static void draw_outline(powergl_object *obj){
-  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  // --- PREPARATION ---
   glEnable(GL_STENCIL_TEST);
   glClear(GL_STENCIL_BUFFER_BIT);
-  glStencilFunc(GL_ALWAYS, 1, 0xFF);
+  
+  
+  // --- PASS 1: DRAW THE MAIN OBJECT AND POPULATE THE STENCIL BUFFER ---
   glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+  glStencilFunc(GL_ALWAYS, 1, 0xFF);
   glStencilMask(0xFF);
+  glDepthMask(GL_TRUE); 
   glDrawArrays(GL_TRIANGLES, 0, obj->geometry.n_vertex);
+
+  // --- PASS 2: DRAW THE OUTLINE ---
+  glCullFace(GL_FRONT);
+
   glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
   glStencilMask(0x00);
-  glDisable(GL_DEPTH_TEST);
-  glLineWidth(3.0f);
-  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  glDepthMask(GL_FALSE);
+  glUseProgram(last_ppl3->gpOutline);
+  glUniformMatrix4fv(last_ppl3->uni_matrixOutline, 1, GL_FALSE, obj->transform.mvp.data);
+
   glDrawArrays(GL_TRIANGLES, 0, obj->geometry.n_vertex);
-  glLineWidth(1.0f);
-  glEnable(GL_DEPTH_TEST);
+
+  glStencilMask(0xFF);
+  glStencilFunc(GL_ALWAYS, 0, 0xFF);
   glDisable(GL_STENCIL_TEST);
-  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  glDepthMask(GL_TRUE);
+  glCullFace(GL_BACK); // Reset face culling to the default.
 }
 
 static void render3(powergl_pipeline3 *ppl, powergl_object **objs, size_t n_object){
@@ -584,6 +595,42 @@ void powergl_pipeline3_create(powergl_pipeline3 *ppl, powergl_object **objs, siz
       fColor = vec4(colorToFs, 1.0f);\n				   \
     }"
   };
+
+    /*shader compiler input specs*/
+  const GLchar *const vsrcOutline[] = { "#version 330 core\n\
+    layout( location = 0 ) in vec3 vPosition;\n		\
+    uniform mat4 mvp;\n					\
+    void main(){\n							\
+       vec3 pos = vPosition;\
+       pos *= 1.05; \
+      gl_Position = mvp * 1.05 * vec4( pos, 1.0f );\n			\
+    }"
+  };
+  const GLchar *const fsrcOutline[] = {"#version 330 core\n\
+    out vec4 fColor;\n					   \
+    void main(){\n						   \
+      fColor = vec4(0.05, 0.9, 0.2, 1.0);\n				   \
+    }"
+  };
+
+  /*vertex shader*/
+  ppl->vsOutline = glCreateShader(GL_VERTEX_SHADER);
+  glShaderSource(ppl->vsOutline, 1, vsrcOutline, NULL);
+  glCompileShader(ppl->vsOutline);
+  /*fragment shader*/
+  ppl->fsOutline = glCreateShader(GL_FRAGMENT_SHADER);
+  glShaderSource(ppl->fsOutline, 1, fsrcOutline, NULL);
+  glCompileShader(ppl->fsOutline);
+  /*program*/
+  ppl->gpOutline = glCreateProgram();
+  glAttachShader(ppl->gpOutline, ppl->vsOutline);
+  glAttachShader(ppl->gpOutline, ppl->fsOutline);
+  glLinkProgram(ppl->gpOutline);
+  /*uniform*/
+  /* uniform a verilen string ayri tutulacak  bunun icin biseyler dusun*/
+  glUseProgram(ppl->gpOutline);
+  ppl->uni_matrixOutline = glGetUniformLocation(ppl->gpOutline, "mvp");
+
   /*vertex shader*/
   ppl->vs = glCreateShader(GL_VERTEX_SHADER);
   glShaderSource(ppl->vs, 1, vsrc, NULL);
