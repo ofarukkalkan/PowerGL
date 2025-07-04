@@ -30,6 +30,10 @@ struct powergl_visualscene_t {
   powergl_pipeline3 pipeline3;
   powergl_pipeline4 pipeline4;
 
+  /* interaction state */
+  powergl_object *hovered_object;
+  powergl_object *selected_object;
+
   fprun_visualscene run;
   fpcreate_visualscene create;
   fphandle_events_visualscene handle_events;
@@ -38,5 +42,10 @@ struct powergl_visualscene_t {
 
 void powergl_scene_build(powergl_visualscene *, const char *);
 powergl_object *powergl_scene_find(powergl_visualscene *, const char *);
+powergl_object *powergl_scene_pick(powergl_visualscene *, powergl_object *cam,
+                                   powergl_vec2 mouse,
+                                   powergl_vec4 viewport,
+                                   float *out_dist);
+void powergl_scene_handle_picking(powergl_visualscene *, powergl_event *e);
 
 #endif
