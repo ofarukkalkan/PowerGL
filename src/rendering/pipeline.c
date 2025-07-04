@@ -56,6 +56,11 @@ static void render3(powergl_pipeline3 *ppl, powergl_object **objs, size_t n_obje
     }
 #endif
 
+    if(obj->selected || obj->hovered)
+      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    else
+      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
     glDrawArrays( GL_TRIANGLES, 0, obj->geometry.n_vertex );
 
     last_obj = obj;
@@ -104,6 +109,11 @@ static void render2(powergl_pipeline2 *ppl, powergl_object **objs, size_t n_obje
       powergl_vec4_print("transformed", powergl_vec4_trans(vec, obj->transform.mvp));
     }
 #endif
+
+    if(obj->selected || obj->hovered)
+      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    else
+      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     glDrawArrays( GL_TRIANGLES, 0, obj->geometry.n_vertex );
 
@@ -174,6 +184,11 @@ static void render(powergl_pipeline *ppl, powergl_object **objs, size_t n_object
       powergl_vec4_print("transformed", powergl_vec4_trans(vec, obj->transform.mvp));
     }
 #endif
+
+    if(obj->selected || obj->hovered)
+      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    else
+      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     glDrawArrays( GL_TRIANGLES, 0, obj->geometry.n_vertex );
 
@@ -313,6 +328,11 @@ static void render4(powergl_pipeline4 *ppl, powergl_object **objs, size_t n_obje
       powergl_vec4_print("transformed", powergl_vec4_trans(vec, obj->transform.mvp));
     }
 #endif
+
+    if(obj->selected || obj->hovered)
+      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    else
+      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     glDrawArrays( GL_TRIANGLES, 0, obj->geometry.n_vertex );
 
