@@ -39,6 +39,7 @@ static void scene_create(powergl_visualscene *scene){
 }
 
 static void scene_events(powergl_visualscene *scene, powergl_event *e, float dt){
+    powergl_scene_handle_picking(scene, e);
     if(cube)
         powergl_event_handle(cube, e, dt);
 }
