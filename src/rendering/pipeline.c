@@ -219,8 +219,11 @@ void powergl_pipeline3_render(powergl_pipeline3 *ppl, powergl_object **objs, siz
       
     render3(ppl, objs, n_object);
 
+    /* restore solid mode for subsequent passes (e.g. UI rendering) */
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
     last_ppl3 = ppl;
-    
+
     return;
 }
 
@@ -237,8 +240,11 @@ void powergl_pipeline2_render(powergl_pipeline2 *ppl, powergl_object **objs, siz
       
     render2(ppl, objs, n_object);
 
+    /* ensure next passes start in solid mode */
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
     last_ppl2 = ppl;
-    
+
     return;
 }
 
@@ -259,15 +265,18 @@ void powergl_pipeline_render(powergl_pipeline *ppl, powergl_object **objs, size_
       main_light->light.color_flag = 0;
     }
 
-    if (main_light->light.dir_flag == 1) {	  
+    if (main_light->light.dir_flag == 1) {
       glUniform3fv( ppl->uni_light_dir, 1, main_light->light.dir.data);
       main_light->light.dir_flag = 0;
     }
-      
+
     render(ppl, objs, n_object);
 
+    /* reset to solid mode so subsequent draws (e.g. UI) are unaffected */
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
     last_ppl = ppl;
-    
+
     return;
 }
 
@@ -361,6 +370,9 @@ void powergl_pipeline4_render(powergl_pipeline4 *ppl, powergl_object **objs, siz
     glUniform3fv( ppl->uni_light_pos, 1, light->transform.location.data);
 
     render4(ppl, objs, n_object);
+
+    /* reset polygon mode for following passes */
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     last_ppl4 = ppl;
 
