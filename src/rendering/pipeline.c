@@ -14,6 +14,29 @@ static powergl_pipeline3 *last_ppl3;
 static powergl_pipeline4 *last_ppl4;
 static powergl_object *last_obj;
 
+/* Global toggle for drawing selection outlines */
+int powergl_enable_outline = 1;
+
+static void draw_outline(powergl_object *obj){
+  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  glEnable(GL_STENCIL_TEST);
+  glClear(GL_STENCIL_BUFFER_BIT);
+  glStencilFunc(GL_ALWAYS, 1, 0xFF);
+  glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+  glStencilMask(0xFF);
+  glDrawArrays(GL_TRIANGLES, 0, obj->geometry.n_vertex);
+  glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+  glStencilMask(0x00);
+  glDisable(GL_DEPTH_TEST);
+  glLineWidth(3.0f);
+  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  glDrawArrays(GL_TRIANGLES, 0, obj->geometry.n_vertex);
+  glLineWidth(1.0f);
+  glEnable(GL_DEPTH_TEST);
+  glDisable(GL_STENCIL_TEST);
+  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+}
+
 static void render3(powergl_pipeline3 *ppl, powergl_object **objs, size_t n_object){
 
   powergl_object *obj = NULL;
@@ -56,12 +79,14 @@ static void render3(powergl_pipeline3 *ppl, powergl_object **objs, size_t n_obje
     }
 #endif
 
-    if(obj->selected || obj->hovered)
-      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    else
+    if(obj->selected && powergl_enable_outline){
+      draw_outline(obj);
+    } else {
       glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+      glDrawArrays(GL_TRIANGLES, 0, obj->geometry.n_vertex);
+    }
 
-    glDrawArrays( GL_TRIANGLES, 0, obj->geometry.n_vertex );
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     last_obj = obj;
         
@@ -110,12 +135,14 @@ static void render2(powergl_pipeline2 *ppl, powergl_object **objs, size_t n_obje
     }
 #endif
 
-    if(obj->selected || obj->hovered)
-      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    else
+    if(obj->selected && powergl_enable_outline){
+      draw_outline(obj);
+    } else {
       glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+      glDrawArrays(GL_TRIANGLES, 0, obj->geometry.n_vertex);
+    }
 
-    glDrawArrays( GL_TRIANGLES, 0, obj->geometry.n_vertex );
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     last_obj = obj;
         
@@ -185,12 +212,14 @@ static void render(powergl_pipeline *ppl, powergl_object **objs, size_t n_object
     }
 #endif
 
-    if(obj->selected || obj->hovered)
-      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    else
+    if(obj->selected && powergl_enable_outline){
+      draw_outline(obj);
+    } else {
       glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+      glDrawArrays(GL_TRIANGLES, 0, obj->geometry.n_vertex);
+    }
 
-    glDrawArrays( GL_TRIANGLES, 0, obj->geometry.n_vertex );
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     last_obj = obj;
         
@@ -205,7 +234,8 @@ void powergl_pipeline3_render(powergl_pipeline3 *ppl, powergl_object **objs, siz
     if(ppl!=last_ppl3 || ppl->forceUpdate){
       
       glClearColor(0.3f, 0.6f, 0.9f, 1.0f);
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      glClearStencil(0);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
       glEnable(GL_DEPTH_TEST);
       glEnable (GL_CULL_FACE); 
       glCullFace (GL_BACK);
@@ -338,12 +368,14 @@ static void render4(powergl_pipeline4 *ppl, powergl_object **objs, size_t n_obje
     }
 #endif
 
-    if(obj->selected || obj->hovered)
-      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    else
+    if(obj->selected && powergl_enable_outline){
+      draw_outline(obj);
+    } else {
       glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+      glDrawArrays(GL_TRIANGLES, 0, obj->geometry.n_vertex);
+    }
 
-    glDrawArrays( GL_TRIANGLES, 0, obj->geometry.n_vertex );
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     last_obj = obj;
 
