@@ -4,6 +4,8 @@
 #include <setjmp.h>
 
 #include "png_loader.h"
+#include <GL/glew.h>
+#include <png.h>
 
 powergl_png powergl_png_load(const char * file){
 
@@ -91,5 +93,105 @@ powergl_png powergl_png_load(const char * file){
   image.color_type = color_type;
 
   return image;
+}
 
+int powergl_png_save(const char *filename){
+  GLint vp[4];
+  glGetIntegerv(GL_VIEWPORT, vp);
+  int width = vp[2];
+  int height = vp[3];
+  size_t size = (size_t)width * height * 4;
+  unsigned char *pixels = (unsigned char*)malloc(size);
+  if(!pixels){
+    fprintf(stderr, "failed to allocate %zu bytes for screenshot\n", size);
+    return 0;
+  }
+  glPixelStorei(GL_PACK_ALIGNMENT, 1);
+  glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+  FILE *fp = fopen(filename, "wb");
+  if(!fp){
+    fprintf(stderr, "cannot open %s for writing\n", filename);
+    free(pixels);
+    return 0;
+  }
+
+  png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+  if(!png_ptr){
+    fprintf(stderr, "failed to create png write struct\n");
+    fclose(fp);
+    free(pixels);
+    return 0;
+  }
+  png_infop info_ptr = png_create_info_struct(png_ptr);
+  if(!info_ptr){
+    fprintf(stderr, "failed to create png info struct\n");
+    png_destroy_write_struct(&png_ptr, NULL);
+    fclose(fp);
+    free(pixels);
+    return 0;
+  }
+  if(setjmp(png_jmpbuf(png_ptr))){
+    fprintf(stderr, "png error writing to %s\n", filename);
+    png_destroy_write_struct(&png_ptr, &info_ptr);
+    fclose(fp);
+    free(pixels);
+    return 0;
+  }
+  png_init_io(png_ptr, fp);
+  png_set_IHDR(png_ptr, info_ptr, width, height, 8, PNG_COLOR_TYPE_RGBA,
+               PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+  png_write_info(png_ptr, info_ptr);
+  png_bytep *row_pointers = malloc(sizeof(png_bytep) * height);
+  if(!row_pointers){
+    fprintf(stderr, "failed to allocate row pointers\n");
+    png_destroy_write_struct(&png_ptr, &info_ptr);
+    fclose(fp);
+    free(pixels);
+    return 0;
+  }
+  for(int y = 0; y < height; ++y)
+    row_pointers[height - 1 - y] = pixels + y * width * 4;
+  png_write_image(png_ptr, row_pointers);
+  png_write_end(png_ptr, NULL);
+  png_destroy_write_struct(&png_ptr, &info_ptr);
+  free(row_pointers);
+  fclose(fp);
+  free(pixels);
+  return 1;
+}
+
+int powergl_png_compare(const char *a, const char *b){
+  powergl_png pa = powergl_png_load(a);
+  powergl_png pb = powergl_png_load(b);
+  if(!pa.data){
+    fprintf(stderr, "failed to load image %s\n", a);
+    if(pb.data) free(pb.data);
+    return 0;
+  }
+  if(!pb.data){
+    fprintf(stderr, "failed to load image %s\n", b);
+    free(pa.data);
+    return 0;
+  }
+  if(pa.width != pb.width || pa.height != pb.height || pa.color_type != pb.color_type){
+    fprintf(stderr, "image dimensions or color type differ\n");
+    free(pa.data);
+    free(pb.data);
+    return 0;
+  }
+  int bpp = (pa.color_type == PNG_COLOR_TYPE_RGB) ? 3 : 4;
+  size_t size = (size_t)pa.width * pa.height * bpp;
+  int diff = 0;
+  for(size_t i = 0; i < size; ++i){
+    if(abs((int)pa.data[i] - (int)pb.data[i]) > 160){
+      diff = 1;
+      break;
+    }
+  }
+  if(diff)
+    fprintf(stderr, "image data differs between %s and %s\n", a, b);
+  free(pa.data);
+  free(pb.data);
+  return diff ? 0 : 1;
 }
