@@ -216,6 +216,10 @@ struct powergl_object_t {
   char light_flag;
   char textured_flag;
 
+  /* interaction state */
+  char hovered;
+  char selected;
+
   // info
   char *id;
   char *name;
