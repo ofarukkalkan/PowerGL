@@ -1,4 +1,5 @@
 #include "headless.h"
+#include "window.h"
 #include <string.h>
 #include <stdio.h>
 #include <SDL2/SDL_opengl.h>
@@ -13,6 +14,8 @@ static const EGLint configAttribs[] = {
     EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
     EGL_NONE
 };
+
+typedef powergl_headless headless_backend_data;
 
 powergl_headless *powergl_headless_new(powergl_visualscene *scene){
     powergl_headless *h = calloc(1, sizeof(*h));
@@ -98,3 +101,58 @@ int powergl_headless_run(powergl_headless *h){
     eglTerminate(h->display);
     return 0;
 }
+
+/* Backend interface implementation */
+static int headless_create(powergl_window *wnd, int width, int height)
+{
+    headless_backend_data *h = calloc(1, sizeof(*h));
+    wnd->backend_data = h;
+    h->root_scene = wnd->root_scene;
+    return powergl_headless_create(h, width, height);
+}
+
+static int headless_run(powergl_window *wnd)
+{
+    headless_backend_data *h = (headless_backend_data *)wnd->backend_data;
+    return powergl_headless_run(h);
+}
+
+static int headless_poll_event(powergl_window *wnd, powergl_event *ev)
+{
+    (void)wnd; (void)ev;
+    return 0;
+}
+
+static void headless_swap(powergl_window *wnd)
+{
+    headless_backend_data *h = (headless_backend_data *)wnd->backend_data;
+    eglSwapBuffers(h->display, h->surface);
+}
+
+static void headless_destroy(powergl_window *wnd)
+{
+    headless_backend_data *h = (headless_backend_data *)wnd->backend_data;
+    if(!h)
+        return;
+    eglMakeCurrent(h->display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+    eglDestroySurface(h->display, h->surface);
+    eglDestroyContext(h->display, h->context);
+    eglTerminate(h->display);
+    free(h);
+}
+
+static void *headless_get_native_window(powergl_window *wnd)
+{
+    (void)wnd;
+    return NULL;
+}
+
+const powergl_window_backend powergl_window_backend_headless = {
+    .create = headless_create,
+    .run = headless_run,
+    .poll_event = headless_poll_event,
+    .swap_buffers = headless_swap,
+    .destroy = headless_destroy,
+    .get_native_window = headless_get_native_window
+};
+

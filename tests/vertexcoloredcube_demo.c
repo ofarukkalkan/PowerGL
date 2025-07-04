@@ -179,17 +179,18 @@ int main(){
 
     const char *headless = getenv("POWERGL_HEADLESS");
     if(headless && strcmp(headless, "1") == 0){
-        powergl_headless *h = powergl_headless_new(&scene);
-        if(!powergl_headless_create(h, 640, 480))
+        powergl_window *wnd =
+            powergl_window_new_with_backend(&scene, &powergl_window_backend_headless);
+        if(!powergl_window_create(wnd, 640, 480))
             return 1;
-        int ret = powergl_headless_run(h);
+        int ret = powergl_window_run(wnd);
         return ret || png_mismatch;
     } else {
         powergl_window *wnd = powergl_window_new(&scene);
         if(!powergl_window_create(wnd, 640, 480))
             return 1;
 
-        nkctx = nk_sdl_init(wnd->window);
+        nkctx = nk_sdl_init((SDL_Window *)powergl_window_get_native_window(wnd));
         struct nk_font_atlas *atlas;
         nk_sdl_font_stash_begin(&atlas);
         nk_sdl_font_stash_end();
@@ -243,7 +244,7 @@ int main(){
             nk_sdl_render(NK_ANTI_ALIASING_OFF, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
 
 
-            SDL_GL_SwapWindow(wnd->window);
+            powergl_window_swap_buffers(wnd);
             last_counter = current_counter;
         }
 

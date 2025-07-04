@@ -1,148 +1,54 @@
 #include "window.h"
-#include "window_sdl.h"
-#include <stdio.h>
-#include <time.h>
 
-enum msgSource {
-    SOURCE_API = 0x8246,
-    SOURCE_SYSTEM = 0x8247,
-    SOURCE_SHADER_COMPILER = 0x8248,
-    SOURCE_THIRD_PARTY = 0x8249,
-    SOURCE_APPLICATION = 0x824A,
-    SOURCE_OTHER = 0x824B,
-};
-
-enum msgType {
-    TYPE_ERROR = 0x824C,
-    TYPE_DEPRECATED_BEHAVIOR = 0x824D,
-    TYPE_UNDEFINED_BEHAVIOR = 0x824E,
-    TYPE_PORTABILITY = 0x824F,
-    TYPE_PERFORMANCE = 0x8250,
-    TYPE_OTHER = 0x8251,
-    TYPE_MARKER = 0x8268,
-    TYPE_PUSH_GROUP = 0x8269,
-    TYPE_POP_GROUP = 0x826A,
-};
-
-enum msgSeverity {
-    SEVERITY_HIGH = 0x9146,
-    SEVERITY_MEDIUM = 0x9147,
-    SEVERITY_LOW = 0x9148,
-    SEVERITY_NOTIFICATION = 0x826B,
-};
-
-void errorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const GLvoid *userParam) {
-    fprintf(stderr, "\nSource = [ %d ] \n", (int) source);
-    fprintf(stderr, "Type = [ %d ]\n", (int) type);
-    fprintf(stderr, "Severity = [ %d ]\n", (int) severity);
-    fprintf(stderr, "ID = [ %d ]\n", (int) id);
-    fprintf(stderr, "Msg = [ %u %s ]\n", length, (const char *)message);
-
-    if(userParam) {}
-}
-
-
-powergl_window *powergl_window_new(powergl_visualscene *scene) {
-    powergl_window *wnd =  powergl_resize(NULL, 1, sizeof(powergl_window));
+powergl_window *powergl_window_new_with_backend(powergl_visualscene *scene,
+                                               const powergl_window_backend *backend)
+{
+    powergl_window *wnd = powergl_resize(NULL, 1, sizeof(*wnd));
     wnd->root_scene = scene;
+    wnd->backend = backend;
+    wnd->backend_data = NULL;
+    wnd->width = wnd->height = 0;
     return wnd;
 }
 
-int powergl_window_create(powergl_window *wnd, int width, int height) {
-    //Initialization flag
-    int success = 1;
-    wnd->window = NULL;
+powergl_window *powergl_window_new(powergl_visualscene *scene)
+{
+    extern const powergl_window_backend powergl_window_backend_sdl; /* defined in window_sdl.c */
+    return powergl_window_new_with_backend(scene, &powergl_window_backend_sdl);
+}
+
+int powergl_window_create(powergl_window *wnd, int width, int height)
+{
     wnd->width = width;
     wnd->height = height;
-
-    //Initialize SDL
-    if(SDL_Init(SDL_INIT_VIDEO) < 0) {
-        printf("SDL could not initialize! SDL Error: %s\n", SDL_GetError());
-        success = 0;
-    } else {
-        //Use OpenGL 3.1 core
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-/* 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4); */
-        //Create window
-        wnd->window = SDL_CreateWindow("PowerGL Engine", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
-
-        if(wnd->window == NULL) {
-            printf("Window could not be created! SDL Error: %s\n", SDL_GetError());
-            success = 0;
-        } else {
-            //Create context
-            wnd->context = SDL_GL_CreateContext(wnd->window);
-
-            if(wnd->context == NULL) {
-                printf("OpenGL context could not be created! SDL Error: %s\n", SDL_GetError());
-                success = 0;
-            } else {
-                //Initialize GLEW
-                glewExperimental = GL_TRUE;
-                GLenum glewError = glewInit();
-
-                if(glewError != GLEW_OK) {
-                    printf("Error initializing GLEW! %s\n", glewGetErrorString(glewError));
-                }
-
-                //Use Vsync
-                if(SDL_GL_SetSwapInterval(1) < 0) {
-                    printf("Warning: Unable to set VSync! SDL Error: %s\n", SDL_GetError());
-                }
-            }
-        }
-    }
-
-    return success;
+    if(!wnd->backend || !wnd->backend->create)
+        return 0;
+    return wnd->backend->create(wnd, width, height);
 }
 
-static int gl_debug_enabled(void){
-    const char *env = getenv("POWERGL_GL_DEBUG");
-    return env && strcmp(env, "1") == 0;
+int powergl_window_run(powergl_window *wnd)
+{
+    if(!wnd->backend || !wnd->backend->run)
+        return 0;
+    return wnd->backend->run(wnd);
 }
 
-int powergl_window_run(powergl_window *wnd) {
-    if(gl_debug_enabled()) {
-        glDebugMessageCallback(errorCallback, NULL);
-        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
-        glEnable(GL_DEBUG_OUTPUT);
-    }
-    glEnable(GL_DEPTH_TEST);
-    //glEnable(GL_MULTISAMPLE);
-    glClearColor(0.3f, 0.6f, 0.9f, 1.0f);
-    wnd->root_scene->create(wnd->root_scene);
-    float delta_time = 0.0f;
-    int quit = 0;
-    powergl_event ev;
+int powergl_window_poll_event(powergl_window *wnd, powergl_event *ev)
+{
+    if(!wnd->backend || !wnd->backend->poll_event)
+        return 0;
+    return wnd->backend->poll_event(wnd, ev);
+}
 
-    Uint64 last_counter = SDL_GetPerformanceCounter();
-    Uint64 frequency = SDL_GetPerformanceFrequency();
+void powergl_window_swap_buffers(powergl_window *wnd)
+{
+    if(wnd->backend && wnd->backend->swap_buffers)
+        wnd->backend->swap_buffers(wnd);
+}
 
-
-    while(!quit) {
-        Uint64 current_counter = SDL_GetPerformanceCounter();
-        delta_time = (float)(current_counter - last_counter) / (float)frequency;
-	
-        while(powergl_sdl_poll_event(&ev)) {
-            wnd->root_scene->handle_events(wnd->root_scene, &ev, delta_time);
-            if(ev.type == POWERGL_EVENT_WINDOW_CLOSE) {
-                quit = 1;
-            }
-        }
-	
-
-	
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        wnd->root_scene->run(wnd->root_scene, delta_time);
-        //Update screen
-        SDL_GL_SwapWindow(wnd->window);
-
-        last_counter = current_counter;
-    }
-
-
-    return 0;
+void *powergl_window_get_native_window(powergl_window *wnd)
+{
+    if(wnd->backend && wnd->backend->get_native_window)
+        return wnd->backend->get_native_window(wnd);
+    return NULL;
 }
