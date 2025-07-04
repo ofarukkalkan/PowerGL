@@ -129,7 +129,12 @@ void powergl_scene_handle_picking(powergl_visualscene *scene, powergl_event *e)
 
   if(e->type == POWERGL_EVENT_MOUSE_MOVE){
     powergl_object *hit = powergl_scene_pick(scene, scene->main_camera, pos, vp, NULL);
-    if(hit != scene->hovered_object && hit != scene->selected_object){
+
+    /* do not hover the object already selected */
+    if(hit == scene->selected_object)
+      hit = NULL;
+
+    if(hit != scene->hovered_object){
       if(scene->hovered_object)
         scene->hovered_object->hovered = 0;
       scene->hovered_object = hit;
