@@ -58,7 +58,7 @@ static void scene_run(powergl_visualscene *scene, float dt){
     if(frame_counter < max_frames){
         char fname[64];
         snprintf(fname, sizeof(fname), "frame_%02d.png", frame_counter);
-        powergl_png_save(fname);
+        powergl_window_screenshot(fname);
         char ref[256];
         snprintf(ref, sizeof(ref), "%s/vertexcoloredcube_demo.png", TEST_SRCDIR);
         int same = powergl_png_compare(fname, ref);

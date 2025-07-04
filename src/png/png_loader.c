@@ -4,7 +4,6 @@
 #include <setjmp.h>
 
 #include "png_loader.h"
-#include <GL/glew.h>
 #include <png.h>
 
 powergl_png powergl_png_load(const char * file){
@@ -95,71 +94,6 @@ powergl_png powergl_png_load(const char * file){
   return image;
 }
 
-int powergl_png_save(const char *filename){
-  GLint vp[4];
-  glGetIntegerv(GL_VIEWPORT, vp);
-  int width = vp[2];
-  int height = vp[3];
-  size_t size = (size_t)width * height * 4;
-  unsigned char *pixels = (unsigned char*)malloc(size);
-  if(!pixels){
-    fprintf(stderr, "failed to allocate %zu bytes for screenshot\n", size);
-    return 0;
-  }
-  glPixelStorei(GL_PACK_ALIGNMENT, 1);
-  glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-
-  FILE *fp = fopen(filename, "wb");
-  if(!fp){
-    fprintf(stderr, "cannot open %s for writing\n", filename);
-    free(pixels);
-    return 0;
-  }
-
-  png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-  if(!png_ptr){
-    fprintf(stderr, "failed to create png write struct\n");
-    fclose(fp);
-    free(pixels);
-    return 0;
-  }
-  png_infop info_ptr = png_create_info_struct(png_ptr);
-  if(!info_ptr){
-    fprintf(stderr, "failed to create png info struct\n");
-    png_destroy_write_struct(&png_ptr, NULL);
-    fclose(fp);
-    free(pixels);
-    return 0;
-  }
-  if(setjmp(png_jmpbuf(png_ptr))){
-    fprintf(stderr, "png error writing to %s\n", filename);
-    png_destroy_write_struct(&png_ptr, &info_ptr);
-    fclose(fp);
-    free(pixels);
-    return 0;
-  }
-  png_init_io(png_ptr, fp);
-  png_set_IHDR(png_ptr, info_ptr, width, height, 8, PNG_COLOR_TYPE_RGBA,
-               PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
-  png_write_info(png_ptr, info_ptr);
-  png_bytep *row_pointers = malloc(sizeof(png_bytep) * height);
-  if(!row_pointers){
-    fprintf(stderr, "failed to allocate row pointers\n");
-    png_destroy_write_struct(&png_ptr, &info_ptr);
-    fclose(fp);
-    free(pixels);
-    return 0;
-  }
-  for(int y = 0; y < height; ++y)
-    row_pointers[height - 1 - y] = pixels + y * width * 4;
-  png_write_image(png_ptr, row_pointers);
-  png_write_end(png_ptr, NULL);
-  png_destroy_write_struct(&png_ptr, &info_ptr);
-  free(row_pointers);
-  fclose(fp);
-  free(pixels);
-  return 1;
-}
 
 int powergl_png_compare(const char *a, const char *b){
   powergl_png pa = powergl_png_load(a);
