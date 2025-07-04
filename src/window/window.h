@@ -26,5 +26,12 @@ int powergl_window_poll_event(powergl_window *, powergl_event *ev);
 void powergl_window_swap_buffers(powergl_window *);
 void *powergl_window_get_native_window(powergl_window *);
 
+/*
+ * Save the current OpenGL framebuffer to a PNG image. The image dimensions
+ * are taken from the current viewport. Returns 0 on failure, non-zero on
+ * success.
+ */
+int powergl_window_screenshot(const char *filename);
+
 
 #endif

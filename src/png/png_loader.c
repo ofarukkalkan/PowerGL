@@ -4,6 +4,7 @@
 #include <setjmp.h>
 
 #include "png_loader.h"
+#include <png.h>
 
 powergl_png powergl_png_load(const char * file){
 
@@ -91,5 +92,40 @@ powergl_png powergl_png_load(const char * file){
   image.color_type = color_type;
 
   return image;
+}
 
+
+int powergl_png_compare(const char *a, const char *b){
+  powergl_png pa = powergl_png_load(a);
+  powergl_png pb = powergl_png_load(b);
+  if(!pa.data){
+    fprintf(stderr, "failed to load image %s\n", a);
+    if(pb.data) free(pb.data);
+    return 0;
+  }
+  if(!pb.data){
+    fprintf(stderr, "failed to load image %s\n", b);
+    free(pa.data);
+    return 0;
+  }
+  if(pa.width != pb.width || pa.height != pb.height || pa.color_type != pb.color_type){
+    fprintf(stderr, "image dimensions or color type differ\n");
+    free(pa.data);
+    free(pb.data);
+    return 0;
+  }
+  int bpp = (pa.color_type == PNG_COLOR_TYPE_RGB) ? 3 : 4;
+  size_t size = (size_t)pa.width * pa.height * bpp;
+  int diff = 0;
+  for(size_t i = 0; i < size; ++i){
+    if(abs((int)pa.data[i] - (int)pb.data[i]) > 160){
+      diff = 1;
+      break;
+    }
+  }
+  if(diff)
+    fprintf(stderr, "image data differs between %s and %s\n", a, b);
+  free(pa.data);
+  free(pb.data);
+  return diff ? 0 : 1;
 }
