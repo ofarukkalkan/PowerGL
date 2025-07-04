@@ -1,12 +1,10 @@
+
+#include <SDL2/SDL.h>
+#include <GL/glew.h>
+#include <SDL2/SDL_opengl.h>
+
 #include "window_sdl.h"
 #include "window.h"
-#ifndef GL_ARB_ES2_compatibility
-#define GL_ARB_ES2_compatibility 1
-typedef int GLfixed;
-#endif
-#include <GL/glew.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_opengl.h>
 #include <stdio.h>
 #include <string.h>
 
