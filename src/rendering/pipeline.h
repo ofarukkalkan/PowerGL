@@ -11,7 +11,6 @@
 typedef struct powergl_pipeline_t powergl_pipeline;
 typedef struct powergl_pipeline2_t powergl_pipeline2;
 typedef struct powergl_pipeline3_t powergl_pipeline3;
-typedef struct powergl_pipeline4_t powergl_pipeline4;
 
 typedef struct {
   GLuint index;
@@ -59,20 +58,6 @@ struct powergl_pipeline3_t {
   int forceUpdate;
 };
 
-struct powergl_pipeline4_t {
-  powergl_vsis vis;
-  powergl_vsis nis;
-  powergl_vsis cis;
-  powergl_vsis tcis;
-  GLuint vs;
-  GLuint fs;
-  GLuint gp;
-  GLint uni_matrix;
-  GLint uni_model;
-  GLint uni_light_color;
-  GLint uni_light_pos;
-  GLint uni_sampler;
-};
 
 
 void powergl_pipeline_create(powergl_pipeline *, powergl_object **objs, size_t n_obj);
@@ -83,9 +68,6 @@ void powergl_pipeline2_render(powergl_pipeline2 *, powergl_object **, size_t);
 
 void powergl_pipeline3_create(powergl_pipeline3 *, powergl_object **objs, size_t n_obj);
 void powergl_pipeline3_render(powergl_pipeline3 *, powergl_object **, size_t);
-
-void powergl_pipeline4_create(powergl_pipeline4 *, powergl_object **objs, size_t n_obj);
-void powergl_pipeline4_render(powergl_pipeline4 *, powergl_object **, size_t, powergl_object *);
 
 /* Set to 0 to disable drawing selection outlines */
 extern int powergl_enable_outline;
