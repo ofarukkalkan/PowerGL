@@ -12,6 +12,7 @@
 #include "src/rendering/object.h"
 #include "src/rendering/grid.h"
 #include "src/rendering/pipeline.h"
+#include "src/rendering/gizmo.h"
 #include "src/ui/scene_hierarchy.h"
 #include "src/png/png_loader.h"
 
@@ -128,6 +129,7 @@ int main(){
             nk_input_end(nkctx);
 
             scene.run(&scene, dt);
+            powergl_gizmo_draw(scene.main_camera, wnd->width, wnd->height);
 
             if(nk_begin(nkctx, "Demo", nk_rect(10,10,230,250),
                 NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|

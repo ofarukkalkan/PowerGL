@@ -10,7 +10,8 @@ libpowerglrendering_la_HEADERS = \
 	dae2object.h \
         objectlibrary.h \
         3dtext.h \
-        grid.h
+        grid.h \
+        gizmo.h
 libpowerglrendering_la_LDFLAGS = -no-undefined
 libpowerglrendering_la_SOURCES = \
         object.c \
@@ -19,7 +20,8 @@ libpowerglrendering_la_SOURCES = \
         dae2object.c \
         objectlibrary.c \
         3dtext.c \
-        grid.c
+        grid.c \
+        gizmo.c
 libpowerglrendering_la_LIBADD = $(CODE_COVERAGE_LIBS)
 
 include $(top_srcdir)/aminclude_static.am

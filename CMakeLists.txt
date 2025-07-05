@@ -28,6 +28,7 @@ add_library(powergl
     src/rendering/objectlibrary.c
     src/rendering/3dtext.c
     src/rendering/grid.c
+    src/rendering/gizmo.c
     src/ui/scene_hierarchy.c
     src/ui/nuklear_impl.c
     src/math/mat4x4.c
