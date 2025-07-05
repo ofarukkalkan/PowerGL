@@ -4,10 +4,11 @@
 #define DEBUG_OUTPUT 1
 #endif
 
+/* Convert Blender's Z-up coordinates to Y-up, -Z-forward system. */
 static const powergl_mat4 POWERGL_ZUP_TO_YUP = { .c = {
     {1.0f, 0.0f, 0.0f, 0.0f},
-    {0.0f, 0.0f, -1.0f, 0.0f},
-    {0.0f, 1.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 1.0f, 0.0f},
+    {0.0f, -1.0f, 0.0f, 0.0f},
     {0.0f, 0.0f, 0.0f, 1.0f}
 }};
 
