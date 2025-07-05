@@ -213,6 +213,8 @@ void powergl_build_geometry(powergl_collada_core_node *node, powergl_object *obj
   powergl_collada_core_mesh  *mesh = geo->c_mesh[0];
   
   if(mesh->n_triangles > 0){
+
+    obj->geometry.primitive_type = GL_TRIANGLES;
 	
     powergl_collada_core_triangles *tris = mesh->c_triangles[0];
     powergl_collada_core_ListOfUInts *prim = tris->c_p[0];

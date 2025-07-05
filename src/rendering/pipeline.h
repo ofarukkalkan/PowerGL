@@ -71,4 +71,6 @@ void powergl_pipeline3_render(powergl_pipeline3 *, powergl_object **, size_t);
 
 /* Set to 0 to disable drawing selection outlines */
 extern int powergl_enable_outline;
+/* Set to 0 to disable drawing the grid */
+extern int powergl_enable_grid;
 #endif

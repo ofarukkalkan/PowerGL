@@ -106,6 +106,9 @@ struct powergl_geometry_t {
   GLuint cbo;
   GLuint tcbo;
 
+  /* primitive type for rendering (GL_TRIANGLES, GL_LINES, ...) */
+  GLenum primitive_type;
+
   char visible_flag;
   
   float min_x, min_y, min_z, max_x, max_y, max_z;
