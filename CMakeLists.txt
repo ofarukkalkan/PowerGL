@@ -27,6 +27,7 @@ add_library(powergl
     src/rendering/dae2object.c
     src/rendering/objectlibrary.c
     src/rendering/3dtext.c
+    src/rendering/grid.c
     src/ui/scene_hierarchy.c
     src/ui/nuklear_impl.c
     src/math/mat4x4.c

@@ -8,8 +8,9 @@ libpowerglrendering_la_HEADERS = \
 	pipeline.h \
 	visualscene.h \
 	dae2object.h \
-	objectlibrary.h \
-	3dtext.h
+        objectlibrary.h \
+        3dtext.h \
+        grid.h
 libpowerglrendering_la_LDFLAGS = -no-undefined
 libpowerglrendering_la_SOURCES = \
         object.c \
@@ -17,7 +18,8 @@ libpowerglrendering_la_SOURCES = \
         visualscene.c \
         dae2object.c \
         objectlibrary.c \
-        3dtext.c
+        3dtext.c \
+        grid.c
 libpowerglrendering_la_LIBADD = $(CODE_COVERAGE_LIBS)
 
 include $(top_srcdir)/aminclude_static.am

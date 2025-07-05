@@ -489,6 +489,8 @@ void powergl_object_geometry_reset(powergl_geometry *geo){
     geo->triangles.n_color = 0;
   }
 
+  geo->primitive_type = GL_TRIANGLES;
+
 }
 
 powergl_object *powergl_camera_default(){
