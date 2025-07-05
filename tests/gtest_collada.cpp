@@ -54,9 +54,9 @@ TEST(ObjectImport, AxisConversion){
     EXPECT_NEAR(w.c[0].x, 1.0f, 1e-5f);
     EXPECT_NEAR(w.c[1].y, 0.0f, 1e-5f);
     /* After converting from Z-up to Y-up with -Z forward, the Y and Z axes are
-       swapped and Y is positive up. */
-    EXPECT_NEAR(w.c[1].z, 1.0f, 1e-5f);
-    EXPECT_NEAR(w.c[2].y, -1.0f, 1e-5f);
+       swapped and Z points forward (positive Y in Blender becomes +Z). */
+    EXPECT_NEAR(w.c[1].z, -1.0f, 1e-5f);
+    EXPECT_NEAR(w.c[2].y, 1.0f, 1e-5f);
     EXPECT_NEAR(w.c[2].z, 0.0f, 1e-5f);
 }
 

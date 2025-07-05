@@ -4,11 +4,15 @@
 #define DEBUG_OUTPUT 1
 #endif
 
-/* Convert Blender's Z-up coordinates to Y-up, -Z-forward system. */
+/*
+ * Convert Blender's Z-up coordinates to the engine's orientation where
+ * Y is the vertical axis and -Z is forward.  This is achieved with a
+ * +90 degree rotation around the X axis.
+ */
 static const powergl_mat4 POWERGL_ZUP_TO_YUP = { .c = {
     {1.0f, 0.0f, 0.0f, 0.0f},
-    {0.0f, 0.0f, 1.0f, 0.0f},
-    {0.0f, -1.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, -1.0f, 0.0f},
+    {0.0f, 1.0f, 0.0f, 0.0f},
     {0.0f, 0.0f, 0.0f, 1.0f}
 }};
 
