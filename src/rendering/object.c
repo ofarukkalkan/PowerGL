@@ -241,18 +241,20 @@ void powergl_object_fps_controller(powergl_object *obj, float delta_time){
     mov.x += displacement;
   }
 
+  /* With Y-up and -Z-forward coordinates W/S translate along Z while
+     SPACE/CTRL move vertically on Y. */
   if(e.key_w_pressed == 1){
-    mov.y += displacement;
+    mov.z += -displacement;
   }
   if(e.key_s_pressed == 1){
-    mov.y += -displacement;
+    mov.z += displacement;
   }
 
   if(e.key_space_pressed == 1){
-    mov.z += displacement;
+    mov.y += displacement;
   }
   if(e.key_lctrl_pressed == 1){
-    mov.z += -displacement;
+    mov.y += -displacement;
   }
   
   if(mov.x !=0.0f || mov.y !=0.0f || mov.z !=0.0f){
