@@ -4,10 +4,19 @@
 #define DEBUG_OUTPUT 1
 #endif
 
+/*
+ * Blender exports scenes using a Z-up coordinate system while
+ * PowerGL assumes Y-up with -Z forward.  The original matrix rotated
+ * the axes in the wrong direction which resulted in Y becoming
+ * downward and Z pointing forward.  This caused imported cameras to
+ * produce a vertical ground plane and movement along the Y axis when
+ * moving "forward".  Rotate by -90 degrees around the X axis instead
+ * so that Blender's +Z maps to +Y and +Y maps to -Z.
+ */
 static const powergl_mat4 POWERGL_ZUP_TO_YUP = { .c = {
     {1.0f, 0.0f, 0.0f, 0.0f},
-    {0.0f, 0.0f, -1.0f, 0.0f},
-    {0.0f, 1.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 1.0f, 0.0f},
+    {0.0f, -1.0f, 0.0f, 0.0f},
     {0.0f, 0.0f, 0.0f, 1.0f}
 }};
 
