@@ -10,6 +10,7 @@
 #include "src/window/headless.h"
 #include "src/rendering/visualscene.h"
 #include "src/rendering/object.h"
+#include "src/rendering/grid.h"
 #include "src/rendering/pipeline.h"
 #include "src/ui/scene_hierarchy.h"
 #include "src/png/png_loader.h"
@@ -20,7 +21,8 @@
 static struct nk_context *nkctx;
 
 static powergl_object *cube;
-static powergl_object *cube_list[1];
+static powergl_object grid;
+static powergl_object *object_list[2];
 static int frame_counter = 0;
 static const int max_frames = 10;
 static int png_mismatch = 0;
@@ -32,10 +34,12 @@ static void scene_create(powergl_visualscene *scene){
     if(!scene->main_camera)
         scene->main_camera = powergl_camera_default();
     cube = powergl_scene_find(scene, "Cube");
-    cube_list[0] = cube;
+    object_list[0] = cube;
+    powergl_grid_create(&grid, 10);
+    object_list[1] = &grid;
     if(cube)
         cube->event_flag = 1;
-    powergl_pipeline3_create(&scene->pipeline3, cube_list, 1);
+    powergl_pipeline3_create(&scene->pipeline3, object_list, 2);
 }
 
 static void scene_events(powergl_visualscene *scene, powergl_event *e, float dt){
@@ -51,7 +55,9 @@ static void scene_run(powergl_visualscene *scene, float dt){
         powergl_object_update_transform(cube, dt);
         powergl_camera_update(scene->main_camera);
         powergl_object_update_mvp(cube, scene->main_camera);
-        powergl_pipeline3_render(&scene->pipeline3, cube_list, 1);
+        powergl_object_update_mvp(&grid, scene->main_camera);
+        size_t count = powergl_enable_grid ? 2 : 1;
+        powergl_pipeline3_render(&scene->pipeline3, object_list, count);
         scene->main_camera->camera.vp_flag = 0;
     }
 
@@ -73,6 +79,9 @@ static void scene_run(powergl_visualscene *scene, float dt){
 int main(){
     powergl_visualscene scene = {0};
     setenv("POWERGL_GL_DEBUG", "0", 0);
+    const char *grid_env = getenv("POWERGL_ENABLE_GRID");
+    if(grid_env && strcmp(grid_env, "0") == 0)
+        powergl_enable_grid = 0;
     scene.create = scene_create;
     scene.run = scene_run;
     scene.handle_events = scene_events;

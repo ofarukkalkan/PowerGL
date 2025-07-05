@@ -15,6 +15,7 @@ static powergl_object *last_obj;
 
 /* Global toggle for drawing selection outlines */
 int powergl_enable_outline = 1;
+int powergl_enable_grid = 1;
 
 static void draw_outline(powergl_object *obj){
   // --- PREPARATION ---
@@ -27,7 +28,7 @@ static void draw_outline(powergl_object *obj){
   glStencilFunc(GL_ALWAYS, 1, 0xFF);
   glStencilMask(0xFF);
   glDepthMask(GL_TRUE); 
-  glDrawArrays(GL_TRIANGLES, 0, obj->geometry.n_vertex);
+  glDrawArrays(obj->geometry.primitive_type, 0, obj->geometry.n_vertex);
 
   // --- PASS 2: DRAW THE OUTLINE ---
   glCullFace(GL_FRONT);
@@ -38,7 +39,7 @@ static void draw_outline(powergl_object *obj){
   glUseProgram(last_ppl3->gpOutline);
   glUniformMatrix4fv(last_ppl3->uni_matrixOutline, 1, GL_FALSE, obj->transform.mvp.data);
 
-  glDrawArrays(GL_TRIANGLES, 0, obj->geometry.n_vertex);
+  glDrawArrays(obj->geometry.primitive_type, 0, obj->geometry.n_vertex);
 
   glStencilMask(0xFF);
   glStencilFunc(GL_ALWAYS, 0, 0xFF);
@@ -93,7 +94,7 @@ static void render3(powergl_pipeline3 *ppl, powergl_object **objs, size_t n_obje
       draw_outline(obj);
     } else {
       glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-      glDrawArrays(GL_TRIANGLES, 0, obj->geometry.n_vertex);
+      glDrawArrays(obj->geometry.primitive_type, 0, obj->geometry.n_vertex);
     }
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -149,7 +150,7 @@ static void render2(powergl_pipeline2 *ppl, powergl_object **objs, size_t n_obje
       draw_outline(obj);
     } else {
       glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-      glDrawArrays(GL_TRIANGLES, 0, obj->geometry.n_vertex);
+      glDrawArrays(obj->geometry.primitive_type, 0, obj->geometry.n_vertex);
     }
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -226,7 +227,7 @@ static void render(powergl_pipeline *ppl, powergl_object **objs, size_t n_object
       draw_outline(obj);
     } else {
       glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-      glDrawArrays(GL_TRIANGLES, 0, obj->geometry.n_vertex);
+      glDrawArrays(obj->geometry.primitive_type, 0, obj->geometry.n_vertex);
     }
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

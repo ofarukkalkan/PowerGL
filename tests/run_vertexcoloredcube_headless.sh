@@ -3,4 +3,4 @@
 # vertexcoloredcube_demo binary is available in the current working
 # directory.  Simply invoke it directly to work both in the build tree
 # and in "make distcheck".
-POWERGL_HEADLESS=1 EGL_PLATFORM=surfaceless ./vertexcoloredcube_demo
+POWERGL_ENABLE_GRID=0 POWERGL_HEADLESS=1 EGL_PLATFORM=surfaceless ./vertexcoloredcube_demo
