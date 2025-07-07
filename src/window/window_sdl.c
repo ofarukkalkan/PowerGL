@@ -72,6 +72,11 @@ void powergl_sdl_translate_event(const SDL_Event *src, powergl_event *dst){
             dst->x = src->button.x;
             dst->y = src->button.y;
             break;
+        case SDL_MOUSEWHEEL:
+            dst->type = POWERGL_EVENT_MOUSE_WHEEL;
+            dst->x = src->wheel.x;
+            dst->y = src->wheel.y;
+            break;
         default:
             dst->type = POWERGL_EVENT_NONE;
             break;

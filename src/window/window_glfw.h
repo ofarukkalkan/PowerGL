@@ -7,6 +7,7 @@
 void powergl_glfw_translate_key(powergl_event *dst, int key, int action);
 void powergl_glfw_translate_button(powergl_event *dst, int button, int action, int x, int y);
 void powergl_glfw_translate_cursor(powergl_event *dst, int x, int y);
+void powergl_glfw_translate_scroll(powergl_event *dst, double xoff, double yoff);
 #endif
 
 #endif

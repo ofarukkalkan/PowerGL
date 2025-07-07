@@ -373,6 +373,22 @@ void powergl_event_handle(powergl_object *obj, powergl_event *event, float delta
 
       break;
 
+    case POWERGL_EVENT_MOUSE_WHEEL:
+      if(obj->camera_flag){
+        float delta = powergl_float_to_radians(-event->y * 5.0f);
+        obj->camera.yfov += delta;
+        if(obj->camera.yfov < powergl_float_to_radians(20.0f))
+          obj->camera.yfov = powergl_float_to_radians(20.0f);
+        if(obj->camera.yfov > powergl_float_to_radians(120.0f))
+          obj->camera.yfov = powergl_float_to_radians(120.0f);
+        obj->camera.projection = powergl_mat4_perspectiveRH(obj->camera.yfov,
+                                                           obj->camera.aspect_ratio,
+                                                           obj->camera.znear,
+                                                           obj->camera.zfar);
+        obj->camera.projection_flag = 1;
+      }
+      break;
+
     default:
       break;
 

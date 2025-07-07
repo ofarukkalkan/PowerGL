@@ -57,4 +57,10 @@ void powergl_glfw_translate_cursor(powergl_event *dst, int x, int y){
     dst->y = y;
 }
 
+void powergl_glfw_translate_scroll(powergl_event *dst, double xoff, double yoff){
+    dst->type = POWERGL_EVENT_MOUSE_WHEEL;
+    dst->x = (int)xoff;
+    dst->y = (int)yoff;
+}
+
 #endif /* POWERGL_USE_GLFW */
