@@ -657,7 +657,7 @@ void powergl_pipeline_create(powergl_pipeline *ppl, powergl_object **objs, size_
     uniform vec3 lightDir;\n						\
     void main(){\n							\
       vec3 ambient = vec3(0.1f, 0.1f, 0.1f);				\
-      colorToFs = ambient + vColor * ( lightColor * max(dot(vNormal, reflect(lightDir,vNormal)),0) );\n \
+      colorToFs = ambient + vColor * ( lightColor * max(dot(vNormal, lightDir),0) );\n \
       texCoordToFs = vTexCoord;\n			\
       gl_Position = mvp * vec4( vPosition, 1.0f );\n			\
     }"
@@ -669,7 +669,7 @@ void powergl_pipeline_create(powergl_pipeline *ppl, powergl_object **objs, size_
     uniform sampler2D texUnit;\n			   \
     void main(){\n					   \
       vec4 texColor = texture(texUnit, texCoordToFs);\n	   \
-      fColor = texColor;\n				   \
+      fColor = vec4(texColor.rgb * colorToFs, texColor.a);\n				   \
     }"
   };
   /*vertex shader*/
