@@ -21,6 +21,10 @@ static powergl_key translate_key(SDL_Keycode k){
         case SDLK_s: return POWERGL_KEY_S;
         case SDLK_SPACE: return POWERGL_KEY_SPACE;
         case SDLK_LCTRL: return POWERGL_KEY_LCTRL;
+        case SDLK_LEFT: return POWERGL_KEY_ARROW_LEFT;
+        case SDLK_RIGHT: return POWERGL_KEY_ARROW_RIGHT;
+        case SDLK_UP: return POWERGL_KEY_ARROW_UP;
+        case SDLK_DOWN: return POWERGL_KEY_ARROW_DOWN;
         default: return POWERGL_KEY_UNKNOWN;
     }
 }

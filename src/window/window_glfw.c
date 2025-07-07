@@ -12,6 +12,10 @@ static powergl_key translate_key(int key){
         case GLFW_KEY_S: return POWERGL_KEY_S;
         case GLFW_KEY_SPACE: return POWERGL_KEY_SPACE;
         case GLFW_KEY_LEFT_CONTROL: return POWERGL_KEY_LCTRL;
+        case GLFW_KEY_LEFT: return POWERGL_KEY_ARROW_LEFT;
+        case GLFW_KEY_RIGHT: return POWERGL_KEY_ARROW_RIGHT;
+        case GLFW_KEY_UP: return POWERGL_KEY_ARROW_UP;
+        case GLFW_KEY_DOWN: return POWERGL_KEY_ARROW_DOWN;
         default: return POWERGL_KEY_UNKNOWN;
     }
 }
