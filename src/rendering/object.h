@@ -41,6 +41,10 @@ struct powergl_input_state_t {
   char key_d_pressed;
   char key_space_pressed;
   char key_lctrl_pressed;
+  char key_left_pressed;
+  char key_right_pressed;
+  char key_up_pressed;
+  char key_down_pressed;
 };
 
 struct powergl_texture_t {

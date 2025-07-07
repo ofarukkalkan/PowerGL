@@ -254,7 +254,31 @@ void powergl_object_fps_controller(powergl_object *obj, float delta_time){
   if(e.key_lctrl_pressed == 1){
     mov.z += -displacement;
   }
-  
+
+  float rot_speed = 1.0f * delta_time;
+
+  if(e.key_left_pressed == 1){
+    obj->transform.rotation_z.xyz = (powergl_vec3){{0.0f, 0.0f, 1.0f}};
+    obj->transform.rotation_z.w += rot_speed;
+    obj->transform.matrix_flag = 1;
+  }
+  if(e.key_right_pressed == 1){
+    obj->transform.rotation_z.xyz = (powergl_vec3){{0.0f, 0.0f, 1.0f}};
+    obj->transform.rotation_z.w -= rot_speed;
+    obj->transform.matrix_flag = 1;
+  }
+
+  if(e.key_up_pressed == 1){
+    obj->transform.rotation_x.xyz = (powergl_vec3){{1.0f, 0.0f, 0.0f}};
+    obj->transform.rotation_x.w += rot_speed;
+    obj->transform.matrix_flag = 1;
+  }
+  if(e.key_down_pressed == 1){
+    obj->transform.rotation_x.xyz = (powergl_vec3){{1.0f, 0.0f, 0.0f}};
+    obj->transform.rotation_x.w -= rot_speed;
+    obj->transform.matrix_flag = 1;
+  }
+
   if(mov.x !=0.0f || mov.y !=0.0f || mov.z !=0.0f){
     obj->transform.location = powergl_vec3_add(obj->transform.location, mov);
     powergl_vec3_print("object moved", obj->transform.location);
@@ -291,6 +315,18 @@ void powergl_event_handle(powergl_object *obj, powergl_event *event, float delta
       case POWERGL_KEY_LCTRL:
         obj->input.key_lctrl_pressed = 1;
         break;
+      case POWERGL_KEY_ARROW_LEFT:
+        obj->input.key_left_pressed = 1;
+        break;
+      case POWERGL_KEY_ARROW_RIGHT:
+        obj->input.key_right_pressed = 1;
+        break;
+      case POWERGL_KEY_ARROW_UP:
+        obj->input.key_up_pressed = 1;
+        break;
+      case POWERGL_KEY_ARROW_DOWN:
+        obj->input.key_down_pressed = 1;
+        break;
       default:
         break;
       }
@@ -318,6 +354,18 @@ void powergl_event_handle(powergl_object *obj, powergl_event *event, float delta
         break;
       case POWERGL_KEY_LCTRL:
         obj->input.key_lctrl_pressed = 0;
+        break;
+      case POWERGL_KEY_ARROW_LEFT:
+        obj->input.key_left_pressed = 0;
+        break;
+      case POWERGL_KEY_ARROW_RIGHT:
+        obj->input.key_right_pressed = 0;
+        break;
+      case POWERGL_KEY_ARROW_UP:
+        obj->input.key_up_pressed = 0;
+        break;
+      case POWERGL_KEY_ARROW_DOWN:
+        obj->input.key_down_pressed = 0;
         break;
       default:
         break;
