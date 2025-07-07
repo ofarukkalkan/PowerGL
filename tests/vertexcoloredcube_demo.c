@@ -11,6 +11,7 @@
 #include "src/rendering/visualscene.h"
 #include "src/rendering/object.h"
 #include "src/rendering/grid.h"
+#include "src/rendering/orientation_gizmo.h"
 #include "src/rendering/pipeline.h"
 #include "src/ui/scene_hierarchy.h"
 #include "src/png/png_loader.h"
@@ -22,7 +23,8 @@ static struct nk_context *nkctx;
 
 static powergl_object *cube;
 static powergl_object grid;
-static powergl_object *object_list[2];
+static powergl_object gizmo;
+static powergl_object *object_list[3];
 static int frame_counter = 0;
 static const int max_frames = 1;
 static int png_mismatch = 0;
@@ -40,9 +42,11 @@ static void scene_create(powergl_visualscene *scene){
     object_list[0] = cube;
     powergl_grid_create(&grid, 10);
     object_list[1] = &grid;
+    powergl_orientation_gizmo_create(&gizmo, 1.0f);
+    object_list[2] = &gizmo;
     if(scene->main_camera)
         scene->main_camera->event_flag = 1;
-    powergl_pipeline3_create(&scene->pipeline3, object_list, 2);
+    powergl_pipeline3_create(&scene->pipeline3, object_list, 3);
 }
 
 static void scene_events(powergl_visualscene *scene, powergl_event *e, float dt){
@@ -59,8 +63,16 @@ static void scene_run(powergl_visualscene *scene, float dt){
         powergl_camera_update(scene->main_camera);
         powergl_object_update_mvp(cube, scene->main_camera);
         powergl_object_update_mvp(&grid, scene->main_camera);
-        size_t count = powergl_enable_grid ? 2 : 1;
-        powergl_pipeline3_render(&scene->pipeline3, object_list, count);
+        powergl_orientation_gizmo_update(&gizmo, scene->main_camera);
+
+        powergl_object *draw_list[3];
+        size_t idx = 0;
+        draw_list[idx++] = cube;
+        if(powergl_enable_grid)
+            draw_list[idx++] = &grid;
+        draw_list[idx++] = &gizmo;
+
+        powergl_pipeline3_render(&scene->pipeline3, draw_list, idx);
         scene->main_camera->camera.vp_flag = 0;
     }
 
