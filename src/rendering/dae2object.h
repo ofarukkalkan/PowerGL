@@ -15,8 +15,8 @@ void powergl_build_animation(powergl_collada_core_library_animations *anim_lib, 
 void powergl_build_geometry(powergl_collada_core_node *node, powergl_object *obj);
 void powergl_build_camera(powergl_collada_core_node *node, powergl_object *obj);
 void powergl_build_light(powergl_collada_core_node *node, powergl_object *obj);
-void powergl_build_transform(powergl_collada_core_node *node, powergl_object *obj, int axis_convert);
-void powergl_build_object(powergl_collada_core_node  *node, powergl_collada_core_COLLADA *root, powergl_object *obj, int axis_convert);
+void powergl_build_transform(powergl_collada_core_node *node, powergl_object *obj);
+void powergl_build_object(powergl_collada_core_node  *node, powergl_collada_core_COLLADA *root, powergl_object *obj);
 
 
 #endif

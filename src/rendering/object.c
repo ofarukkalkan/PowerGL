@@ -496,18 +496,29 @@ void powergl_object_geometry_reset(powergl_geometry *geo){
 powergl_object *powergl_camera_default(){
   powergl_object *cam = powergl_resize(NULL, 1, sizeof(powergl_object));
   memset(cam, 0, sizeof(powergl_object));
-
+  cam->id = "Def. Camera";
+  cam->name = "Def. Camera";
+  cam->camera_flag = 1;
   cam->camera.type = 'p';
   cam->camera.aspect_ratio = 1.0f;
-  cam->camera.yfov = powergl_float_to_radians(60.0f);
+  cam->camera.yfov = powergl_float_to_radians(90.0f);
   cam->camera.xfov = 0.0f;
   cam->camera.znear = 0.1f;
-  cam->camera.zfar = 1000.0f;
+  cam->camera.zfar = 100.0f;
 
-  cam->camera.view = powergl_mat4_lookatRH((powergl_vec3){0.0f,0.0f,10.0f},
-                                           (powergl_vec3){0.0f,0.0f,0.0f},
-                                           (powergl_vec3){0.0f,1.0f,0.0f});
-  cam->camera.view_flag = 1;
+  cam->transform.location = (powergl_vec3){{7.35f,-6.92f, 4.95f}};
+  cam->transform.scale = (powergl_vec3){{1.0f, 1.0f, 1.0f}};
+  cam->transform.rotation_x = (powergl_vec4){{1.0f,0.0f,0.0f, 1.1f}};
+  cam->transform.rotation_y = (powergl_vec4){{0.0f,1.0f,0.0f, 0.0f}};
+  cam->transform.rotation_z = (powergl_vec4){{0.0f,0.0f,1.0f, 0.81f}};
+  
+  cam->transform.local = powergl_mat4_ident();
+  cam->transform.local = powergl_mat4_scale(cam->transform.local, cam->transform.scale);
+  cam->transform.local = powergl_mat4_rot(cam->transform.local, cam->transform.rotation_z.w, cam->transform.rotation_z.xyz);
+  cam->transform.local = powergl_mat4_rot(cam->transform.local, cam->transform.rotation_y.w, cam->transform.rotation_y.xyz);
+  cam->transform.local = powergl_mat4_rot(cam->transform.local, cam->transform.rotation_x.w, cam->transform.rotation_x.xyz);
+  cam->transform.local = powergl_mat4_translate(cam->transform.local, cam->transform.location);
+  cam->transform.matrix_flag = 1;
 
   cam->camera.projection = powergl_mat4_perspectiveRH(cam->camera.yfov,
                                                       cam->camera.aspect_ratio,
@@ -517,10 +528,6 @@ powergl_object *powergl_camera_default(){
 
   cam->camera.vp = powergl_mat4_mul(cam->camera.projection, cam->camera.view);
   cam->camera.vp_flag = 1;
-
-  powergl_transform_reset(&cam->transform);
-  cam->transform.location = (powergl_vec3){0.0f,0.0f,10.0f};
-  cam->camera_flag = 1;
 
   return cam;
 }

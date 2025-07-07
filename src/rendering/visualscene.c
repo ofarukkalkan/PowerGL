@@ -3,6 +3,7 @@
 #include "../powergl.h"
 #include "../collada/collada.h"
 #include "../collada/importer.h"
+#include "../math/intersect.h"
 #include "dae2object.h"
 
 #include <GL/glcorearb.h>
@@ -33,7 +34,7 @@ void powergl_scene_build(powergl_visualscene *this, const char *file) {
         this->objects[i] = powergl_resize(NULL, 1, sizeof(powergl_object));
 	this->objects[i]->parent = NULL;
 	
-        powergl_build_object(node, root, this->objects[i], zup);
+        powergl_build_object(node, root, this->objects[i]);
 
     } // for each node
 }
@@ -70,6 +71,23 @@ powergl_object *powergl_scene_find(powergl_visualscene *scene, const char *id) {
   return NULL;
 }
 
+void powergl_scene_add_object(powergl_visualscene *scene, powergl_object* obj, powergl_object* parent)
+{
+  assert(scene);
+  assert(obj);
+  scene->objects = powergl_resize(scene->objects, ++scene->n_object, sizeof(powergl_object));
+  scene->objects[scene->n_object - 1]= obj;
+
+  if(parent && parent->name)
+  {
+    powergl_object* found_parent = powergl_scene_find(scene, parent->name);
+    if(found_parent){
+      parent->objects = powergl_resize(NULL, parent->n_object++, sizeof(powergl_object));
+      parent->objects[parent->n_object - 1] = obj;
+    }
+  }
+}
+
 static void pick_recursive(powergl_object **objs, size_t n_obj, powergl_vec2 pos,
                            powergl_vec4 vp, powergl_object **best_obj,
                            float *best_dist)
@@ -104,10 +122,6 @@ powergl_object *powergl_scene_pick(powergl_visualscene *scene, powergl_object *c
 
   float dist = 1e30f;
   powergl_object *best = NULL;
-
-  /* ensure MVP matrices are up to date */
-  /*for(size_t i=0;i<scene->n_object;i++)
-    powergl_object_update_mvp(scene->objects[i], cam);*/
 
   pick_recursive(scene->objects, scene->n_object, mouse, viewport, &best, &dist);
 

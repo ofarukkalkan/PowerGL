@@ -26,7 +26,7 @@ powergl_object_library * powergl_object_library_build(const char *file){
         lib->objects[i] = powergl_resize(NULL, 1, sizeof(powergl_object));
 	lib->objects[i]->parent = NULL;
 	
-        powergl_build_object(node, root, lib->objects[i], zup);
+        powergl_build_object(node, root, lib->objects[i]);
 
     } // for each node
 

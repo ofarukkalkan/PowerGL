@@ -23,10 +23,10 @@ void powergl_grid_create(powergl_object *obj, int half_size)
     powergl_vec3 col = {0.5f, 0.5f, 0.5f};
     int idx = 0;
     for(int i = -half_size; i <= half_size; ++i){
-        obj->geometry.vertex[idx]   = (powergl_vec3){(float)i, 0.0f, (float)-half_size};
-        obj->geometry.vertex[idx+1] = (powergl_vec3){(float)i, 0.0f, (float)half_size};
-        obj->geometry.vertex[idx+2] = (powergl_vec3){(float)-half_size, 0.0f, (float)i};
-        obj->geometry.vertex[idx+3] = (powergl_vec3){(float)half_size, 0.0f, (float)i};
+        obj->geometry.vertex[idx]   = (powergl_vec3){(float)i, (float)-half_size, 0.0f};
+        obj->geometry.vertex[idx+1] = (powergl_vec3){(float)i, (float)half_size, 0.0f};
+        obj->geometry.vertex[idx+2] = (powergl_vec3){(float)-half_size, (float)i, 0.0f};
+        obj->geometry.vertex[idx+3] = (powergl_vec3){(float)half_size, (float)i, 0.0f};
         obj->geometry.triangles.color[idx] = col;
         obj->geometry.triangles.color[idx+1] = col;
         obj->geometry.triangles.color[idx+2] = col;

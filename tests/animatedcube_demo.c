@@ -13,7 +13,6 @@
 #include "src/rendering/grid.h"
 #include "src/rendering/pipeline.h"
 #include "src/ui/scene_hierarchy.h"
-#include "src/png/png_loader.h"
 
 #define MAX_VERTEX_MEMORY (512 * 1024)
 #define MAX_ELEMENT_MEMORY (128 * 1024)
@@ -24,19 +23,18 @@ static powergl_object *cube;
 static powergl_object grid;
 static powergl_object *object_list[2];
 static int frame_counter = 0;
-static const int max_frames = 1;
+static const int max_frames = 10;
 static int png_mismatch = 0;
 
 static void scene_create(powergl_visualscene *scene){
-    const char *dae = TEST_SRCDIR "/vertexcolored_cube.dae";
+    const char *dae = TEST_SRCDIR "/animated_cube.dae";
     powergl_scene_build(scene, dae);
     scene->main_camera = powergl_scene_find(scene, "Camera");
     if(!scene->main_camera)
-    {
         scene->main_camera = powergl_camera_default();
-        powergl_scene_add_object(scene, scene->main_camera, NULL);
-    }
     cube = powergl_scene_find(scene, "Cube");
+    if(cube)
+        cube->animated_flag = 1;
     object_list[0] = cube;
     powergl_grid_create(&grid, 10);
     object_list[1] = &grid;
@@ -54,28 +52,18 @@ static void scene_events(powergl_visualscene *scene, powergl_event *e, float dt)
 static void scene_run(powergl_visualscene *scene, float dt){
     if(cube && scene->main_camera)
     {
+        powergl_animation_next(cube, dt);
+        powergl_object_update_transform(cube, dt);
+
         powergl_object_fps_controller(scene->main_camera, dt);
         powergl_object_update_transform(scene->main_camera, dt);
+        
         powergl_camera_update(scene->main_camera);
         powergl_object_update_mvp(cube, scene->main_camera);
         powergl_object_update_mvp(&grid, scene->main_camera);
         size_t count = powergl_enable_grid ? 2 : 1;
         powergl_pipeline3_render(&scene->pipeline3, object_list, count);
         scene->main_camera->camera.vp_flag = 0;
-    }
-
-
-    if(frame_counter < max_frames){
-        char fname[64];
-        snprintf(fname, sizeof(fname), "frame_%02d.png", frame_counter);
-        powergl_window_screenshot(fname);
-        char ref[256];
-        snprintf(ref, sizeof(ref), "%s/vertexcoloredcube_demo.png", TEST_SRCDIR);
-        int same = powergl_png_compare(fname, ref);
-        if(!same)
-            png_mismatch = 1;
-        printf("frame %d %s reference\n", frame_counter, same ? "matches" : "differs from");
-        frame_counter++;
     }
 }
 
@@ -132,9 +120,11 @@ int main(){
 
             scene.run(&scene, dt);
 
-            powergl_ui_draw_scene_hierarchy(nkctx, &scene, nk_rect(10,10,250,400));
-                                           
+            powergl_ui_draw_scene_hierarchy(nkctx, &scene,
+                                           nk_rect(10,10,250,400));
+
             nk_sdl_render(NK_ANTI_ALIASING_OFF, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
+
 
             powergl_window_swap_buffers(wnd);
             last_counter = current_counter;

@@ -4,13 +4,6 @@
 #define DEBUG_OUTPUT 1
 #endif
 
-static const powergl_mat4 POWERGL_ZUP_TO_YUP = { .c = {
-    {1.0f, 0.0f, 0.0f, 0.0f},
-    {0.0f, 0.0f, -1.0f, 0.0f},
-    {0.0f, 1.0f, 0.0f, 0.0f},
-    {0.0f, 0.0f, 0.0f, 1.0f}
-}};
-
 typedef struct tokens_t {
   char **arr;
   size_t n;
@@ -490,27 +483,6 @@ void powergl_build_camera(powergl_collada_core_node *node, powergl_object *obj) 
   if(pers->n_aspect_ratio > 0 && pers->c_aspect_ratio[0]->n_content > 0) {
     obj->camera.aspect_ratio = pers->c_aspect_ratio[0]->content[0];
   }
-
-  /*
-    Build the initial view matrix from the camera's transform.  Blender does
-    not export a dedicated view matrix, but the world matrix of the camera can
-    be used for this after inversion.  Without this step the view remains the
-    identity matrix which causes objects to appear inverted or misplaced when
-    the scene is loaded.
-  */
-
-  powergl_mat4_inv_simd(obj->transform.world.data, obj->camera.view.data);
-  obj->camera.view_flag = 1;
-  
-  // If the transform is already inverted (for example exported in a different
-  // coordinate system) adjust the view matrix here instead.
-    
-  /*
-    powergl_vec3 eye = {{0.0f, 0.0f, 4.0f}};
-    powergl_vec3 target = {{0.0f, 0.0f, 0.0f}};
-    powergl_vec3 up = {{0.0f, 1.0f, 0.0f}};
-    powergl_lookat(&obj->camera.view, &eye, &target, &up);
-  */
     
 #if DEBUG_OUTPUT
   powergl_mat4_print("view transform", obj->camera.view);
@@ -600,7 +572,7 @@ void powergl_build_light(powergl_collada_core_node *node, powergl_object *obj) {
   }
 }
 
-void powergl_build_transform(powergl_collada_core_node *node, powergl_object *obj, int axis_convert) {
+void powergl_build_transform(powergl_collada_core_node *node, powergl_object *obj) {
 #if DEBUG_OUTPUT
   printf("\n%s\n", __func__);
 #endif
@@ -645,10 +617,6 @@ void powergl_build_transform(powergl_collada_core_node *node, powergl_object *ob
     obj->transform.world = powergl_mat4_ident();
   }
 
-  if(axis_convert && obj->parent == NULL){
-    obj->transform.local = powergl_mat4_mul(POWERGL_ZUP_TO_YUP, obj->transform.local);
-    obj->transform.world = powergl_mat4_mul(POWERGL_ZUP_TO_YUP, obj->transform.world);
-  }
 
   obj->transform.matrix_flag = 1;
     
@@ -657,7 +625,7 @@ void powergl_build_transform(powergl_collada_core_node *node, powergl_object *ob
 #endif
 }
 
-void powergl_build_object(powergl_collada_core_node  *node, powergl_collada_core_COLLADA *root, powergl_object *obj, int axis_convert) {
+void powergl_build_object(powergl_collada_core_node  *node, powergl_collada_core_COLLADA *root, powergl_object *obj) {
 #if DEBUG_OUTPUT
   printf("\n%s -> %s\n", __func__, node->c_id);
 #endif
@@ -668,7 +636,7 @@ void powergl_build_object(powergl_collada_core_node  *node, powergl_collada_core
   }
 
   if(node->n_translate > 0 || node->n_rotate > 0) {
-    powergl_build_transform(node, obj, axis_convert);
+    powergl_build_transform(node, obj);
   } else if(node->n_matrix > 0) {
     powergl_mat4 m;
     powergl_mat4_copy(&m, node->c_matrix[0]->content,
@@ -692,11 +660,6 @@ void powergl_build_object(powergl_collada_core_node  *node, powergl_collada_core
       obj->transform.world = powergl_mat4_mul(obj->parent->transform.world, obj->transform.local);
     } else {
       obj->transform.world = obj->transform.local;
-    }
-
-    if(axis_convert && obj->parent == NULL){
-      obj->transform.local = powergl_mat4_mul(POWERGL_ZUP_TO_YUP, obj->transform.local);
-      obj->transform.world = powergl_mat4_mul(POWERGL_ZUP_TO_YUP, obj->transform.world);
     }
 
     obj->transform.matrix_flag = 1;
@@ -734,7 +697,7 @@ void powergl_build_object(powergl_collada_core_node  *node, powergl_collada_core
       newobj->parent = obj;
       obj->objects[i] = newobj;
 
-      powergl_build_object(node->c_node[i], root, newobj, 0);
+      powergl_build_object(node->c_node[i], root, newobj);
     }
     
   }

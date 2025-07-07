@@ -8,7 +8,7 @@ AM_CXXFLAGS = -std=c++17 $(CODE_COVERAGE_CXXFLAGS)
 AM_CFLAGS = $(CODE_COVERAGE_CFLAGS)
 CODE_COVERAGE_LCOV_OPTIONS = --ignore-errors mismatch
 
-check_PROGRAMS = gtest_math gtest_collada vertexcoloredcube_demo
+check_PROGRAMS = gtest_math gtest_collada vertexcoloredcube_demo animatedcube_demo
 TESTS = gtest_math gtest_collada run_vertexcoloredcube_headless.sh
 
 gtest_math_SOURCES = gtest_math.cpp
@@ -23,6 +23,10 @@ gtest_collada_LDADD = \
 
 vertexcoloredcube_demo_SOURCES = vertexcoloredcube_demo.c
 vertexcoloredcube_demo_LDADD = \
+    $(top_builddir)/src/libpowergl.la -lm $(CODE_COVERAGE_LIBS)
+
+animatedcube_demo_SOURCES = animatedcube_demo.c
+animatedcube_demo_LDADD = \
     $(top_builddir)/src/libpowergl.la -lm $(CODE_COVERAGE_LIBS)
 
 include $(top_srcdir)/aminclude_static.am

@@ -40,6 +40,7 @@ struct powergl_visualscene_t {
 };
 
 void powergl_scene_build(powergl_visualscene *, const char *);
+void powergl_scene_add_object(powergl_visualscene *, powergl_object*, powergl_object*);
 powergl_object *powergl_scene_find(powergl_visualscene *, const char *);
 powergl_object *powergl_scene_pick(powergl_visualscene *, powergl_object *cam,
                                    powergl_vec2 mouse,
