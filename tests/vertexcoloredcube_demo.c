@@ -11,7 +11,9 @@
 #include "src/rendering/visualscene.h"
 #include "src/rendering/object.h"
 #include "src/rendering/grid.h"
+#include "src/rendering/orientation_gizmo.h"
 #include "src/rendering/pipeline.h"
+#include "src/math/mat4x4.h"
 #include "src/ui/scene_hierarchy.h"
 #include "src/png/png_loader.h"
 
@@ -22,7 +24,10 @@ static struct nk_context *nkctx;
 
 static powergl_object *cube;
 static powergl_object grid;
-static powergl_object *object_list[2];
+static powergl_object gizmo;
+static powergl_object *main_objects[2];
+static powergl_object *pipeline_objects[3];
+static powergl_object *gizmo_objects[1];
 static int frame_counter = 0;
 static const int max_frames = 10;
 static int png_mismatch = 0;
@@ -33,13 +38,24 @@ static void scene_create(powergl_visualscene *scene){
     scene->main_camera = powergl_scene_find(scene, "Camera");
     if(!scene->main_camera)
         scene->main_camera = powergl_camera_default();
+
     cube = powergl_scene_find(scene, "Cube");
-    object_list[0] = cube;
+    main_objects[0] = cube;
     powergl_grid_create(&grid, 10);
-    object_list[1] = &grid;
+    main_objects[1] = &grid;
+
+    powergl_orientation_gizmo_create(&gizmo, 1.0f);
+    gizmo_objects[0] = &gizmo;
+
+
     if(cube)
         cube->event_flag = 1;
-    powergl_pipeline3_create(&scene->pipeline3, object_list, 2);
+
+    pipeline_objects[0] = cube;
+    pipeline_objects[1] = &grid;
+    pipeline_objects[2] = &gizmo;
+
+    powergl_pipeline3_create(&scene->pipeline3, pipeline_objects, 3);
 }
 
 static void scene_events(powergl_visualscene *scene, powergl_event *e, float dt){
@@ -57,8 +73,18 @@ static void scene_run(powergl_visualscene *scene, float dt){
         powergl_object_update_mvp(cube, scene->main_camera);
         powergl_object_update_mvp(&grid, scene->main_camera);
         size_t count = powergl_enable_grid ? 2 : 1;
-        powergl_pipeline3_render(&scene->pipeline3, object_list, count);
+        powergl_pipeline3_render(&scene->pipeline3, main_objects, count);
         scene->main_camera->camera.vp_flag = 0;
+
+        /* draw orientation gizmo */
+        powergl_orientation_gizmo_update(&gizmo, scene->main_camera);
+        GLint vp[4];
+        glGetIntegerv(GL_VIEWPORT, vp);
+        glDisable(GL_DEPTH_TEST);
+        glViewport(vp[2]-100, vp[3]-100, 100, 100);
+        powergl_pipeline3_render(&scene->pipeline3, gizmo_objects, 1);
+        glViewport(vp[0], vp[1], vp[2], vp[3]);
+        glEnable(GL_DEPTH_TEST);
     }
 
 
