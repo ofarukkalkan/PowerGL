@@ -698,3 +698,368 @@ void powergl_pipeline_create(powergl_pipeline *ppl, powergl_object **objs, size_
   return;
 }
 
+void powergl_pipeline_lambert_create(powergl_pipeline_lambert *ppl, powergl_object **objs, size_t n_obj) {
+  /* vertex shader input attribute specs */
+  ppl->vis.index = 0;
+  ppl->vis.size = 3;
+  ppl->vis.type = GL_FLOAT;
+  ppl->vis.normalized = GL_FALSE;
+  ppl->vis.stride = 0;
+  ppl->vis.offset = 0;
+
+  ppl->nis.index = 1;
+  ppl->nis.size = 3;
+  ppl->nis.type = GL_FLOAT;
+  ppl->nis.normalized = GL_FALSE;
+  ppl->nis.stride = 0;
+  ppl->nis.offset = 0;
+
+  ppl->cis.index = 2;
+  ppl->cis.size = 3;
+  ppl->cis.type = GL_FLOAT;
+  ppl->cis.normalized = GL_FALSE;
+  ppl->cis.stride = 0;
+  ppl->cis.offset = 0;
+
+  ppl->tcis.index = 3;
+  ppl->tcis.size = 2;
+  ppl->tcis.type = GL_FLOAT;
+  ppl->tcis.normalized = GL_FALSE;
+  ppl->tcis.stride = 0;
+  ppl->tcis.offset = 0;
+
+  const GLchar *const vsrc[] = {
+    "#version 330 core\n"
+    "layout(location = 0) in vec3 vPosition;\n"
+    "layout(location = 1) in vec3 vNormal;\n"
+    "layout(location = 2) in vec3 vColor;\n"
+    "layout(location = 3) in vec2 vTexCoord;\n"
+    "out vec3 normalToFs;\n"
+    "out vec3 colorToFs;\n"
+    "out vec2 texCoordToFs;\n"
+    "uniform mat4 mvp;\n"
+    "void main(){\n"
+    "  normalToFs = vNormal;\n"
+    "  colorToFs = vColor;\n"
+    "  texCoordToFs = vTexCoord;\n"
+    "  gl_Position = mvp * vec4(vPosition, 1.0f);\n"
+    "}"
+  };
+
+  const GLchar *const fsrc[] = {
+    "#version 330 core\n"
+    "in vec3 normalToFs;\n"
+    "in vec3 colorToFs;\n"
+    "in vec2 texCoordToFs;\n"
+    "out vec4 fColor;\n"
+    "uniform vec3 lightColor;\n"
+    "uniform vec3 lightDir;\n"
+    "uniform sampler2D texUnit;\n"
+    "void main(){\n"
+    "  vec3 ambient = vec3(0.1,0.1,0.1);\n"
+    "  vec3 n = normalize(normalToFs);\n"
+    "  float diff = max(dot(n, -lightDir), 0.0);\n"
+    "  vec3 diffuse = colorToFs * lightColor * diff;\n"
+    "  vec4 texColor = texture(texUnit, texCoordToFs);\n"
+    "  vec3 finalColor = ambient + diffuse;\n"
+    "  fColor = vec4(finalColor,1.0) * texColor;\n"
+    "}"
+  };
+
+  ppl->vs = glCreateShader(GL_VERTEX_SHADER);
+  glShaderSource(ppl->vs, 1, vsrc, NULL);
+  glCompileShader(ppl->vs);
+
+  ppl->fs = glCreateShader(GL_FRAGMENT_SHADER);
+  glShaderSource(ppl->fs, 1, fsrc, NULL);
+  glCompileShader(ppl->fs);
+
+  ppl->gp = glCreateProgram();
+  glAttachShader(ppl->gp, ppl->vs);
+  glAttachShader(ppl->gp, ppl->fs);
+  glLinkProgram(ppl->gp);
+
+  glUseProgram(ppl->gp);
+  ppl->uni_matrix = glGetUniformLocation(ppl->gp, "mvp");
+  ppl->uni_light_color = glGetUniformLocation(ppl->gp, "lightColor");
+  ppl->uni_light_dir = glGetUniformLocation(ppl->gp, "lightDir");
+  ppl->uni_sampler = glGetUniformLocation(ppl->gp, "texUnit");
+
+  powergl_pipeline_create_objects(ppl, objs, n_obj);
+}
+
+void powergl_pipeline_blinnphong_create(powergl_pipeline_blinnphong *ppl, powergl_object **objs, size_t n_obj) {
+  ppl->vis.index = 0;
+  ppl->vis.size = 3;
+  ppl->vis.type = GL_FLOAT;
+  ppl->vis.normalized = GL_FALSE;
+  ppl->vis.stride = 0;
+  ppl->vis.offset = 0;
+
+  ppl->nis.index = 1;
+  ppl->nis.size = 3;
+  ppl->nis.type = GL_FLOAT;
+  ppl->nis.normalized = GL_FALSE;
+  ppl->nis.stride = 0;
+  ppl->nis.offset = 0;
+
+  ppl->cis.index = 2;
+  ppl->cis.size = 3;
+  ppl->cis.type = GL_FLOAT;
+  ppl->cis.normalized = GL_FALSE;
+  ppl->cis.stride = 0;
+  ppl->cis.offset = 0;
+
+  ppl->tcis.index = 3;
+  ppl->tcis.size = 2;
+  ppl->tcis.type = GL_FLOAT;
+  ppl->tcis.normalized = GL_FALSE;
+  ppl->tcis.stride = 0;
+  ppl->tcis.offset = 0;
+
+  const GLchar *const vsrc[] = {
+    "#version 330 core\n"
+    "layout(location = 0) in vec3 vPosition;\n"
+    "layout(location = 1) in vec3 vNormal;\n"
+    "layout(location = 2) in vec3 vColor;\n"
+    "layout(location = 3) in vec2 vTexCoord;\n"
+    "out vec3 normalToFs;\n"
+    "out vec3 colorToFs;\n"
+    "out vec2 texCoordToFs;\n"
+    "uniform mat4 mvp;\n"
+    "void main(){\n"
+    "  normalToFs = vNormal;\n"
+    "  colorToFs = vColor;\n"
+    "  texCoordToFs = vTexCoord;\n"
+    "  gl_Position = mvp * vec4(vPosition, 1.0f);\n"
+    "}"
+  };
+
+  const GLchar *const fsrc[] = {
+    "#version 330 core\n"
+    "in vec3 normalToFs;\n"
+    "in vec3 colorToFs;\n"
+    "in vec2 texCoordToFs;\n"
+    "out vec4 fColor;\n"
+    "uniform vec3 lightColor;\n"
+    "uniform vec3 lightDir;\n"
+    "uniform sampler2D texUnit;\n"
+    "void main(){\n"
+    "  vec3 ambient = vec3(0.1,0.1,0.1);\n"
+    "  vec3 n = normalize(normalToFs);\n"
+    "  vec3 l = normalize(-lightDir);\n"
+    "  vec3 v = vec3(0,0,1);\n"
+    "  vec3 h = normalize(l + v);\n"
+    "  float diff = max(dot(n,l),0.0);\n"
+    "  float spec = pow(max(dot(n,h),0.0),16.0);\n"
+    "  vec3 diffuse = colorToFs * lightColor * diff;\n"
+    "  vec3 specular = lightColor * spec;\n"
+    "  vec4 texColor = texture(texUnit, texCoordToFs);\n"
+    "  vec3 finalColor = ambient + diffuse + specular;\n"
+    "  fColor = vec4(finalColor,1.0) * texColor;\n"
+    "}"
+  };
+
+  ppl->vs = glCreateShader(GL_VERTEX_SHADER);
+  glShaderSource(ppl->vs, 1, vsrc, NULL);
+  glCompileShader(ppl->vs);
+
+  ppl->fs = glCreateShader(GL_FRAGMENT_SHADER);
+  glShaderSource(ppl->fs, 1, fsrc, NULL);
+  glCompileShader(ppl->fs);
+
+  ppl->gp = glCreateProgram();
+  glAttachShader(ppl->gp, ppl->vs);
+  glAttachShader(ppl->gp, ppl->fs);
+  glLinkProgram(ppl->gp);
+
+  glUseProgram(ppl->gp);
+  ppl->uni_matrix = glGetUniformLocation(ppl->gp, "mvp");
+  ppl->uni_light_color = glGetUniformLocation(ppl->gp, "lightColor");
+  ppl->uni_light_dir = glGetUniformLocation(ppl->gp, "lightDir");
+  ppl->uni_sampler = glGetUniformLocation(ppl->gp, "texUnit");
+
+  powergl_pipeline_create_objects(ppl, objs, n_obj);
+}
+
+void powergl_pipeline_flat_create(powergl_pipeline_flat *ppl, powergl_object **objs, size_t n_obj) {
+  ppl->vis.index = 0;
+  ppl->vis.size = 3;
+  ppl->vis.type = GL_FLOAT;
+  ppl->vis.normalized = GL_FALSE;
+  ppl->vis.stride = 0;
+  ppl->vis.offset = 0;
+
+  ppl->nis.index = 1;
+  ppl->nis.size = 3;
+  ppl->nis.type = GL_FLOAT;
+  ppl->nis.normalized = GL_FALSE;
+  ppl->nis.stride = 0;
+  ppl->nis.offset = 0;
+
+  ppl->cis.index = 2;
+  ppl->cis.size = 3;
+  ppl->cis.type = GL_FLOAT;
+  ppl->cis.normalized = GL_FALSE;
+  ppl->cis.stride = 0;
+  ppl->cis.offset = 0;
+
+  ppl->tcis.index = 3;
+  ppl->tcis.size = 2;
+  ppl->tcis.type = GL_FLOAT;
+  ppl->tcis.normalized = GL_FALSE;
+  ppl->tcis.stride = 0;
+  ppl->tcis.offset = 0;
+
+  const GLchar *const vsrc[] = {
+    "#version 330 core\n"
+    "layout(location = 0) in vec3 vPosition;\n"
+    "layout(location = 1) in vec3 vNormal;\n"
+    "layout(location = 2) in vec3 vColor;\n"
+    "flat out vec3 normalToFs;\n"
+    "flat out vec3 colorToFs;\n"
+    "uniform mat4 mvp;\n"
+    "void main(){\n"
+    "  normalToFs = vNormal;\n"
+    "  colorToFs = vColor;\n"
+    "  gl_Position = mvp * vec4(vPosition,1.0f);\n"
+    "}"
+  };
+
+  const GLchar *const fsrc[] = {
+    "#version 330 core\n"
+    "flat in vec3 normalToFs;\n"
+    "flat in vec3 colorToFs;\n"
+    "out vec4 fColor;\n"
+    "uniform vec3 lightColor;\n"
+    "uniform vec3 lightDir;\n"
+    "void main(){\n"
+    "  vec3 ambient = vec3(0.1,0.1,0.1);\n"
+    "  vec3 n = normalize(normalToFs);\n"
+    "  float diff = max(dot(n,-lightDir),0.0);\n"
+    "  vec3 finalColor = ambient + colorToFs * lightColor * diff;\n"
+    "  fColor = vec4(finalColor,1.0);\n"
+    "}"
+  };
+
+  ppl->vs = glCreateShader(GL_VERTEX_SHADER);
+  glShaderSource(ppl->vs, 1, vsrc, NULL);
+  glCompileShader(ppl->vs);
+
+  ppl->fs = glCreateShader(GL_FRAGMENT_SHADER);
+  glShaderSource(ppl->fs, 1, fsrc, NULL);
+  glCompileShader(ppl->fs);
+
+  ppl->gp = glCreateProgram();
+  glAttachShader(ppl->gp, ppl->vs);
+  glAttachShader(ppl->gp, ppl->fs);
+  glLinkProgram(ppl->gp);
+
+  glUseProgram(ppl->gp);
+  ppl->uni_matrix = glGetUniformLocation(ppl->gp, "mvp");
+  ppl->uni_light_color = glGetUniformLocation(ppl->gp, "lightColor");
+  ppl->uni_light_dir = glGetUniformLocation(ppl->gp, "lightDir");
+  ppl->uni_sampler = -1;
+
+  powergl_pipeline_create_objects(ppl, objs, n_obj);
+}
+
+void powergl_pipeline_gouraud_create(powergl_pipeline_gouraud *ppl, powergl_object **objs, size_t n_obj) {
+  ppl->vis.index = 0;
+  ppl->vis.size = 3;
+  ppl->vis.type = GL_FLOAT;
+  ppl->vis.normalized = GL_FALSE;
+  ppl->vis.stride = 0;
+  ppl->vis.offset = 0;
+
+  ppl->nis.index = 1;
+  ppl->nis.size = 3;
+  ppl->nis.type = GL_FLOAT;
+  ppl->nis.normalized = GL_FALSE;
+  ppl->nis.stride = 0;
+  ppl->nis.offset = 0;
+
+  ppl->cis.index = 2;
+  ppl->cis.size = 3;
+  ppl->cis.type = GL_FLOAT;
+  ppl->cis.normalized = GL_FALSE;
+  ppl->cis.stride = 0;
+  ppl->cis.offset = 0;
+
+  ppl->tcis.index = 3;
+  ppl->tcis.size = 2;
+  ppl->tcis.type = GL_FLOAT;
+  ppl->tcis.normalized = GL_FALSE;
+  ppl->tcis.stride = 0;
+  ppl->tcis.offset = 0;
+
+  const GLchar *const vsrc[] = {
+    "#version 330 core\n"
+    "layout(location = 0) in vec3 vPosition;\n"
+    "layout(location = 1) in vec3 vNormal;\n"
+    "layout(location = 2) in vec3 vColor;\n"
+    "layout(location = 3) in vec2 vTexCoord;\n"
+    "out vec3 colorToFs;\n"
+    "out vec2 texCoordToFs;\n"
+    "uniform mat4 mvp;\n"
+    "uniform vec3 lightColor;\n"
+    "uniform vec3 lightDir;\n"
+    "void main(){\n"
+    "  vec3 ambient = vec3(0.1,0.1,0.1);\n"
+    "  float diff = max(dot(normalize(vNormal), -lightDir), 0.0);\n"
+    "  colorToFs = ambient + vColor * lightColor * diff;\n"
+    "  texCoordToFs = vTexCoord;\n"
+    "  gl_Position = mvp * vec4(vPosition,1.0f);\n"
+    "}"
+  };
+
+  const GLchar *const fsrc[] = {
+    "#version 330 core\n"
+    "in vec3 colorToFs;\n"
+    "in vec2 texCoordToFs;\n"
+    "out vec4 fColor;\n"
+    "uniform sampler2D texUnit;\n"
+    "void main(){\n"
+    "  vec4 texColor = texture(texUnit, texCoordToFs);\n"
+    "  fColor = vec4(colorToFs,1.0) * texColor;\n"
+    "}"
+  };
+
+  ppl->vs = glCreateShader(GL_VERTEX_SHADER);
+  glShaderSource(ppl->vs, 1, vsrc, NULL);
+  glCompileShader(ppl->vs);
+
+  ppl->fs = glCreateShader(GL_FRAGMENT_SHADER);
+  glShaderSource(ppl->fs, 1, fsrc, NULL);
+  glCompileShader(ppl->fs);
+
+  ppl->gp = glCreateProgram();
+  glAttachShader(ppl->gp, ppl->vs);
+  glAttachShader(ppl->gp, ppl->fs);
+  glLinkProgram(ppl->gp);
+
+  glUseProgram(ppl->gp);
+  ppl->uni_matrix = glGetUniformLocation(ppl->gp, "mvp");
+  ppl->uni_light_color = glGetUniformLocation(ppl->gp, "lightColor");
+  ppl->uni_light_dir = glGetUniformLocation(ppl->gp, "lightDir");
+  ppl->uni_sampler = glGetUniformLocation(ppl->gp, "texUnit");
+
+  powergl_pipeline_create_objects(ppl, objs, n_obj);
+}
+
+void powergl_pipeline_lambert_render(powergl_pipeline_lambert *ppl, powergl_object **objs, size_t n_object, powergl_object *main_light){
+  powergl_pipeline_render((powergl_pipeline *)ppl, objs, n_object, main_light);
+}
+
+void powergl_pipeline_blinnphong_render(powergl_pipeline_blinnphong *ppl, powergl_object **objs, size_t n_object, powergl_object *main_light){
+  powergl_pipeline_render((powergl_pipeline *)ppl, objs, n_object, main_light);
+}
+
+void powergl_pipeline_flat_render(powergl_pipeline_flat *ppl, powergl_object **objs, size_t n_object, powergl_object *main_light){
+  powergl_pipeline_render((powergl_pipeline *)ppl, objs, n_object, main_light);
+}
+
+void powergl_pipeline_gouraud_render(powergl_pipeline_gouraud *ppl, powergl_object **objs, size_t n_object, powergl_object *main_light){
+  powergl_pipeline_render((powergl_pipeline *)ppl, objs, n_object, main_light);
+}
+

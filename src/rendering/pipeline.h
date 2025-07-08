@@ -11,6 +11,10 @@
 typedef struct powergl_pipeline_t powergl_pipeline;
 typedef struct powergl_pipeline2_t powergl_pipeline2;
 typedef struct powergl_pipeline3_t powergl_pipeline3;
+typedef powergl_pipeline powergl_pipeline_lambert;
+typedef powergl_pipeline powergl_pipeline_blinnphong;
+typedef powergl_pipeline powergl_pipeline_flat;
+typedef powergl_pipeline powergl_pipeline_gouraud;
 
 typedef struct {
   GLuint index;
@@ -68,6 +72,18 @@ void powergl_pipeline2_render(powergl_pipeline2 *, powergl_object **, size_t);
 
 void powergl_pipeline3_create(powergl_pipeline3 *, powergl_object **objs, size_t n_obj);
 void powergl_pipeline3_render(powergl_pipeline3 *, powergl_object **, size_t);
+
+void powergl_pipeline_lambert_create(powergl_pipeline_lambert *, powergl_object **objs, size_t n_obj);
+void powergl_pipeline_lambert_render(powergl_pipeline_lambert *, powergl_object **, size_t, powergl_object *);
+
+void powergl_pipeline_blinnphong_create(powergl_pipeline_blinnphong *, powergl_object **objs, size_t n_obj);
+void powergl_pipeline_blinnphong_render(powergl_pipeline_blinnphong *, powergl_object **, size_t, powergl_object *);
+
+void powergl_pipeline_flat_create(powergl_pipeline_flat *, powergl_object **objs, size_t n_obj);
+void powergl_pipeline_flat_render(powergl_pipeline_flat *, powergl_object **, size_t, powergl_object *);
+
+void powergl_pipeline_gouraud_create(powergl_pipeline_gouraud *, powergl_object **objs, size_t n_obj);
+void powergl_pipeline_gouraud_render(powergl_pipeline_gouraud *, powergl_object **, size_t, powergl_object *);
 
 /* Set to 0 to disable drawing selection outlines */
 extern int powergl_enable_outline;
