@@ -280,14 +280,11 @@ void powergl_object_fps_controller(powergl_object *obj, float delta_time){
   }
 
   if(mov.x !=0.0f || mov.y !=0.0f || mov.z !=0.0f){
-    /* Move relative to the camera orientation */
+    /* Move relative to the yaw orientation only so looking up/down does not
+       affect forward/backward movement */
     powergl_mat4 rot = powergl_mat4_ident();
     rot = powergl_mat4_rot(rot, obj->transform.rotation_z.w,
                            obj->transform.rotation_z.xyz);
-    rot = powergl_mat4_rot(rot, obj->transform.rotation_y.w,
-                           obj->transform.rotation_y.xyz);
-    rot = powergl_mat4_rot(rot, obj->transform.rotation_x.w,
-                           obj->transform.rotation_x.xyz);
 
     powergl_vec4 mov4 = {{mov.x, mov.y, mov.z, 0.0f}};
     mov4 = powergl_vec4_trans(mov4, rot);
