@@ -123,9 +123,7 @@ static void render2(powergl_pipeline2 *ppl, powergl_object **objs, size_t n_obje
       continue;
     }
       
-    if(last_obj != objs[i]){
-      glUniformMatrix4fv(ppl->uni_matrix, 1, GL_FALSE, obj->transform.mvp.data);
-    } else if(obj->transform.mvp_flag == 1){      
+    if(last_obj != objs[i] || obj->transform.mvp_flag == 1 || ppl->forceUpdate){
       glUniformMatrix4fv(ppl->uni_matrix, 1, GL_FALSE, obj->transform.mvp.data);
       obj->transform.mvp_flag = 0;
     }
@@ -180,12 +178,9 @@ static void render(powergl_pipeline *ppl, powergl_object **objs, size_t n_object
 
 
       
-    if(last_obj != objs[i]){
+    if(last_obj != objs[i] || obj->transform.mvp_flag == 1 || ppl->forceUpdate){
       glUniformMatrix4fv(ppl->uni_matrix, 1, GL_FALSE, obj->transform.mvp.data);
       glUniform1i(ppl->uni_sampler, 0);
-
-    } else if(obj->transform.mvp_flag == 1){      
-      glUniformMatrix4fv(ppl->uni_matrix, 1, GL_FALSE, obj->transform.mvp.data);
       obj->transform.mvp_flag = 0;
     }
 
@@ -270,7 +265,7 @@ void powergl_pipeline3_render(powergl_pipeline3 *ppl, powergl_object **objs, siz
 
 void powergl_pipeline2_render(powergl_pipeline2 *ppl, powergl_object **objs, size_t n_object) {
 
-    if(ppl!=last_ppl2){
+    if(ppl!=last_ppl2 || ppl->forceUpdate){
 
       // restore uniforms
       glUseProgram(ppl->gp);
@@ -292,7 +287,7 @@ void powergl_pipeline2_render(powergl_pipeline2 *ppl, powergl_object **objs, siz
 
 void powergl_pipeline_render(powergl_pipeline *ppl, powergl_object **objs, size_t n_object, powergl_object *main_light) {
 
-    if(ppl!=last_ppl){
+    if(ppl!=last_ppl || ppl->forceUpdate){
 
       // restore uniforms
       glUseProgram(ppl->gp);
@@ -555,6 +550,7 @@ void powergl_pipeline3_create(powergl_pipeline3 *ppl, powergl_object **objs, siz
 }
 
 void powergl_pipeline2_create(powergl_pipeline2 *ppl, powergl_object **objs, size_t n_obj) {
+  ppl->forceUpdate = 0;
   
   /*vertex shader input attibute specs*/
   
@@ -609,6 +605,7 @@ void powergl_pipeline2_create(powergl_pipeline2 *ppl, powergl_object **objs, siz
 }
 
 void powergl_pipeline_create(powergl_pipeline *ppl, powergl_object **objs, size_t n_obj) {
+  ppl->forceUpdate = 0;
   
   /*vertex shader input attibute specs*/
   
@@ -699,6 +696,7 @@ void powergl_pipeline_create(powergl_pipeline *ppl, powergl_object **objs, size_
 }
 
 void powergl_pipeline_flat_create(powergl_pipeline *ppl, powergl_object **objs, size_t n_obj) {
+  ppl->forceUpdate = 0;
   /*vertex shader input attribute specs*/
   /*vertex input*/
   ppl->vis.index = 0;
@@ -774,6 +772,7 @@ void powergl_pipeline_flat_create(powergl_pipeline *ppl, powergl_object **objs, 
 }
 
 void powergl_pipeline_gouraud_create(powergl_pipeline *ppl, powergl_object **objs, size_t n_obj) {
+  ppl->forceUpdate = 0;
   /*vertex shader input attribute specs*/
   /*vertex input*/
   ppl->vis.index = 0;
@@ -844,6 +843,7 @@ void powergl_pipeline_gouraud_create(powergl_pipeline *ppl, powergl_object **obj
 }
 
 void powergl_pipeline_lambert_create(powergl_pipeline *ppl, powergl_object **objs, size_t n_obj) {
+  ppl->forceUpdate = 0;
   /*vertex shader input attribute specs*/
   /*vertex input*/
   ppl->vis.index = 0;
@@ -918,6 +918,7 @@ void powergl_pipeline_lambert_create(powergl_pipeline *ppl, powergl_object **obj
 }
 
 void powergl_pipeline_blinnphong_create(powergl_pipeline *ppl, powergl_object **objs, size_t n_obj) {
+  ppl->forceUpdate = 0;
   /*vertex shader input attribute specs*/
   /*vertex input*/
   ppl->vis.index = 0;

@@ -34,6 +34,7 @@ struct powergl_pipeline_t {
   GLint uni_light_color;
   GLint uni_light_dir;
   GLint uni_sampler;
+  int forceUpdate;
 };
 
 struct powergl_pipeline2_t {
@@ -42,6 +43,7 @@ struct powergl_pipeline2_t {
   GLuint fs;
   GLuint gp;
   GLint uni_matrix;
+  int forceUpdate;
 };
 
 struct powergl_pipeline3_t {
