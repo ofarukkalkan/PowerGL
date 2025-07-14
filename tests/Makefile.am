@@ -8,8 +8,8 @@ AM_CXXFLAGS = -std=c++17 $(CODE_COVERAGE_CXXFLAGS)
 AM_CFLAGS = $(CODE_COVERAGE_CFLAGS)
 CODE_COVERAGE_LCOV_OPTIONS = --ignore-errors mismatch
 
-check_PROGRAMS = gtest_math gtest_collada vertexcoloredcube_demo animatedcube_demo
-TESTS = gtest_math gtest_collada run_vertexcoloredcube_headless.sh
+check_PROGRAMS = gtest_math gtest_collada gtest_intersect vertexcoloredcube_demo animatedcube_demo
+TESTS = gtest_math gtest_collada gtest_intersect run_vertexcoloredcube_headless.sh
 
 gtest_math_SOURCES = gtest_math.cpp
 
@@ -20,6 +20,10 @@ gtest_collada_LDADD = \
     $(top_builddir)/src/collada/libpowerglcollada.la \
     $(top_builddir)/src/libpowergl.la \
     $(GTEST_LIBS) -lm $(CODE_COVERAGE_LIBS)
+
+gtest_intersect_SOURCES = gtest_intersect.cpp
+gtest_intersect_LDADD = \
+    $(top_builddir)/src/math/libpowerglmath.la $(GTEST_LIBS) -lm $(CODE_COVERAGE_LIBS)
 
 vertexcoloredcube_demo_SOURCES = vertexcoloredcube_demo.c
 vertexcoloredcube_demo_LDADD = \
