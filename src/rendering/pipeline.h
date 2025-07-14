@@ -69,6 +69,11 @@ void powergl_pipeline2_render(powergl_pipeline2 *, powergl_object **, size_t);
 void powergl_pipeline3_create(powergl_pipeline3 *, powergl_object **objs, size_t n_obj);
 void powergl_pipeline3_render(powergl_pipeline3 *, powergl_object **, size_t);
 
+void powergl_pipeline_flat_create(powergl_pipeline *, powergl_object **objs, size_t n_obj);
+void powergl_pipeline_gouraud_create(powergl_pipeline *, powergl_object **objs, size_t n_obj);
+void powergl_pipeline_lambert_create(powergl_pipeline *, powergl_object **objs, size_t n_obj);
+void powergl_pipeline_blinnphong_create(powergl_pipeline *, powergl_object **objs, size_t n_obj);
+
 /* Set to 0 to disable drawing selection outlines */
 extern int powergl_enable_outline;
 /* Set to 0 to disable drawing the grid */

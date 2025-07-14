@@ -8,7 +8,8 @@ AM_CXXFLAGS = -std=c++17 $(CODE_COVERAGE_CXXFLAGS)
 AM_CFLAGS = $(CODE_COVERAGE_CFLAGS)
 CODE_COVERAGE_LCOV_OPTIONS = --ignore-errors mismatch
 
-check_PROGRAMS = gtest_math gtest_collada gtest_intersect vertexcoloredcube_demo animatedcube_demo
+check_PROGRAMS = gtest_math gtest_collada gtest_intersect vertexcoloredcube_demo animatedcube_demo \
+    flat_demo gouraud_demo lambert_demo blinnphong_demo
 TESTS = gtest_math gtest_collada gtest_intersect run_vertexcoloredcube_headless.sh
 
 gtest_math_SOURCES = gtest_math.cpp
@@ -31,6 +32,22 @@ vertexcoloredcube_demo_LDADD = \
 
 animatedcube_demo_SOURCES = animatedcube_demo.c
 animatedcube_demo_LDADD = \
+    $(top_builddir)/src/libpowergl.la -lm $(CODE_COVERAGE_LIBS)
+
+flat_demo_SOURCES = flat_demo.c
+flat_demo_LDADD = \
+    $(top_builddir)/src/libpowergl.la -lm $(CODE_COVERAGE_LIBS)
+
+gouraud_demo_SOURCES = gouraud_demo.c
+gouraud_demo_LDADD = \
+    $(top_builddir)/src/libpowergl.la -lm $(CODE_COVERAGE_LIBS)
+
+lambert_demo_SOURCES = lambert_demo.c
+lambert_demo_LDADD = \
+    $(top_builddir)/src/libpowergl.la -lm $(CODE_COVERAGE_LIBS)
+
+blinnphong_demo_SOURCES = blinnphong_demo.c
+blinnphong_demo_LDADD = \
     $(top_builddir)/src/libpowergl.la -lm $(CODE_COVERAGE_LIBS)
 
 include $(top_srcdir)/aminclude_static.am
