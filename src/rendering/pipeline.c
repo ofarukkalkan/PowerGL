@@ -145,7 +145,7 @@ static void render2(powergl_pipeline2 *ppl, powergl_object **objs, size_t n_obje
 #endif
 
     if(obj->selected && powergl_enable_outline){
-      draw_outline(obj);
+      // draw_outline(obj);
     } else {
       glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
       glDrawArrays(obj->geometry.primitive_type, 0, obj->geometry.n_vertex);
@@ -219,7 +219,7 @@ static void render(powergl_pipeline *ppl, powergl_object **objs, size_t n_object
 #endif
 
     if(obj->selected && powergl_enable_outline){
-      draw_outline(obj);
+      // draw_outline(obj);
     } else {
       glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
       glDrawArrays(obj->geometry.primitive_type, 0, obj->geometry.n_vertex);
@@ -288,6 +288,13 @@ void powergl_pipeline2_render(powergl_pipeline2 *ppl, powergl_object **objs, siz
 void powergl_pipeline_render(powergl_pipeline *ppl, powergl_object **objs, size_t n_object, powergl_object *main_light) {
 
     if(ppl!=last_ppl || ppl->forceUpdate){
+
+      glClearColor(0.3f, 0.6f, 0.9f, 1.0f);
+      glClearStencil(0);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+      glEnable(GL_DEPTH_TEST);
+      glEnable (GL_CULL_FACE);
+      glCullFace (GL_BACK);
 
       // restore uniforms
       glUseProgram(ppl->gp);
@@ -727,27 +734,23 @@ void powergl_pipeline_flat_create(powergl_pipeline *ppl, powergl_object **objs, 
     "#version 330 core\n"
     "layout(location = 0) in vec3 vPosition;\n"
     "layout(location = 1) in vec3 vNormal;\n"
-    "layout(location = 2) in vec3 vColor;\n"
     "out flat vec3 normalToFs;\n"
-    "out flat vec3 colorToFs;\n"
     "uniform mat4 mvp;\n"
     "void main(){\n"
     "  normalToFs = vNormal;\n"
-    "  colorToFs = vColor;\n"
     "  gl_Position = mvp * vec4(vPosition,1.0);\n"
     "}"
   };
   const GLchar *const fsrc[] = {
     "#version 330 core\n"
     "in flat vec3 normalToFs;\n"
-    "in flat vec3 colorToFs;\n"
     "out vec4 fColor;\n"
     "uniform vec3 lightColor;\n"
     "uniform vec3 lightDir;\n"
     "void main(){\n"
     "  vec3 ambient = vec3(0.1,0.1,0.1);\n"
     "  float diff = max(dot(normalize(normalToFs), normalize(-lightDir)),0.0);\n"
-    "  vec3 result = (ambient + diff * lightColor) * colorToFs;\n"
+    "  vec3 result = (ambient + diff * lightColor) * vec3(0.5, 0.5, 0.5);\n"
     "  fColor = vec4(result,1.0);\n"
     "}"
   };

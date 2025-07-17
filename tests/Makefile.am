@@ -10,7 +10,8 @@ CODE_COVERAGE_LCOV_OPTIONS = --ignore-errors mismatch
 
 check_PROGRAMS = gtest_math gtest_collada gtest_intersect vertexcoloredcube_demo animatedcube_demo \
     flat_demo gouraud_demo lambert_demo blinnphong_demo
-TESTS = gtest_math gtest_collada gtest_intersect run_vertexcoloredcube_headless.sh
+TESTS = gtest_math gtest_collada gtest_intersect run_vertexcoloredcube_headless.sh run_flatshadedcube_headless.sh \
+    run_gouraudshadedcube_headless.sh run_lambertshadedcube_headless.sh run_blinnphongshadedcube_headless.sh
 
 gtest_math_SOURCES = gtest_math.cpp
 
@@ -57,7 +58,8 @@ distclean-local: code-coverage-dist-clean
 
 # Test data files shipped with the distribution
 EXTRA_DIST = vertexcolored_cube.dae vertexcoloredcube_demo.png \
-    run_vertexcoloredcube_headless.sh
+    run_vertexcoloredcube_headless.sh run_flatshadedcube_headless.sh \
+    run_gouraudshadedcube_headless.sh run_lambertshadedcube_headless.sh run_blinnphongshadedcube_headless.sh
 
 # Remove generated files produced during tests
 CLEANFILES = cube_exported.dae exported.dae frame_*.png

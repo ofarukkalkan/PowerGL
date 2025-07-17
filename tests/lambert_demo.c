@@ -64,7 +64,7 @@ static void scene_run(powergl_visualscene *scene, float dt){
         powergl_object_update_mvp(cube, scene->main_camera);
         powergl_object_update_mvp(&grid, scene->main_camera);
         powergl_orientation_gizmo_update(&gizmo, scene->main_camera);
-        size_t count = powergl_enable_grid ? 3 : 2;
+        size_t count = powergl_enable_grid ? 3 : 1;
         powergl_pipeline_render(&scene->pipeline, object_list, count, scene->main_light);
         scene->main_camera->camera.vp_flag = 0;
     }
@@ -107,6 +107,7 @@ int main(){
         nk_sdl_font_stash_end();
 
         wnd->root_scene->create(wnd->root_scene);
+        wnd->root_scene->pipeline.forceUpdate = 1;
 
         SDL_Event e;
         powergl_event pe;
