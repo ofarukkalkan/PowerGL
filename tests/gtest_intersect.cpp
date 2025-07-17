@@ -34,6 +34,34 @@ TEST(Intersect, CullBackface){
     ASSERT_EQ(hit, 0);
 }
 
+TEST(Intersect, CullUTestFail){
+    powergl_vec3 mesh[3] = {
+        { 1.0f, -1.0f, 0.0f},
+        {-1.0f, -1.0f, 0.0f},
+        { 0.0f,  1.0f, 0.0f}
+    };
+    powergl_mat4 mvp = powergl_mat4_ident();
+    powergl_vec2 event = {80.0f, 50.0f};
+    powergl_vec4 vp = {0.0f, 0.0f, 100.0f, 100.0f};
+    powergl_vec3 out;
+    int hit = powergl_intersect_ray_tri_mesh(mesh, 3, mvp, event, vp, &out, 1);
+    ASSERT_EQ(hit, 0);
+}
+
+TEST(Intersect, CullVTestFail){
+    powergl_vec3 mesh[3] = {
+        { 1.0f, -1.0f, 0.0f},
+        {-1.0f, -1.0f, 0.0f},
+        { 0.0f,  1.0f, 0.0f}
+    };
+    powergl_mat4 mvp = powergl_mat4_ident();
+    powergl_vec2 event = {30.0f, 10.0f};
+    powergl_vec4 vp = {0.0f, 0.0f, 100.0f, 100.0f};
+    powergl_vec3 out;
+    int hit = powergl_intersect_ray_tri_mesh(mesh, 3, mvp, event, vp, &out, 1);
+    ASSERT_EQ(hit, 0);
+}
+
 int main(int argc, char **argv){
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
