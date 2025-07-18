@@ -566,6 +566,47 @@ void powergl_object_geometry_reset(powergl_geometry *geo){
 
 }
 
+void powergl_geometry_generate_flat_normals(powergl_geometry *geo){
+  if(geo->n_vertex == 0 || geo->n_vertex % 3 != 0){
+    return;
+  }
+
+  if(geo->triangles.normal){
+    free(geo->triangles.normal);
+  }
+
+  geo->triangles.normal = powergl_resize(NULL, geo->n_vertex, sizeof(powergl_vec3));
+  geo->triangles.n_normal = geo->n_vertex;
+
+  for(size_t i = 0; i < geo->n_vertex; i += 3){
+    powergl_vec3 v0 = geo->vertex[i];
+    powergl_vec3 v1 = geo->vertex[i+1];
+    powergl_vec3 v2 = geo->vertex[i+2];
+    powergl_vec3 e1 = powergl_vec3_sub(v1, v0);
+    powergl_vec3 e2 = powergl_vec3_sub(v2, v0);
+    powergl_vec3 n = powergl_vec3_norm(powergl_vec3_cross(e1, e2));
+    geo->triangles.normal[i] = n;
+    geo->triangles.normal[i+1] = n;
+    geo->triangles.normal[i+2] = n;
+  }
+
+  geo->triangles.normal_flag = 1;
+}
+
+static void object_generate_flat_normals_rec(powergl_object *obj){
+  if(obj->geometry.visible_flag && obj->geometry.n_vertex > 0){
+    powergl_geometry_generate_flat_normals(&obj->geometry);
+  }
+
+  for(size_t i = 0; i < obj->n_object; ++i){
+    object_generate_flat_normals_rec(obj->objects[i]);
+  }
+}
+
+void powergl_object_generate_flat_normals(powergl_object *obj){
+  object_generate_flat_normals_rec(obj);
+}
+
 powergl_object *powergl_camera_default(){
   powergl_object *cam = powergl_resize(NULL, 1, sizeof(powergl_object));
   memset(cam, 0, sizeof(powergl_object));

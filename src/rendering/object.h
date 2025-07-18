@@ -247,6 +247,12 @@ void powergl_event_handle(powergl_object *obj, powergl_event *e, float delta_tim
 void powergl_object_geometry_append(powergl_geometry *dest, powergl_geometry *src, powergl_vec3 offset, powergl_vec3 color);
 void powergl_object_geometry_reset(powergl_geometry *geo);
 
+/* Generate per-face normals for flat shading. The normal array will be resized
+   so that each vertex has the face normal of its triangle. */
+void powergl_geometry_generate_flat_normals(powergl_geometry *geo);
+/* Recursively generate flat normals for the given object and all children. */
+void powergl_object_generate_flat_normals(powergl_object *obj);
+
 void powergl_transform_reset(powergl_transform *trans);
 
 /* Creates and returns a camera object with default parameters.
