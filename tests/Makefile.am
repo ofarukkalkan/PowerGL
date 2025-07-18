@@ -58,10 +58,13 @@ distclean-local: code-coverage-dist-clean
 
 # Test data files shipped with the distribution
 EXTRA_DIST = vertexcolored_cube.dae vertexcoloredcube_demo.png \
+    blinnphongshadedcube.png gouraudshadedcube.png lambertshadedcube.png \
     run_vertexcoloredcube_headless.sh run_flatshadedcube_headless.sh \
-    run_gouraudshadedcube_headless.sh run_lambertshadedcube_headless.sh run_blinnphongshadedcube_headless.sh
+    run_gouraudshadedcube_headless.sh run_lambertshadedcube_headless.sh \
+    run_blinnphongshadedcube_headless.sh
 
 # Remove generated files produced during tests
-CLEANFILES = cube_exported.dae exported.dae frame_*.png
+CLEANFILES = cube_exported.dae exported.dae frame_*.png flat_frame_*.png \
+    gouraud_frame_*.png lambert_frame_*.png blinnphong_frame_*.png
 
 # Run tests via make check
