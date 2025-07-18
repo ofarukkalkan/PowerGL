@@ -771,6 +771,10 @@ void powergl_pipeline_flat_create(powergl_pipeline *ppl, powergl_object **objs, 
   ppl->uni_light_dir = glGetUniformLocation(ppl->gp, "lightDir");
   ppl->uni_sampler = -1;
 
+  for(size_t i = 0; i < n_obj; ++i){
+    powergl_object_generate_flat_normals(objs[i]);
+  }
+
   powergl_pipeline_create_objects(ppl, objs, n_obj);
 }
 
