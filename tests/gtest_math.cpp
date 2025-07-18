@@ -190,6 +190,31 @@ TEST(Mat4, Decompose) {
     EXPECT_NEAR(drot.z, rot.z, 1e-4f);
 }
 
+TEST(Mat4, InverseSIMD) {
+    powergl_mat4 m = powergl_mat4_ident();
+    m = powergl_mat4_scale(m, (powergl_vec3){2.0f, 3.0f, 4.0f});
+    m = powergl_mat4_rot(m, (float)M_PI / 3.0f, (powergl_vec3){1.0f, 1.0f, 0.0f});
+    m = powergl_mat4_translate(m, (powergl_vec3){1.0f, 2.0f, 3.0f});
+
+    powergl_mat4 inv_scalar = powergl_mat4_inv(m);
+    powergl_mat4 inv_simd;
+    powergl_mat4_inv_simd(m.data, inv_simd.data);
+
+    for (int i = 0; i < 4; ++i) {
+        for (int j = 0; j < 4; ++j) {
+            EXPECT_NEAR(inv_scalar.c[j].r[i], inv_simd.c[j].r[i], 1e-5f);
+        }
+    }
+
+    powergl_mat4 prod = powergl_mat4_mul(m, inv_simd);
+    powergl_mat4 ident = powergl_mat4_ident();
+    for (int i = 0; i < 4; ++i) {
+        for (int j = 0; j < 4; ++j) {
+            EXPECT_NEAR(prod.c[j].r[i], ident.c[j].r[i], 1e-4f);
+        }
+    }
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
